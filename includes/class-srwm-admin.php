@@ -1031,6 +1031,7 @@ class SRWM_Admin {
         .srwm-form-group input[type="text"],
         .srwm-form-group input[type="email"],
         .srwm-form-group input[type="number"],
+        .srwm-form-group input[type="password"],
         .srwm-form-group select,
         .srwm-form-group textarea {
             width: 100%;
@@ -1038,17 +1039,21 @@ class SRWM_Admin {
             border: 1px solid #dcdcde;
             border-radius: 6px;
             font-size: 14px;
-            transition: border-color 0.2s ease;
+            background: #ffffff;
+            color: #1d2327;
+            transition: all 0.2s ease;
         }
         
         .srwm-form-group input[type="text"]:focus,
         .srwm-form-group input[type="email"]:focus,
         .srwm-form-group input[type="number"]:focus,
+        .srwm-form-group input[type="password"]:focus,
         .srwm-form-group select:focus,
         .srwm-form-group textarea:focus {
             border-color: #007cba;
             outline: none;
             box-shadow: 0 0 0 1px #007cba;
+            background: #ffffff;
         }
         
         /* Toggle Switch */
@@ -1408,6 +1413,62 @@ class SRWM_Admin {
         
         .srwm-template-content {
             margin-top: 15px;
+        }
+        
+        /* Override WordPress default dark styles for form elements */
+        .srwm-pro-page input[type="text"],
+        .srwm-pro-page input[type="email"],
+        .srwm-pro-page input[type="number"],
+        .srwm-pro-page input[type="password"],
+        .srwm-pro-page select,
+        .srwm-pro-page textarea {
+            background: #ffffff !important;
+            color: #1d2327 !important;
+            border: 1px solid #dcdcde !important;
+        }
+        
+        .srwm-pro-page input[type="text"]:focus,
+        .srwm-pro-page input[type="email"]:focus,
+        .srwm-pro-page input[type="number"]:focus,
+        .srwm-pro-page input[type="password"]:focus,
+        .srwm-pro-page select:focus,
+        .srwm-pro-page textarea:focus {
+            background: #ffffff !important;
+            color: #1d2327 !important;
+            border-color: #007cba !important;
+            box-shadow: 0 0 0 1px #007cba !important;
+        }
+        
+        /* Specific overrides for notification and template pages */
+        .srwm-notification-content input[type="text"],
+        .srwm-notification-content input[type="email"],
+        .srwm-notification-content input[type="password"],
+        .srwm-notification-content select,
+        .srwm-notification-content textarea,
+        .srwm-template-content input[type="text"],
+        .srwm-template-content input[type="email"],
+        .srwm-template-content input[type="password"],
+        .srwm-template-content select,
+        .srwm-template-content textarea {
+            background: #ffffff !important;
+            color: #1d2327 !important;
+            border: 1px solid #dcdcde !important;
+        }
+        
+        .srwm-notification-content input[type="text"]:focus,
+        .srwm-notification-content input[type="email"]:focus,
+        .srwm-notification-content input[type="password"]:focus,
+        .srwm-notification-content select:focus,
+        .srwm-notification-content textarea:focus,
+        .srwm-template-content input[type="text"]:focus,
+        .srwm-template-content input[type="email"]:focus,
+        .srwm-template-content input[type="password"]:focus,
+        .srwm-template-content select:focus,
+        .srwm-template-content textarea:focus {
+            background: #ffffff !important;
+            color: #1d2327 !important;
+            border-color: #007cba !important;
+            box-shadow: 0 0 0 1px #007cba !important;
         }
         
         /* Responsive */
