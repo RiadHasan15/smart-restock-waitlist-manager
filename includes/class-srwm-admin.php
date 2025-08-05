@@ -2426,6 +2426,15 @@ class SRWM_Admin {
      */
     public function render_thresholds_page() {
         if (!$this->license_manager->is_pro_active()) {
+            // Show debug information
+            $current_status = get_option('smart-restock-waitlist-manager_license_status', 'inactive');
+            $current_key = get_option('smart-restock-waitlist-manager_license_key', '');
+            $is_pro = $this->license_manager->is_pro_active();
+            
+            echo '<div class="notice notice-warning"><p><strong>Debug Info:</strong> Status: ' . esc_html($current_status) . 
+                 ' | Key: ' . (empty($current_key) ? 'Empty' : 'Set') . 
+                 ' | Pro Active: ' . ($is_pro ? 'Yes' : 'No') . '</p></div>';
+            
             $this->render_pro_feature_locked();
             return;
         }
@@ -2535,6 +2544,11 @@ class SRWM_Admin {
                 </div>
                 <h1><?php _e('Pro Feature Locked', 'smart-restock-waitlist'); ?></h1>
                 <p><?php _e('This feature requires a valid Pro license. Please activate your license to unlock all Pro features.', 'smart-restock-waitlist'); ?></p>
+                <div class="srwm-dev-license-info">
+                    <p><strong><?php _e('For Development/Testing:', 'smart-restock-waitlist'); ?></strong></p>
+                    <p><?php _e('Use any of these license keys:', 'smart-restock-waitlist'); ?></p>
+                    <code>DEV-LICENSE-12345, TEST-LICENSE-67890, DEMO-LICENSE-11111, PRO-LICENSE-22222, TRIAL-LICENSE-33333</code>
+                </div>
                 <div class="srwm-pro-locked-actions">
                     <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary">
                         <span class="dashicons dashicons-admin-plugins"></span>
