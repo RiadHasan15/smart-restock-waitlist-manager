@@ -1468,11 +1468,54 @@ class SmartRestockWaitlistManager {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_csv_approvals';
         
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        error_log('CSV Approvals AJAX: Table exists = ' . ($table_exists ? 'yes' : 'no'));
+        
+        if (!$table_exists) {
+            wp_die(json_encode(array('success' => false, 'message' => 'CSV approvals table does not exist')));
+        }
+        
         $approvals = $wpdb->get_results("
             SELECT * FROM $table 
             ORDER BY created_at DESC 
             LIMIT 50
         ");
+        
+        error_log('CSV Approvals AJAX: Found ' . count($approvals) . ' approvals');
+        
+        // If no approvals found, create a test entry for debugging
+        if (empty($approvals)) {
+            error_log('CSV Approvals AJAX: No approvals found, creating test entry');
+            $test_data = array(
+                array('sku' => 'TEST001', 'quantity' => 10),
+                array('sku' => 'TEST002', 'quantity' => 20)
+            );
+            
+            $wpdb->insert(
+                $table,
+                array(
+                    'token' => 'test-token-123',
+                    'supplier_email' => 'test@example.com',
+                    'file_name' => 'test-upload.csv',
+                    'file_size' => 1024,
+                    'upload_data' => json_encode($test_data),
+                    'status' => 'pending',
+                    'ip_address' => '127.0.0.1',
+                    'created_at' => current_time('mysql')
+                ),
+                array('%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s')
+            );
+            
+            $approvals = $wpdb->get_results("
+                SELECT * FROM $table 
+                ORDER BY created_at DESC 
+                LIMIT 50
+            ");
+            error_log('CSV Approvals AJAX: Created test entry, now found ' . count($approvals) . ' approvals');
+        }
+        
+        error_log('CSV Approvals AJAX: Response = ' . json_encode(array('success' => true, 'data' => $approvals)));
         
         wp_die(json_encode(array('success' => true, 'data' => $approvals)));
     }

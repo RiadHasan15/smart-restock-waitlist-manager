@@ -2856,26 +2856,30 @@ class SRWM_Admin {
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
+                    dataType: 'json',
                     data: {
                         action: 'srwm_get_csv_approvals',
                         nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
                     },
                     success: function(response) {
+                        console.log('CSV Approvals Response:', response);
                         if (response.success) {
                             displayApprovals(response.data);
                         } else {
-                            $('#srwm-approvals-container').html('<div class="srwm-no-approvals">' + response.message + '</div>');
+                            $('#srwm-approvals-container').html('<div class="srwm-no-approvals">' + (response.message || 'Unknown error') + '</div>');
                         }
                     },
-                    error: function() {
-                        $('#srwm-approvals-container').html('<div class="srwm-no-approvals">Error loading approvals</div>');
+                    error: function(xhr, status, error) {
+                        console.error('CSV Approvals Error:', xhr.responseText, status, error);
+                        $('#srwm-approvals-container').html('<div class="srwm-no-approvals">Error loading approvals: ' + error + '</div>');
                     }
                 });
             }
             
             // Display approvals
             function displayApprovals(approvals) {
-                if (approvals.length === 0) {
+                console.log('Displaying approvals:', approvals);
+                if (!approvals || approvals.length === 0) {
                     $('#srwm-approvals-container').html('<div class="srwm-no-approvals">No pending approvals</div>');
                     return;
                 }
