@@ -63,6 +63,15 @@ class SRWM_Admin {
             array($this, 'render_analytics_page')
         );
         
+        add_submenu_page(
+            'smart-restock-waitlist',
+            __('Supplier Management', 'smart-restock-waitlist'),
+            __('Supplier Management', 'smart-restock-waitlist'),
+            'manage_woocommerce',
+            'smart-restock-waitlist-suppliers',
+            array($this, 'render_suppliers_page')
+        );
+        
         // Pro features menu items - always check current license status
         if ($this->license_manager->is_pro_active()) {
             add_submenu_page(
@@ -5134,6 +5143,824 @@ class SRWM_Admin {
             }
         }
         </style>
+        <?php
+    }
+    
+    /**
+     * Render Supplier Management page
+     */
+    public function render_suppliers_page() {
+        ?>
+        <div class="wrap">
+            <h1 class="wp-heading-inline">
+                <i class="fas fa-users"></i>
+                <?php _e('Supplier Management', 'smart-restock-waitlist'); ?>
+            </h1>
+            
+            <div class="srwm-suppliers-container">
+                <!-- Header with Search and Filters -->
+                <div class="srwm-suppliers-header">
+                    <div class="srwm-search-filters">
+                        <div class="srwm-search-box">
+                            <input type="text" id="supplier-search" placeholder="<?php _e('Search suppliers...', 'smart-restock-waitlist'); ?>">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="srwm-filters">
+                            <select id="category-filter">
+                                <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
+                                <option value="electronics"><?php _e('Electronics', 'smart-restock-waitlist'); ?></option>
+                                <option value="clothing"><?php _e('Fashion & Apparel', 'smart-restock-waitlist'); ?></option>
+                                <option value="home"><?php _e('Home & Garden', 'smart-restock-waitlist'); ?></option>
+                                <option value="automotive"><?php _e('Automotive', 'smart-restock-waitlist'); ?></option>
+                                <option value="health"><?php _e('Health & Beauty', 'smart-restock-waitlist'); ?></option>
+                            </select>
+                            <select id="status-filter">
+                                <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
+                                <option value="active"><?php _e('Active', 'smart-restock-waitlist'); ?></option>
+                                <option value="inactive"><?php _e('Inactive', 'smart-restock-waitlist'); ?></option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="button button-primary" id="add-supplier-btn">
+                        <i class="fas fa-plus"></i>
+                        <?php _e('Add New Supplier', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+                
+                <!-- Suppliers Grid -->
+                <div class="srwm-suppliers-grid" id="suppliers-grid">
+                    <div class="srwm-loading">
+                        <span class="spinner is-active"></span>
+                        <?php _e('Loading suppliers...', 'smart-restock-waitlist'); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add/Edit Supplier Modal -->
+        <div id="supplier-modal" class="srwm-modal" style="display: none;">
+            <div class="srwm-modal-content">
+                <div class="srwm-modal-header">
+                    <h3 id="modal-title"><?php _e('Add New Supplier', 'smart-restock-waitlist'); ?></h3>
+                    <button class="srwm-modal-close">&times;</button>
+                </div>
+                <div class="srwm-modal-body">
+                    <form id="supplier-form">
+                        <input type="hidden" id="supplier-id" name="supplier_id" value="">
+                        
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="supplier-name"><?php _e('Contact Person Name *', 'smart-restock-waitlist'); ?></label>
+                                <input type="text" id="supplier-name" name="supplier_name" required>
+                            </div>
+                            <div class="srwm-form-group">
+                                <label for="company-name"><?php _e('Company Name', 'smart-restock-waitlist'); ?></label>
+                                <input type="text" id="company-name" name="company_name">
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="supplier-email"><?php _e('Email Address *', 'smart-restock-waitlist'); ?></label>
+                                <input type="email" id="supplier-email" name="supplier_email" required>
+                            </div>
+                            <div class="srwm-form-group">
+                                <label for="supplier-phone"><?php _e('Phone Number', 'smart-restock-waitlist'); ?></label>
+                                <input type="tel" id="supplier-phone" name="phone">
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label for="supplier-address"><?php _e('Address', 'smart-restock-waitlist'); ?></label>
+                            <textarea id="supplier-address" name="address" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="contact-person"><?php _e('Contact Person', 'smart-restock-waitlist'); ?></label>
+                                <input type="text" id="contact-person" name="contact_person">
+                            </div>
+                            <div class="srwm-form-group">
+                                <label for="supplier-category"><?php _e('Category', 'smart-restock-waitlist'); ?></label>
+                                <select id="supplier-category" name="category">
+                                    <option value=""><?php _e('Select Category', 'smart-restock-waitlist'); ?></option>
+                                    <option value="electronics"><?php _e('Electronics', 'smart-restock-waitlist'); ?></option>
+                                    <option value="clothing"><?php _e('Fashion & Apparel', 'smart-restock-waitlist'); ?></option>
+                                    <option value="home"><?php _e('Home & Garden', 'smart-restock-waitlist'); ?></option>
+                                    <option value="automotive"><?php _e('Automotive', 'smart-restock-waitlist'); ?></option>
+                                    <option value="health"><?php _e('Health & Beauty', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="supplier-threshold"><?php _e('Stock Threshold', 'smart-restock-waitlist'); ?></label>
+                                <input type="number" id="supplier-threshold" name="threshold" min="0" value="5">
+                            </div>
+                            <div class="srwm-form-group" id="status-group" style="display: none;">
+                                <label for="supplier-status"><?php _e('Status', 'smart-restock-waitlist'); ?></label>
+                                <select id="supplier-status" name="status">
+                                    <option value="active"><?php _e('Active', 'smart-restock-waitlist'); ?></option>
+                                    <option value="inactive"><?php _e('Inactive', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label for="supplier-notes"><?php _e('Notes', 'smart-restock-waitlist'); ?></label>
+                            <textarea id="supplier-notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button" id="cancel-supplier"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
+                    <button type="button" class="button button-primary" id="save-supplier"><?php _e('Save Supplier', 'smart-restock-waitlist'); ?></button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-modal" class="srwm-modal" style="display: none;">
+            <div class="srwm-modal-content">
+                <div class="srwm-modal-header">
+                    <h3><?php _e('Delete Supplier', 'smart-restock-waitlist'); ?></h3>
+                    <button class="srwm-modal-close">&times;</button>
+                </div>
+                <div class="srwm-modal-body">
+                    <p><?php _e('Are you sure you want to delete this supplier? This action cannot be undone.', 'smart-restock-waitlist'); ?></p>
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button" id="cancel-delete"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
+                    <button type="button" class="button button-primary button-danger" id="confirm-delete"><?php _e('Delete', 'smart-restock-waitlist'); ?></button>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .srwm-suppliers-container {
+            margin-top: 20px;
+        }
+        
+        .srwm-suppliers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-search-filters {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .srwm-search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .srwm-search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-search-box i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+        
+        .srwm-filters {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .srwm-filters select {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            min-width: 140px;
+        }
+        
+        .srwm-filters select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        #add-supplier-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #add-supplier-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .srwm-suppliers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .srwm-supplier-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        
+        .srwm-supplier-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .supplier-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .supplier-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .supplier-info h3 {
+            margin: 0 0 4px 0;
+            color: #1f2937;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .supplier-company {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin: 0 0 8px 0;
+        }
+        
+        .supplier-email {
+            color: #3b82f6;
+            font-size: 0.9rem;
+            margin: 0;
+            text-decoration: none;
+        }
+        
+        .supplier-email:hover {
+            text-decoration: underline;
+        }
+        
+        .supplier-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .supplier-stat {
+            text-align: center;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .supplier-stat .number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .supplier-stat .label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .supplier-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .supplier-action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .supplier-action-btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .supplier-action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .supplier-action-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .supplier-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .supplier-status {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .supplier-status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .supplier-status.inactive {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .srwm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .srwm-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .srwm-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 24px 0 24px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+        }
+        
+        .srwm-modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.3rem;
+        }
+        
+        .srwm-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-modal-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .srwm-modal-body {
+            padding: 0 24px;
+        }
+        
+        .srwm-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-form-group {
+            margin-bottom: 20px;
+        }
+        
+        .srwm-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .srwm-form-group input,
+        .srwm-form-group select,
+        .srwm-form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .srwm-form-group input:focus,
+        .srwm-form-group select:focus,
+        .srwm-form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 24px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 24px;
+        }
+        
+        .button-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            border-color: #dc2626 !important;
+        }
+        
+        .srwm-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 40px;
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .srwm-suppliers-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .srwm-search-filters {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .srwm-suppliers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .supplier-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        </style>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            let currentSupplierId = null;
+            
+            // Load suppliers on page load
+            loadSuppliers();
+            
+            // Search and filter functionality
+            $('#supplier-search').on('input', debounce(loadSuppliers, 300));
+            $('#category-filter, #status-filter').on('change', loadSuppliers);
+            
+            // Add supplier button
+            $('#add-supplier-btn').on('click', function() {
+                openSupplierModal();
+            });
+            
+            // Modal close buttons
+            $('.srwm-modal-close, #cancel-supplier, #cancel-delete').on('click', function() {
+                closeAllModals();
+            });
+            
+            // Save supplier
+            $('#save-supplier').on('click', function() {
+                saveSupplier();
+            });
+            
+            // Confirm delete
+            $('#confirm-delete').on('click', function() {
+                deleteSupplier();
+            });
+            
+            // Close modal on outside click
+            $('.srwm-modal').on('click', function(e) {
+                if (e.target === this) {
+                    closeAllModals();
+                }
+            });
+            
+            function loadSuppliers() {
+                const search = $('#supplier-search').val();
+                const category = $('#category-filter').val();
+                const status = $('#status-filter').val();
+                
+                $('#suppliers-grid').html('<div class="srwm-loading"><span class="spinner is-active"></span> Loading suppliers...</div>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_suppliers',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        search: search,
+                        category: category,
+                        status: status
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            displaySuppliers(response.data);
+                        } else {
+                            $('#suppliers-grid').html('<div class="srwm-error">Error loading suppliers: ' + response.data + '</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#suppliers-grid').html('<div class="srwm-error">Error loading suppliers. Please try again.</div>');
+                    }
+                });
+            }
+            
+            function displaySuppliers(suppliers) {
+                if (suppliers.length === 0) {
+                    $('#suppliers-grid').html('<div class="srwm-empty">No suppliers found. <button class="button button-primary" onclick="openSupplierModal()">Add your first supplier</button></div>');
+                    return;
+                }
+                
+                let html = '';
+                suppliers.forEach(function(supplier) {
+                    const avatarText = supplier.supplier_name.charAt(0).toUpperCase();
+                    const lastUpload = supplier.last_upload ? new Date(supplier.last_upload).toLocaleDateString() : 'Never';
+                    
+                    html += `
+                        <div class="srwm-supplier-card">
+                            <div class="supplier-status ${supplier.status}">${supplier.status}</div>
+                            <div class="supplier-header">
+                                <div class="supplier-avatar">${avatarText}</div>
+                                <div class="supplier-info">
+                                    <h3>${supplier.supplier_name}</h3>
+                                    <p class="supplier-company">${supplier.company_name || 'No company name'}</p>
+                                    <a href="mailto:${supplier.supplier_email}" class="supplier-email">${supplier.supplier_email}</a>
+                                </div>
+                            </div>
+                            <div class="supplier-stats">
+                                <div class="supplier-stat">
+                                    <span class="number">${supplier.upload_count || 0}</span>
+                                    <span class="label">Uploads</span>
+                                </div>
+                                <div class="supplier-stat">
+                                    <span class="number">${parseFloat(supplier.trust_score || 0).toFixed(1)}</span>
+                                    <span class="label">Trust Score</span>
+                                </div>
+                            </div>
+                            <div class="supplier-actions">
+                                <button class="supplier-action-btn primary" onclick="generateUploadLink(${supplier.id})">
+                                    <i class="fas fa-link"></i> Generate Link
+                                </button>
+                                <button class="supplier-action-btn secondary" onclick="editSupplier(${supplier.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="supplier-action-btn danger" onclick="deleteSupplierConfirm(${supplier.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                $('#suppliers-grid').html(html);
+            }
+            
+            function openSupplierModal(supplierId = null) {
+                currentSupplierId = supplierId;
+                
+                if (supplierId) {
+                    // Edit mode
+                    $('#modal-title').text('Edit Supplier');
+                    $('#status-group').show();
+                    loadSupplierData(supplierId);
+                } else {
+                    // Add mode
+                    $('#modal-title').text('Add New Supplier');
+                    $('#status-group').hide();
+                    $('#supplier-form')[0].reset();
+                    $('#supplier-id').val('');
+                }
+                
+                $('#supplier-modal').show();
+            }
+            
+            function loadSupplierData(supplierId) {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_supplier',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        supplier_id: supplierId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            const supplier = response.data;
+                            $('#supplier-id').val(supplier.id);
+                            $('#supplier-name').val(supplier.supplier_name);
+                            $('#company-name').val(supplier.company_name);
+                            $('#supplier-email').val(supplier.supplier_email);
+                            $('#supplier-phone').val(supplier.phone);
+                            $('#supplier-address').val(supplier.address);
+                            $('#contact-person').val(supplier.contact_person);
+                            $('#supplier-category').val(supplier.category);
+                            $('#supplier-status').val(supplier.status);
+                            $('#supplier-threshold').val(supplier.threshold);
+                            $('#supplier-notes').val(supplier.notes);
+                        }
+                    }
+                });
+            }
+            
+            function saveSupplier() {
+                const formData = new FormData($('#supplier-form')[0]);
+                formData.append('action', currentSupplierId ? 'srwm_update_supplier' : 'srwm_add_supplier');
+                formData.append('nonce', '<?php echo wp_create_nonce('srwm_nonce'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            closeAllModals();
+                            loadSuppliers();
+                            showNotification(response.data.message || 'Supplier saved successfully!', 'success');
+                        } else {
+                            showNotification(response.data || 'Error saving supplier', 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Error saving supplier. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function deleteSupplierConfirm(supplierId) {
+                currentSupplierId = supplierId;
+                $('#delete-modal').show();
+            }
+            
+            function deleteSupplier() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_delete_supplier',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        supplier_id: currentSupplierId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            closeAllModals();
+                            loadSuppliers();
+                            showNotification(response.data || 'Supplier deleted successfully!', 'success');
+                        } else {
+                            showNotification(response.data || 'Error deleting supplier', 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Error deleting supplier. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function closeAllModals() {
+                $('.srwm-modal').hide();
+                currentSupplierId = null;
+            }
+            
+            function showNotification(message, type) {
+                const notification = $(`
+                    <div class="notice notice-${type} is-dismissible">
+                        <p>${message}</p>
+                    </div>
+                `);
+                
+                $('.wrap h1').after(notification);
+                
+                setTimeout(function() {
+                    notification.fadeOut();
+                }, 3000);
+            }
+            
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // Global functions for onclick handlers
+            window.openSupplierModal = openSupplierModal;
+            window.editSupplier = function(supplierId) {
+                openSupplierModal(supplierId);
+            };
+            window.deleteSupplierConfirm = deleteSupplierConfirm;
+            window.generateUploadLink = function(supplierId) {
+                // TODO: Implement upload link generation
+                showNotification('Upload link generation coming soon!', 'info');
+            };
+        });
+        </script>
         <?php
     }
     

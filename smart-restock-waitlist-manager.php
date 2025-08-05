@@ -999,6 +999,13 @@ class SmartRestockWaitlistManager {
         // CSV Approval AJAX handlers
         add_action('wp_ajax_srwm_approve_csv_upload', array($this, 'ajax_approve_csv_upload'));
         add_action('wp_ajax_srwm_reject_csv_upload', array($this, 'ajax_reject_csv_upload'));
+        
+        // Supplier Management AJAX handlers
+        add_action('wp_ajax_srwm_get_suppliers', array($this, 'ajax_get_suppliers'));
+        add_action('wp_ajax_srwm_add_supplier', array($this, 'ajax_add_supplier'));
+        add_action('wp_ajax_srwm_update_supplier', array($this, 'ajax_update_supplier'));
+        add_action('wp_ajax_srwm_delete_supplier', array($this, 'ajax_delete_supplier'));
+        add_action('wp_ajax_srwm_get_supplier', array($this, 'ajax_get_supplier'));
         add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
     }
     
@@ -1702,6 +1709,9 @@ class SmartRestockWaitlistManager {
         
         $charset_collate = $wpdb->get_charset_collate();
         
+        // Migrate existing supplier data if needed
+        $this->migrate_supplier_data();
+        
         // Force create CSV approvals table if it doesn't exist
         $table_approvals = $wpdb->prefix . 'srwm_csv_approvals';
         if ($wpdb->get_var("SHOW TABLES LIKE '$table_approvals'") != $table_approvals) {
@@ -1745,20 +1755,33 @@ class SmartRestockWaitlistManager {
             KEY notified (notified)
         ) $charset_collate;";
         
-        // Suppliers table
+        // Enhanced Suppliers table
         $table_supplier = $wpdb->prefix . 'srwm_suppliers';
         $sql_supplier = "CREATE TABLE $table_supplier (
             id bigint(20) NOT NULL AUTO_INCREMENT,
-            product_id bigint(20) NOT NULL,
+            product_id bigint(20) DEFAULT NULL,
             supplier_name varchar(255) NOT NULL,
+            company_name varchar(255) DEFAULT '',
             supplier_email varchar(255) NOT NULL,
+            phone varchar(50) DEFAULT '',
+            address text DEFAULT '',
+            contact_person varchar(255) DEFAULT '',
+            notes text DEFAULT '',
+            category varchar(100) DEFAULT '',
+            status enum('active', 'inactive') DEFAULT 'active',
+            trust_score decimal(3,2) DEFAULT 0.00,
             threshold int(11) DEFAULT 5,
-            channels longtext,
+            channels longtext DEFAULT '',
             auto_generate_po tinyint(1) DEFAULT 0,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
+            UNIQUE KEY email (supplier_email),
             KEY product_id (product_id),
-            KEY supplier_email (supplier_email)
+            KEY status (status),
+            KEY category (category),
+            KEY trust_score (trust_score),
+            KEY created_at (created_at)
         ) $charset_collate;";
         
         // Restock logs table
@@ -1862,6 +1885,384 @@ class SmartRestockWaitlistManager {
         dbDelta($sql_waitlist);
         dbDelta($sql_supplier);
         dbDelta($sql_logs);
+    }
+    
+    /**
+     * Migrate existing supplier data to new schema
+     */
+    private function migrate_supplier_data() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Check if migration is needed
+        $migration_done = get_option('srwm_supplier_migration_done', false);
+        if ($migration_done) {
+            return;
+        }
+        
+        // Check if table exists and has old structure
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name;
+        
+        if ($table_exists) {
+            // Check if new columns exist
+            $columns = $wpdb->get_results("SHOW COLUMNS FROM $table_name");
+            $column_names = array_column($columns, 'Field');
+            
+            if (!in_array('company_name', $column_names)) {
+                // Add new columns to existing table
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN company_name varchar(255) DEFAULT '' AFTER supplier_name");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN phone varchar(50) DEFAULT '' AFTER supplier_email");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN address text DEFAULT '' AFTER phone");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN contact_person varchar(255) DEFAULT '' AFTER address");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN notes text DEFAULT '' AFTER contact_person");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN category varchar(100) DEFAULT '' AFTER notes");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN status enum('active', 'inactive') DEFAULT 'active' AFTER category");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN trust_score decimal(3,2) DEFAULT 0.00 AFTER status");
+                $wpdb->query("ALTER TABLE $table_name ADD COLUMN updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
+                
+                // Update existing records to set supplier_name as contact_person if it's not already set
+                $wpdb->query("UPDATE $table_name SET contact_person = supplier_name WHERE contact_person = ''");
+                
+                // Add indexes
+                $wpdb->query("ALTER TABLE $table_name ADD UNIQUE KEY email (supplier_email)");
+                $wpdb->query("ALTER TABLE $table_name ADD KEY status (status)");
+                $wpdb->query("ALTER TABLE $table_name ADD KEY category (category)");
+                $wpdb->query("ALTER TABLE $table_name ADD KEY trust_score (trust_score)");
+                $wpdb->query("ALTER TABLE $table_name ADD KEY created_at (created_at)");
+            }
+        }
+        
+        // Mark migration as done
+        update_option('srwm_supplier_migration_done', true);
+    }
+    
+    /**
+     * Get all suppliers
+     */
+    public function ajax_get_suppliers() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+        $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
+        $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+        
+        $where_conditions = array();
+        $where_values = array();
+        
+        if (!empty($search)) {
+            $where_conditions[] = "(supplier_name LIKE %s OR company_name LIKE %s OR supplier_email LIKE %s)";
+            $search_term = '%' . $wpdb->esc_like($search) . '%';
+            $where_values[] = $search_term;
+            $where_values[] = $search_term;
+            $where_values[] = $search_term;
+        }
+        
+        if (!empty($category)) {
+            $where_conditions[] = "category = %s";
+            $where_values[] = $category;
+        }
+        
+        if (!empty($status)) {
+            $where_conditions[] = "status = %s";
+            $where_values[] = $status;
+        }
+        
+        $where_clause = '';
+        if (!empty($where_conditions)) {
+            $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
+        }
+        
+        $sql = "SELECT * FROM $table_name $where_clause ORDER BY created_at DESC";
+        
+        if (!empty($where_values)) {
+            $sql = $wpdb->prepare($sql, $where_values);
+        }
+        
+        $suppliers = $wpdb->get_results($sql);
+        
+        // Calculate upload counts and trust scores
+        foreach ($suppliers as $supplier) {
+            $supplier->upload_count = $this->get_supplier_upload_count($supplier->supplier_email);
+            $supplier->last_upload = $this->get_supplier_last_upload($supplier->supplier_email);
+            $supplier->trust_score = $this->calculate_trust_score($supplier->id);
+        }
+        
+        wp_send_json_success($suppliers);
+    }
+    
+    /**
+     * Add new supplier
+     */
+    public function ajax_add_supplier() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_name = sanitize_text_field($_POST['supplier_name']);
+        $company_name = sanitize_text_field($_POST['company_name']);
+        $supplier_email = sanitize_email($_POST['supplier_email']);
+        $phone = sanitize_text_field($_POST['phone']);
+        $address = sanitize_textarea_field($_POST['address']);
+        $contact_person = sanitize_text_field($_POST['contact_person']);
+        $notes = sanitize_textarea_field($_POST['notes']);
+        $category = sanitize_text_field($_POST['category']);
+        $threshold = intval($_POST['threshold']);
+        
+        if (empty($supplier_name) || empty($supplier_email)) {
+            wp_send_json_error(__('Supplier name and email are required.', 'smart-restock-waitlist'));
+        }
+        
+        if (!is_email($supplier_email)) {
+            wp_send_json_error(__('Please enter a valid email address.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Check if email already exists
+        $existing = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE supplier_email = %s",
+            $supplier_email
+        ));
+        
+        if ($existing) {
+            wp_send_json_error(__('A supplier with this email already exists.', 'smart-restock-waitlist'));
+        }
+        
+        $result = $wpdb->insert(
+            $table_name,
+            array(
+                'supplier_name' => $supplier_name,
+                'company_name' => $company_name,
+                'supplier_email' => $supplier_email,
+                'phone' => $phone,
+                'address' => $address,
+                'contact_person' => $contact_person,
+                'notes' => $notes,
+                'category' => $category,
+                'threshold' => $threshold,
+                'status' => 'active'
+            ),
+            array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to add supplier. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_id = $wpdb->insert_id;
+        
+        wp_send_json_success(array(
+            'message' => __('Supplier added successfully!', 'smart-restock-waitlist'),
+            'supplier_id' => $supplier_id
+        ));
+    }
+    
+    /**
+     * Update supplier
+     */
+    public function ajax_update_supplier() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_id = intval($_POST['supplier_id']);
+        $supplier_name = sanitize_text_field($_POST['supplier_name']);
+        $company_name = sanitize_text_field($_POST['company_name']);
+        $supplier_email = sanitize_email($_POST['supplier_email']);
+        $phone = sanitize_text_field($_POST['phone']);
+        $address = sanitize_textarea_field($_POST['address']);
+        $contact_person = sanitize_text_field($_POST['contact_person']);
+        $notes = sanitize_textarea_field($_POST['notes']);
+        $category = sanitize_text_field($_POST['category']);
+        $status = sanitize_text_field($_POST['status']);
+        $threshold = intval($_POST['threshold']);
+        
+        if (empty($supplier_name) || empty($supplier_email)) {
+            wp_send_json_error(__('Supplier name and email are required.', 'smart-restock-waitlist'));
+        }
+        
+        if (!is_email($supplier_email)) {
+            wp_send_json_error(__('Please enter a valid email address.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Check if email already exists for different supplier
+        $existing = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE supplier_email = %s AND id != %d",
+            $supplier_email,
+            $supplier_id
+        ));
+        
+        if ($existing) {
+            wp_send_json_error(__('A supplier with this email already exists.', 'smart-restock-waitlist'));
+        }
+        
+        $result = $wpdb->update(
+            $table_name,
+            array(
+                'supplier_name' => $supplier_name,
+                'company_name' => $company_name,
+                'supplier_email' => $supplier_email,
+                'phone' => $phone,
+                'address' => $address,
+                'contact_person' => $contact_person,
+                'notes' => $notes,
+                'category' => $category,
+                'status' => $status,
+                'threshold' => $threshold
+            ),
+            array('id' => $supplier_id),
+            array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d'),
+            array('%d')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to update supplier. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        wp_send_json_success(__('Supplier updated successfully!', 'smart-restock-waitlist'));
+    }
+    
+    /**
+     * Delete supplier
+     */
+    public function ajax_delete_supplier() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_id = intval($_POST['supplier_id']);
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        $result = $wpdb->delete(
+            $table_name,
+            array('id' => $supplier_id),
+            array('%d')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to delete supplier. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        wp_send_json_success(__('Supplier deleted successfully!', 'smart-restock-waitlist'));
+    }
+    
+    /**
+     * Get single supplier
+     */
+    public function ajax_get_supplier() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_id = intval($_POST['supplier_id']);
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_name WHERE id = %d",
+            $supplier_id
+        ));
+        
+        if (!$supplier) {
+            wp_send_json_error(__('Supplier not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Add additional data
+        $supplier->upload_count = $this->get_supplier_upload_count($supplier->supplier_email);
+        $supplier->last_upload = $this->get_supplier_last_upload($supplier->supplier_email);
+        $supplier->trust_score = $this->calculate_trust_score($supplier->id);
+        
+        wp_send_json_success($supplier);
+    }
+    
+    /**
+     * Get supplier upload count
+     */
+    private function get_supplier_upload_count($email) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE supplier_email = %s",
+            $email
+        ));
+    }
+    
+    /**
+     * Get supplier last upload date
+     */
+    private function get_supplier_last_upload($email) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT created_at FROM $table_name WHERE supplier_email = %s ORDER BY created_at DESC LIMIT 1",
+            $email
+        ));
+    }
+    
+    /**
+     * Calculate trust score for supplier
+     */
+    private function calculate_trust_score($supplier_id) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        // Get supplier email
+        $supplier_email = $wpdb->get_var($wpdb->prepare(
+            "SELECT supplier_email FROM {$wpdb->prefix}srwm_suppliers WHERE id = %d",
+            $supplier_id
+        ));
+        
+        if (!$supplier_email) {
+            return 0.00;
+        }
+        
+        // Calculate based on approval rate and upload frequency
+        $total_uploads = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE supplier_email = %s",
+            $supplier_email
+        ));
+        
+        $approved_uploads = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE supplier_email = %s AND status = 'approved'",
+            $supplier_email
+        ));
+        
+        if ($total_uploads == 0) {
+            return 0.00;
+        }
+        
+        $approval_rate = $approved_uploads / $total_uploads;
+        $base_score = $approval_rate * 5; // 0-5 scale
+        
+        // Bonus for frequent uploads
+        $frequency_bonus = min(0.5, $total_uploads * 0.1);
+        
+        return min(5.00, $base_score + $frequency_bonus);
     }
     
     /**
