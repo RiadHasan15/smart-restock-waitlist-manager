@@ -1009,7 +1009,6 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_generate_supplier_upload_link', array($this, 'ajax_generate_supplier_upload_link'));
         add_action('wp_ajax_srwm_get_csv_upload_links', array($this, 'ajax_get_csv_upload_links'));
         add_action('wp_ajax_srwm_delete_upload_link', array($this, 'ajax_delete_upload_link'));
-        add_action('wp_ajax_srwm_download_csv_template', array($this, 'ajax_download_csv_template'));
         add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
     }
     
@@ -1432,30 +1431,61 @@ class SmartRestockWaitlistManager {
      * AJAX: Download CSV template (Pro)
      */
     public function ajax_download_csv_template() {
-        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        // Check for both possible nonces (for compatibility)
+        if (!wp_verify_nonce($_POST['nonce'], 'srwm_admin_nonce') && !wp_verify_nonce($_POST['nonce'], 'srwm_nonce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Security check failed.', 'smart-restock-waitlist'))));
+        }
         
         if (!current_user_can('manage_woocommerce')) {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
-        if (!$this->license_manager->is_pro_active()) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
+        // Create CSV template content with real WooCommerce products if available
+        $csv_content = "Product ID,SKU,Quantity,Notes\n";
+        
+        // Try to get some real WooCommerce products for the template
+        $products = get_posts(array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'numberposts' => 5,
+            'orderby' => 'title',
+            'order' => 'ASC'
+        ));
+        
+        if (!empty($products)) {
+            foreach ($products as $product) {
+                $product_id = $product->ID;
+                $sku = get_post_meta($product_id, '_sku', true);
+                $product_name = $product->post_title;
+                
+                $csv_content .= sprintf(
+                    "%d,%s,50,Restock %s\n",
+                    $product_id,
+                    $sku ? $sku : 'SKU-' . $product_id,
+                    $product_name
+                );
+            }
+        } else {
+            // Fallback template if no products exist
+            $csv_content .= "123,PROD-001,50,Restock product\n";
+            $csv_content .= "456,PROD-002,25,Add more stock\n";
+            $csv_content .= "789,PROD-003,100,Full restock\n";
+            $csv_content .= "101,PROD-004,75,Regular restock\n";
+            $csv_content .= "202,PROD-005,30,Low stock restock\n";
         }
         
-        // Create CSV content
-        $csv_content = "Product ID,SKU,Quantity,Notes\n";
-        $csv_content .= "123,PROD-001,50,Restock product\n";
-        $csv_content .= "456,PROD-002,25,Add more stock\n";
-        $csv_content .= "789,PROD-003,100,Full restock\n";
+        // Add instructions as comments
+        $csv_content .= "\n";
+        $csv_content .= "# Instructions:\n";
+        $csv_content .= "# - Product ID: WooCommerce product ID (required)\n";
+        $csv_content .= "# - SKU: Product SKU (optional)\n";
+        $csv_content .= "# - Quantity: Stock quantity to add (required)\n";
+        $csv_content .= "# - Notes: Additional notes (optional)\n";
+        $csv_content .= "# - Maximum file size: 10MB\n";
+        $csv_content .= "# - Supported formats: CSV, Excel (.xlsx, .xls)\n";
         
-        // Set headers for download
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="csv_upload_template.csv"');
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-        
-        echo $csv_content;
-        exit;
+        // Return JSON response for AJAX (instead of direct download)
+        wp_send_json_success($csv_content);
     }
     
     /**
@@ -2461,62 +2491,7 @@ class SmartRestockWaitlistManager {
         wp_send_json_success(__('Upload link deleted successfully!', 'smart-restock-waitlist'));
     }
     
-    /**
-     * Download CSV template
-     */
-    public function ajax_download_csv_template() {
-        check_ajax_referer('srwm_nonce', 'nonce');
-        
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
-        }
-        
-        // Create CSV template content with real WooCommerce products if available
-        $csv_content = "Product ID,SKU,Quantity,Notes\n";
-        
-        // Try to get some real WooCommerce products for the template
-        $products = get_posts(array(
-            'post_type' => 'product',
-            'post_status' => 'publish',
-            'numberposts' => 5,
-            'orderby' => 'title',
-            'order' => 'ASC'
-        ));
-        
-        if (!empty($products)) {
-            foreach ($products as $product) {
-                $product_id = $product->ID;
-                $sku = get_post_meta($product_id, '_sku', true);
-                $product_name = $product->post_title;
-                
-                $csv_content .= sprintf(
-                    "%d,%s,50,Restock %s\n",
-                    $product_id,
-                    $sku ? $sku : 'SKU-' . $product_id,
-                    $product_name
-                );
-            }
-        } else {
-            // Fallback template if no products exist
-            $csv_content .= "123,PROD-001,50,Restock product\n";
-            $csv_content .= "456,PROD-002,25,Add more stock\n";
-            $csv_content .= "789,PROD-003,100,Full restock\n";
-            $csv_content .= "101,PROD-004,75,Regular restock\n";
-            $csv_content .= "202,PROD-005,30,Low stock restock\n";
-        }
-        
-        // Add instructions as comments
-        $csv_content .= "\n";
-        $csv_content .= "# Instructions:\n";
-        $csv_content .= "# - Product ID: WooCommerce product ID (required)\n";
-        $csv_content .= "# - SKU: Product SKU (optional)\n";
-        $csv_content .= "# - Quantity: Stock quantity to add (required)\n";
-        $csv_content .= "# - Notes: Additional notes (optional)\n";
-        $csv_content .= "# - Maximum file size: 10MB\n";
-        $csv_content .= "# - Supported formats: CSV, Excel (.xlsx, .xls)\n";
-        
-        wp_send_json_success($csv_content);
-    }
+
     
     /**
      * Load text domain
