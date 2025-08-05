@@ -160,77 +160,595 @@ class SRWM_License_Manager {
         <div class="wrap">
             <h1><?php _e('Smart Restock & Waitlist Manager - License', 'smart-restock-waitlist'); ?></h1>
             
-            <div class="card" style="max-width: 600px;">
-                <h2><?php _e('License Management (Local Testing)', 'smart-restock-waitlist'); ?></h2>
-                
-                <div class="notice notice-info">
-                    <p><strong><?php _e('Local Testing Mode:', 'smart-restock-waitlist'); ?></strong> 
-                    <?php _e('This is a dummy license system for local testing. Any license key will work.', 'smart-restock-waitlist'); ?></p>
-                </div>
-                
-                <form method="post" action="">
-                    <?php wp_nonce_field('srwm_license_nonce', 'srwm_license_nonce'); ?>
+            <div class="srwm-license-container">
+                <!-- License Management Section -->
+                <div class="srwm-license-card">
+                    <div class="srwm-license-header">
+                        <h2><?php _e('License Management', 'smart-restock-waitlist'); ?></h2>
+                        <div class="srwm-license-badge <?php echo $status == 'valid' ? 'active' : 'inactive'; ?>">
+                            <?php if ($status == 'valid'): ?>
+                                <span class="srwm-badge-icon">✓</span>
+                                <?php _e('Pro Active', 'smart-restock-waitlist'); ?>
+                            <?php else: ?>
+                                <span class="srwm-badge-icon">⚡</span>
+                                <?php _e('Free Version', 'smart-restock-waitlist'); ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                     
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row"><?php _e('License Key', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="text" name="license_key" value="<?php echo esc_attr($license_key); ?>" 
-                                       class="regular-text" placeholder="<?php _e('Enter any license key', 'smart-restock-waitlist'); ?>" />
-                                <p class="description"><?php _e('For local testing, any license key will work.', 'smart-restock-waitlist'); ?></p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><?php _e('Status', 'smart-restock-waitlist'); ?></th>
-                            <td>
+                    <div class="srwm-license-notice">
+                        <div class="srwm-notice-icon">💡</div>
+                        <div class="srwm-notice-content">
+                            <strong><?php _e('Local Testing Mode:', 'smart-restock-waitlist'); ?></strong>
+                            <?php _e('This is a dummy license system for local testing. Any license key will work.', 'smart-restock-waitlist'); ?>
+                        </div>
+                    </div>
+                    
+                    <form method="post" action="" class="srwm-license-form">
+                        <?php wp_nonce_field('srwm_license_nonce', 'srwm_license_nonce'); ?>
+                        
+                        <div class="srwm-form-group">
+                            <label for="license_key"><?php _e('License Key', 'smart-restock-waitlist'); ?></label>
+                            <input type="text" id="license_key" name="license_key" value="<?php echo esc_attr($license_key); ?>" 
+                                   placeholder="<?php _e('Enter any license key for testing', 'smart-restock-waitlist'); ?>" />
+                            <small><?php _e('For local testing, any license key will work.', 'smart-restock-waitlist'); ?></small>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label><?php _e('Status', 'smart-restock-waitlist'); ?></label>
+                            <div class="srwm-status-display">
                                 <?php if ($status == 'valid'): ?>
-                                    <span style="color: green; font-weight: bold;">✓ <?php _e('Active', 'smart-restock-waitlist'); ?></span>
-                                    <p class="description"><?php _e('Your license is active and Pro features are enabled.', 'smart-restock-waitlist'); ?></p>
-                                <?php elseif ($status == 'invalid'): ?>
-                                    <span style="color: red; font-weight: bold;">✗ <?php _e('Invalid', 'smart-restock-waitlist'); ?></span>
-                                    <p class="description"><?php _e('Please check your license key and try again.', 'smart-restock-waitlist'); ?></p>
-                                <?php elseif ($status == 'expired'): ?>
-                                    <span style="color: orange; font-weight: bold;">⚠ <?php _e('Expired', 'smart-restock-waitlist'); ?></span>
-                                    <p class="description"><?php _e('Your license has expired. Please renew to continue receiving updates.', 'smart-restock-waitlist'); ?></p>
+                                    <span class="srwm-status-active">✓ <?php _e('Active', 'smart-restock-waitlist'); ?></span>
+                                    <p><?php _e('Your license is active and Pro features are enabled.', 'smart-restock-waitlist'); ?></p>
                                 <?php else: ?>
-                                    <span style="color: red; font-weight: bold;">✗ <?php _e('Inactive', 'smart-restock-waitlist'); ?></span>
-                                    <p class="description"><?php _e('Pro features are disabled. Enter any license key and activate to enable Pro features.', 'smart-restock-waitlist'); ?></p>
+                                    <span class="srwm-status-inactive">✗ <?php _e('Inactive', 'smart-restock-waitlist'); ?></span>
+                                    <p><?php _e('Pro features are disabled. Enter any license key and activate to enable Pro features.', 'smart-restock-waitlist'); ?></p>
                                 <?php endif; ?>
                                 
                                 <?php if ($last_check): ?>
-                                    <p class="description"><?php _e('Last checked:', 'smart-restock-waitlist'); ?> <?php echo date('Y-m-d H:i:s', $last_check); ?></p>
+                                    <small><?php _e('Last checked:', 'smart-restock-waitlist'); ?> <?php echo date('Y-m-d H:i:s', $last_check); ?></small>
                                 <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><?php _e('Current Version', 'smart-restock-waitlist'); ?></th>
-                            <td><?php echo esc_html(SRWM_VERSION); ?></td>
-                        </tr>
-                    </table>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label><?php _e('Current Version', 'smart-restock-waitlist'); ?></label>
+                            <span class="srwm-version"><?php echo esc_html(SRWM_VERSION); ?></span>
+                        </div>
+                        
+                        <div class="srwm-form-actions">
+                            <?php if ($status == 'valid'): ?>
+                                <button type="submit" name="srwm_license_action" value="deactivate" class="srwm-btn srwm-btn-secondary">
+                                    <?php _e('Deactivate License', 'smart-restock-waitlist'); ?>
+                                </button>
+                                <button type="submit" name="srwm_license_action" value="check" class="srwm-btn srwm-btn-outline">
+                                    <?php _e('Check Status', 'smart-restock-waitlist'); ?>
+                                </button>
+                            <?php else: ?>
+                                <button type="submit" name="srwm_license_action" value="activate" class="srwm-btn srwm-btn-primary">
+                                    <?php _e('Activate License', 'smart-restock-waitlist'); ?>
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Pro Features Preview Section -->
+                <div class="srwm-pro-preview">
+                    <div class="srwm-pro-header">
+                        <h2><?php _e('Pro Features Preview', 'smart-restock-waitlist'); ?></h2>
+                        <p><?php _e('Unlock these powerful features with your Pro license', 'smart-restock-waitlist'); ?></p>
+                    </div>
                     
-                    <p class="submit">
-                        <?php if ($status == 'valid'): ?>
-                            <button type="submit" name="srwm_license_action" value="deactivate" class="button">
-                                <?php _e('Deactivate License', 'smart-restock-waitlist'); ?>
-                            </button>
-                            <button type="submit" name="srwm_license_action" value="check" class="button">
-                                <?php _e('Check Status', 'smart-restock-waitlist'); ?>
-                            </button>
-                        <?php else: ?>
-                            <button type="submit" name="srwm_license_action" value="activate" class="button-primary">
-                                <?php _e('Activate License', 'smart-restock-waitlist'); ?>
-                            </button>
-                        <?php endif; ?>
-                    </p>
-                </form>
+                    <div class="srwm-features-grid">
+                        <!-- One-Click Restock -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">🚀</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('One-Click Restock', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Generate secure restock links for suppliers. No login required - suppliers click and update stock instantly.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('Secure token-based links', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('No supplier login required', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Instant stock updates', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Activity logging & tracking', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Multi-Channel Notifications -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">📱</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('Multi-Channel Notifications', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Reach suppliers through multiple channels: Email, WhatsApp, and SMS notifications.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('Email notifications', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('WhatsApp integration', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('SMS alerts (Twilio/Nexmo)', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Customizable templates', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Purchase Orders -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">📋</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('Automatic Purchase Orders', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Generate professional PDF purchase orders automatically when stock hits threshold levels.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('PDF generation', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Branded templates', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Auto-email to suppliers', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Order tracking', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- CSV Upload -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">📊</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('CSV Bulk Upload', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Allow suppliers to upload CSV files for bulk stock updates across multiple products.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('Secure upload links', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('CSV validation', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Bulk stock updates', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Error handling', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock Thresholds -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">⚖️</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('Stock Threshold Management', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Set custom stock thresholds per product and receive alerts when levels drop below minimum.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('Per-product thresholds', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Global defaults', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Automatic alerts', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Threshold analytics', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Analytics -->
+                        <div class="srwm-feature-card">
+                            <div class="srwm-feature-icon">📈</div>
+                            <div class="srwm-feature-content">
+                                <h3><?php _e('Advanced Analytics', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Comprehensive analytics and reporting for supplier performance and restock efficiency.', 'smart-restock-waitlist'); ?></p>
+                                <ul class="srwm-feature-list">
+                                    <li><?php _e('Supplier performance', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Restock time analytics', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Conversion tracking', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Exportable reports', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Call to Action -->
+                    <div class="srwm-cta-section">
+                        <div class="srwm-cta-content">
+                            <h3><?php _e('Ready to Upgrade?', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Get access to all Pro features and take your waitlist management to the next level.', 'smart-restock-waitlist'); ?></p>
+                            <div class="srwm-cta-buttons">
+                                <a href="#" class="srwm-btn srwm-btn-primary srwm-btn-large">
+                                    <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
+                                </a>
+                                <a href="#" class="srwm-btn srwm-btn-outline srwm-btn-large">
+                                    <?php _e('View Demo', 'smart-restock-waitlist'); ?>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            
         </div>
         
         <style>
-        .card { background: #fff; border: 1px solid #ccd0d4; padding: 20px; border-radius: 4px; }
-        .card h2 { margin-top: 0; }
+        /* Modern License Page Styles */
+        .srwm-license-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* License Management Card */
+        .srwm-license-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            height: fit-content;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-license-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .srwm-license-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .srwm-license-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .srwm-license-badge.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .srwm-license-badge.inactive {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .srwm-badge-icon {
+            font-size: 16px;
+        }
+        
+        /* License Notice */
+        .srwm-license-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 25px;
+        }
+        
+        .srwm-notice-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .srwm-notice-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1e40af;
+        }
+        
+        /* Form Styles */
+        .srwm-license-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .srwm-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .srwm-form-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .srwm-form-group input {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-form-group small {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        
+        .srwm-status-display {
+            padding: 12px 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-status-active {
+            color: #059669;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .srwm-status-inactive {
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .srwm-status-display p {
+            margin: 8px 0 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        .srwm-status-display small {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+        
+        .srwm-version {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #374151;
+        }
+        
+        /* Button Styles */
+        .srwm-form-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .srwm-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+        
+        .srwm-btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .srwm-btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-btn-secondary {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .srwm-btn-secondary:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .srwm-btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .srwm-btn-outline:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+        
+        .srwm-btn-large {
+            padding: 14px 28px;
+            font-size: 16px;
+            min-height: 48px;
+        }
+        
+        /* Pro Features Preview */
+        .srwm-pro-preview {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-pro-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .srwm-pro-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .srwm-pro-header p {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        /* Features Grid */
+        .srwm-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .srwm-feature-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+        
+        .srwm-feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
+        
+        .srwm-feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .srwm-feature-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+        }
+        
+        .srwm-feature-content p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+        }
+        
+        .srwm-feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .srwm-feature-list li {
+            color: #4b5563;
+            font-size: 13px;
+            padding: 4px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .srwm-feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        /* Call to Action */
+        .srwm-cta-section {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .srwm-cta-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+        
+        .srwm-cta-content p {
+            font-size: 16px;
+            color: #d1d5db;
+            margin: 0 0 30px 0;
+        }
+        
+        .srwm-cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .srwm-license-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .srwm-features-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .srwm-license-container {
+                padding: 0 10px;
+            }
+            
+            .srwm-license-card,
+            .srwm-pro-preview {
+                padding: 20px;
+            }
+            
+            .srwm-features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-form-actions {
+                flex-direction: column;
+            }
+            
+            .srwm-cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .srwm-license-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
         </style>
         <?php
     }
