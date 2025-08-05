@@ -6456,6 +6456,19 @@ class SRWM_Admin {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
+        /* Highlight newly generated links */
+        .srwm-new-link {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            border-left: 4px solid #f59e0b;
+            animation: highlightNewLink 2s ease-in-out;
+        }
+        
+        @keyframes highlightNewLink {
+            0% { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+            50% { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
+            100% { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+        }
+        
         @media (max-width: 768px) {
             .srwm-suppliers-header {
                 flex-direction: column;
@@ -6873,7 +6886,14 @@ class SRWM_Admin {
                         
                         if (response.success) {
                             displayUploadLinkResult(response.data);
-                            showNotification(response.data.message, 'success');
+                            showNotification(response.data.message + ' Upload links table will refresh automatically.', 'success');
+                            
+                            // Refresh the upload links table to show the new link
+                            setTimeout(function() {
+                                // Show a brief loading indicator
+                                $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Refreshing upload links...</td></tr>');
+                                loadUploadLinks();
+                            }, 500);
                         } else {
                             $('#upload-link-content').show();
                             showNotification(response.data || 'Error generating upload link', 'error');
@@ -6953,14 +6973,18 @@ class SRWM_Admin {
                 }
                 
                 let html = '';
-                links.forEach(function(link) {
+                links.forEach(function(link, index) {
                     const expiresDate = new Date(link.expires_at);
                     const now = new Date();
                     const isExpired = expiresDate < now;
                     const status = isExpired ? 'expired' : (link.used ? 'used' : 'active');
                     
+                    // Check if this is a newly generated link (first in the list and active)
+                    const isNewLink = index === 0 && status === 'active' && link.upload_count == 0;
+                    const newLinkClass = isNewLink ? 'srwm-new-link' : '';
+                    
                     html += `
-                        <tr>
+                        <tr class="${newLinkClass}">
                             <td>
                                 <div class="srwm-link-token" title="${link.token}">${link.token}</div>
                             </td>
