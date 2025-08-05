@@ -81,10 +81,11 @@ class Smart_restock_waitlist_manager_License_Manager {
     }
     
     public function license_menu() {
-        add_options_page(
+        add_submenu_page(
+            'smart-restock-waitlist',
             'smart-restock-waitlist-manager License',
-            'smart-restock-waitlist-manager License',
-            'manage_options',
+            'License',
+            'manage_woocommerce',
             $this->plugin_slug . '-license',
             array($this, 'license_page')
         );
