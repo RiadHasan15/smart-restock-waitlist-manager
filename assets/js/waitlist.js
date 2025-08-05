@@ -39,7 +39,7 @@
                         showWaitlistMessage($form, 'success', srwm_ajax.messages.success);
                         updateWaitlistCount($form);
                     } else {
-                        showWaitlistMessage($form, 'error', response.data || srwm_ajax.messages.error);
+                        showWaitlistMessage($form, 'error', response.message || srwm_ajax.messages.error);
                     }
                 },
                 error: function() {

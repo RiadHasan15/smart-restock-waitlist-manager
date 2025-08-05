@@ -1213,8 +1213,6 @@ class SmartRestockWaitlistManager {
     public function ajax_save_threshold() {
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
-
-        
         if (!current_user_can('manage_woocommerce')) {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
@@ -1232,6 +1230,12 @@ class SmartRestockWaitlistManager {
         
         if ($product_id <= 0) {
             wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
+        }
+        
+        // Check if product exists
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
         }
         
         if ($threshold < 0) {
@@ -1254,16 +1258,38 @@ class SmartRestockWaitlistManager {
     public function ajax_reset_threshold() {
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
-        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!isset($_POST['product_id'])) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Product ID is required.', 'smart-restock-waitlist'))));
         }
         
         $product_id = intval($_POST['product_id']);
         
-        // Delete the custom threshold meta to use global default
-        delete_post_meta($product_id, '_srwm_threshold');
+        if ($product_id <= 0) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
+        }
         
-        wp_die(json_encode(array('success' => true, 'message' => __('Threshold reset to global default!', 'smart-restock-waitlist'))));
+        // Check if product exists
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
+        }
+        
+        // Delete the custom threshold meta to use global default
+        $result = delete_post_meta($product_id, '_srwm_threshold');
+        
+        if ($result !== false) {
+            wp_die(json_encode(array('success' => true, 'message' => __('Threshold reset to global default!', 'smart-restock-waitlist'))));
+        } else {
+            wp_die(json_encode(array('success' => false, 'message' => __('Failed to reset threshold. Please try again.', 'smart-restock-waitlist'))));
+        }
     }
     
     /**
