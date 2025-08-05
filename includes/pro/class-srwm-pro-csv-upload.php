@@ -846,6 +846,12 @@ class SRWM_Pro_CSV_Upload {
     private function store_for_approval($token, $file, $csv_data) {
         global $wpdb;
         
+        // Ensure CSV approvals table exists
+        global $srwm_plugin;
+        if ($srwm_plugin) {
+            $srwm_plugin->ensure_csv_approvals_table();
+        }
+        
         // Get supplier email from token
         $token_data = $wpdb->get_row($wpdb->prepare(
             "SELECT supplier_email FROM {$wpdb->prefix}srwm_csv_tokens WHERE token = %s",
