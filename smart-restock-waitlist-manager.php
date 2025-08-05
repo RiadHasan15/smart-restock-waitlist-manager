@@ -37,7 +37,6 @@ class SRWM_License_Manager {
     private $plugin_slug = 'smart-restock-waitlist-manager';
     
     public function __construct() {
-        error_log('SRWM: License Manager constructor called');
         add_action('admin_init', array($this, 'handle_license_actions'));
         add_action('admin_notices', array($this, 'show_license_notices'));
     }
@@ -826,7 +825,6 @@ class SmartRestockWaitlistManager {
     private $license_manager;
     
     public function __construct() {
-        error_log('SRWM: Main plugin constructor called');
         // Initialize license manager
         $this->license_manager = new SRWM_License_Manager();
         
@@ -967,8 +965,6 @@ class SmartRestockWaitlistManager {
      * Add AJAX handlers
      */
     private function add_ajax_handlers() {
-        error_log('SRWM: Adding AJAX handlers');
-        
         // Frontend AJAX
         add_action('wp_ajax_srwm_add_to_waitlist', array($this, 'ajax_add_to_waitlist'));
         add_action('wp_ajax_nopriv_srwm_add_to_waitlist', array($this, 'ajax_add_to_waitlist'));
@@ -989,8 +985,6 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_save_notification_settings', array($this, 'ajax_save_notification_settings'));
         add_action('wp_ajax_srwm_save_email_templates', array($this, 'ajax_save_email_templates'));
         add_action('wp_ajax_srwm_save_global_threshold', array($this, 'ajax_save_global_threshold'));
-        
-        error_log('SRWM: AJAX handlers registered');
     }
     
     /**
@@ -1215,50 +1209,39 @@ class SmartRestockWaitlistManager {
      * AJAX: Save product threshold (Pro)
      */
     public function ajax_save_threshold() {
-        // Debug logging
-        error_log('SRWM: Save threshold AJAX handler called');
-        
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
-            error_log('SRWM: Save threshold - insufficient permissions');
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
         if (!$this->license_manager->is_pro_active()) {
-            error_log('SRWM: Save threshold - pro license not active');
             wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
         }
         
         if (!isset($_POST['product_id']) || !isset($_POST['threshold'])) {
-            error_log('SRWM: Save threshold - missing required data');
             wp_die(json_encode(array('success' => false, 'message' => __('Missing required data.', 'smart-restock-waitlist'))));
         }
         
         $product_id = intval($_POST['product_id']);
         $threshold = intval($_POST['threshold']);
-        error_log('SRWM: Save threshold - product_id: ' . $product_id . ', threshold: ' . $threshold);
         
         if ($product_id <= 0) {
-            error_log('SRWM: Save threshold - invalid product_id');
             wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
         }
         
         // Check if product exists
         $product = wc_get_product($product_id);
         if (!$product) {
-            error_log('SRWM: Save threshold - product not found');
             wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
         }
         
         if ($threshold < 0) {
-            error_log('SRWM: Save threshold - invalid threshold value');
             wp_die(json_encode(array('success' => false, 'message' => __('Threshold must be a positive number.', 'smart-restock-waitlist'))));
         }
         
         // Save threshold as product meta
         $result = update_post_meta($product_id, '_srwm_threshold', $threshold);
-        error_log('SRWM: Save threshold - update_post_meta result: ' . ($result !== false ? 'success' : 'failed'));
         
         if ($result !== false) {
             wp_die(json_encode(array('success' => true, 'message' => __('Threshold saved successfully!', 'smart-restock-waitlist'))));
@@ -1271,44 +1254,34 @@ class SmartRestockWaitlistManager {
      * AJAX: Reset product threshold (Pro)
      */
     public function ajax_reset_threshold() {
-        // Debug logging
-        error_log('SRWM: Reset threshold AJAX handler called');
-        
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
-            error_log('SRWM: Reset threshold - insufficient permissions');
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
         if (!$this->license_manager->is_pro_active()) {
-            error_log('SRWM: Reset threshold - pro license not active');
             wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
         }
         
         if (!isset($_POST['product_id'])) {
-            error_log('SRWM: Reset threshold - product_id not set');
             wp_die(json_encode(array('success' => false, 'message' => __('Product ID is required.', 'smart-restock-waitlist'))));
         }
         
         $product_id = intval($_POST['product_id']);
-        error_log('SRWM: Reset threshold - product_id: ' . $product_id);
         
         if ($product_id <= 0) {
-            error_log('SRWM: Reset threshold - invalid product_id');
             wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
         }
         
         // Check if product exists
         $product = wc_get_product($product_id);
         if (!$product) {
-            error_log('SRWM: Reset threshold - product not found');
             wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
         }
         
         // Delete the custom threshold meta to use global default
         $result = delete_post_meta($product_id, '_srwm_threshold');
-        error_log('SRWM: Reset threshold - delete_post_meta result: ' . ($result !== false ? 'success' : 'failed'));
         
         if ($result !== false) {
             wp_die(json_encode(array('success' => true, 'message' => __('Threshold reset to global default!', 'smart-restock-waitlist'))));
