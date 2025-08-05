@@ -1,0 +1,257 @@
+/**
+ * Smart Restock & Waitlist Manager - Frontend Styles
+ */
+
+.srwm-waitlist-form {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+.srwm-waitlist-form-container {
+    text-align: center;
+}
+
+.srwm-waitlist-form h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.srwm-waitlist-form p {
+    margin: 0 0 20px 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.srwm-waitlist-form .form-row {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.srwm-waitlist-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.srwm-waitlist-form input[type="text"],
+.srwm-waitlist-form input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.srwm-waitlist-form input[type="text"]:focus,
+.srwm-waitlist-form input[type="email"]:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.srwm-waitlist-form input.error {
+    border-color: #e74c3c;
+}
+
+.srwm-waitlist-form .field-error {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.srwm-waitlist-submit {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.srwm-waitlist-submit:hover {
+    background: #219a52;
+}
+
+.srwm-waitlist-submit:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.srwm-waitlist-message {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.srwm-waitlist-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.srwm-waitlist-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.srwm-waitlist-message small {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Waitlist count display */
+.srwm-waitlist-count {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .srwm-waitlist-form {
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .srwm-waitlist-form h4 {
+        font-size: 16px;
+    }
+    
+    .srwm-waitlist-form input[type="text"],
+    .srwm-waitlist-form input[type="email"] {
+        padding: 10px 12px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .srwm-waitlist-submit {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}
+
+/* Product loop specific styles */
+.woocommerce-loop-product__title + .srwm-waitlist-form {
+    margin-top: 10px;
+    padding: 15px;
+}
+
+.woocommerce-loop-product__title + .srwm-waitlist-form h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.woocommerce-loop-product__title + .srwm-waitlist-form p {
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+/* Animation for form submission */
+.srwm-waitlist-form.submitting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.srwm-waitlist-form.submitting .srwm-waitlist-submit {
+    position: relative;
+}
+
+.srwm-waitlist-form.submitting .srwm-waitlist-submit::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success state styling */
+.srwm-waitlist-form.success .srwm-waitlist-form-container {
+    display: none;
+}
+
+.srwm-waitlist-form.success .srwm-waitlist-message {
+    text-align: center;
+}
+
+/* Error state styling */
+.srwm-waitlist-form.error input {
+    border-color: #e74c3c;
+}
+
+.srwm-waitlist-form.error .field-error {
+    display: block;
+}
+
+/* Accessibility improvements */
+.srwm-waitlist-form input:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+.srwm-waitlist-submit:focus {
+    outline: 2px solid #27ae60;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .srwm-waitlist-form {
+        border: 2px solid #000;
+    }
+    
+    .srwm-waitlist-form input[type="text"],
+    .srwm-waitlist-form input[type="email"] {
+        border: 2px solid #000;
+    }
+    
+    .srwm-waitlist-submit {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .srwm-waitlist-form input,
+    .srwm-waitlist-submit {
+        transition: none;
+    }
+    
+    .srwm-waitlist-form.submitting .srwm-waitlist-submit::after {
+        animation: none;
+    }
+}
