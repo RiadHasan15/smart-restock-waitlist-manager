@@ -2692,6 +2692,57 @@ class SRWM_Admin {
                     <?php endif; ?>
                 </div>
                 <div class="srwm-pro-card-content">
+                    <!-- Analytics Dashboard -->
+                    <div class="srwm-analytics-dashboard">
+                        <div class="srwm-analytics-grid">
+                            <div class="srwm-analytics-card">
+                                <div class="srwm-analytics-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="srwm-analytics-content">
+                                    <h3 id="pending-count">0</h3>
+                                    <p>Pending Approvals</p>
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-analytics-card">
+                                <div class="srwm-analytics-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="srwm-analytics-content">
+                                    <h3 id="approved-count">0</h3>
+                                    <p>Approved Today</p>
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-analytics-card">
+                                <div class="srwm-analytics-icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="srwm-analytics-content">
+                                    <h3 id="rejected-count">0</h3>
+                                    <p>Rejected Today</p>
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-analytics-card">
+                                <div class="srwm-analytics-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="srwm-analytics-content">
+                                    <h3 id="avg-approval-time">0m</h3>
+                                    <p>Avg. Approval Time</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Trends Chart -->
+                        <div class="srwm-chart-container">
+                            <h3>Upload Trends (Last 7 Days)</h3>
+                            <canvas id="uploadTrendsChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    
                     <div id="srwm-approvals-container">
                         <div class="srwm-loading">
                             <span class="spinner is-active"></span>
@@ -2725,24 +2776,89 @@ class SRWM_Admin {
         </div>
         
         <style>
-            .srwm-approval-item {
+            .srwm-approval-card {
                 background: white;
                 border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 15px;
-                transition: all 0.3s ease;
+                border-radius: 16px;
+                padding: 0;
+                margin-bottom: 20px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                overflow: hidden;
+            }
+            
+            .srwm-approval-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                border-color: #cbd5e1;
             }
             
             .srwm-approval-item:hover {
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
             
-            .srwm-approval-header {
+            .srwm-approval-card-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 15px;
+                padding: 20px 25px;
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .srwm-approval-card-info {
+                flex: 1;
+            }
+            
+            .srwm-approval-card-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .srwm-approval-card-title i {
+                color: #667eea;
+            }
+            
+            .srwm-approval-card-meta {
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+            
+            .srwm-meta-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                color: #6b7280;
+                font-size: 0.9rem;
+            }
+            
+            .srwm-meta-item i {
+                color: #9ca3af;
+                width: 14px;
+            }
+            
+            .srwm-approval-card-status {
+                display: flex;
+                align-items: center;
+            }
+            
+            .srwm-status-badge {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
             
             .srwm-approval-info {
@@ -2789,18 +2905,32 @@ class SRWM_Admin {
                 gap: 10px;
             }
             
+            .srwm-approval-card-content {
+                padding: 25px;
+            }
+            
             .srwm-upload-preview {
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 15px;
-                margin-top: 15px;
+                margin-bottom: 20px;
             }
             
             .srwm-upload-preview h4 {
-                margin: 0 0 10px 0;
+                margin-bottom: 15px;
                 color: #374151;
-                font-size: 0.95rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 1rem;
+            }
+            
+            .srwm-upload-preview h4 i {
+                color: #667eea;
+            }
+            
+            .srwm-upload-table-container {
+                background: #f8fafc;
+                border-radius: 8px;
+                padding: 15px;
+                border: 1px solid #e2e8f0;
             }
             
             .srwm-upload-table {
@@ -2820,6 +2950,95 @@ class SRWM_Admin {
                 background: #f1f5f9;
                 font-weight: 600;
                 color: #374151;
+                padding: 12px 15px;
+            }
+            
+            .srwm-upload-table td {
+                padding: 10px 15px;
+            }
+            
+            .srwm-upload-table tr.valid {
+                background: rgba(16, 185, 129, 0.05);
+            }
+            
+            .srwm-upload-table tr.invalid {
+                background: rgba(239, 68, 68, 0.05);
+            }
+            
+            .srwm-upload-table tr.more-rows {
+                background: #f8fafc;
+                color: #6b7280;
+                font-style: italic;
+            }
+            
+            .srwm-upload-table tr.more-rows td {
+                text-align: center;
+            }
+            
+            .srwm-approval-card-actions {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #e2e8f0;
+            }
+            
+            .srwm-btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                text-decoration: none;
+                font-size: 0.9rem;
+            }
+            
+            .srwm-btn-success {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+            }
+            
+            .srwm-btn-success:hover {
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            
+            .srwm-btn-danger {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+            }
+            
+            .srwm-btn-danger:hover {
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+            
+            .srwm-approval-card-result {
+                margin-top: 20px;
+                padding: 15px;
+                background: #f8fafc;
+                border-radius: 8px;
+                border-left: 4px solid #10b981;
+            }
+            
+            .srwm-admin-notes {
+                margin-bottom: 10px;
+                color: #374151;
+            }
+            
+            .srwm-processed-info {
+                color: #6b7280;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 5px;
             }
             
             .srwm-modal {
@@ -2885,6 +3104,243 @@ class SRWM_Admin {
                 text-align: center;
                 padding: 40px;
                 color: #6b7280;
+                font-style: italic;
+            }
+            
+            /* Animations */
+            @keyframes slideInUp {
+                from {
+                    transform: translateY(30px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes bounceIn {
+                0% {
+                    transform: scale(0.3);
+                    opacity: 0;
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+                70% {
+                    transform: scale(0.9);
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            
+            /* Notification System */
+            .srwm-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                max-width: 300px;
+            }
+            
+            .srwm-notification.show {
+                transform: translateX(0);
+            }
+            
+            .srwm-notification-success {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            }
+            
+            .srwm-notification-error {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            }
+            
+            .srwm-notification-warning {
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            }
+            
+            .srwm-notification-info {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            }
+            
+            /* Mobile Responsive Design */
+            @media (max-width: 768px) {
+                .srwm-approval-card-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 15px;
+                }
+                
+                .srwm-approval-card-meta {
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                
+                .srwm-approval-card-actions {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .srwm-btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+                
+                .srwm-upload-table-container {
+                    overflow-x: auto;
+                }
+                
+                .srwm-upload-table {
+                    min-width: 400px;
+                }
+                
+                .srwm-notification {
+                    right: 10px;
+                    left: 10px;
+                    max-width: none;
+                }
+                
+                .srwm-modal-content {
+                    width: 95%;
+                    margin: 10% auto;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .srwm-approval-card {
+                    margin-bottom: 15px;
+                }
+                
+                .srwm-approval-card-content {
+                    padding: 15px;
+                }
+                
+                .srwm-approval-card-header {
+                    padding: 15px;
+                }
+                
+                .srwm-upload-table {
+                    min-width: 300px;
+                    font-size: 0.8rem;
+                }
+                
+                .srwm-upload-table th,
+                .srwm-upload-table td {
+                    padding: 6px 8px;
+                }
+            }
+            
+            /* Analytics Dashboard Styles */
+            .srwm-analytics-dashboard {
+                margin-bottom: 30px;
+            }
+            
+            .srwm-analytics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            
+            .srwm-analytics-card {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            
+            .srwm-analytics-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            }
+            
+            .srwm-analytics-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: white;
+            }
+            
+            .srwm-analytics-card:nth-child(1) .srwm-analytics-icon {
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            }
+            
+            .srwm-analytics-card:nth-child(2) .srwm-analytics-icon {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            }
+            
+            .srwm-analytics-card:nth-child(3) .srwm-analytics-icon {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            }
+            
+            .srwm-analytics-card:nth-child(4) .srwm-analytics-icon {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            }
+            
+            .srwm-analytics-content h3 {
+                margin: 0 0 5px 0;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: #1f2937;
+            }
+            
+            .srwm-analytics-content p {
+                margin: 0;
+                color: #6b7280;
+                font-size: 0.9rem;
+            }
+            
+            .srwm-chart-container {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            
+            .srwm-chart-container h3 {
+                margin: 0 0 20px 0;
+                color: #1f2937;
+                font-size: 1.1rem;
             }
             
             .srwm-filter-notice {
@@ -2931,6 +3387,9 @@ class SRWM_Admin {
             }
         </style>
         
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
         <script>
         jQuery(document).ready(function($) {
             let currentApprovalId = null;
@@ -2973,55 +3432,92 @@ class SRWM_Admin {
             // Display approvals
             function displayApprovals(approvals) {
                 console.log('Displaying approvals:', approvals);
+                
+                // Update analytics dashboard
+                updateAnalyticsDashboard(approvals);
+                
                 if (!approvals || approvals.length === 0) {
                     $('#srwm-approvals-container').html('<div class="srwm-no-approvals">No pending approvals</div>');
                     return;
                 }
                 
                 let html = '';
-                approvals.forEach(function(approval) {
+                approvals.forEach(function(approval, index) {
                     const uploadData = JSON.parse(approval.upload_data);
                     const statusClass = 'srwm-status-' + approval.status;
+                    const statusIcon = getStatusIcon(approval.status);
+                    const statusColor = getStatusColor(approval.status);
                     
-                    html += '<div class="srwm-approval-item">';
-                    html += '<div class="srwm-approval-header">';
-                    html += '<div class="srwm-approval-info">';
-                    html += '<div class="srwm-approval-title">' + approval.file_name + '</div>';
-                    html += '<div class="srwm-approval-meta">';
-                    html += 'Supplier: ' + approval.supplier_email + ' | ';
-                    html += 'Uploaded: ' + new Date(approval.created_at).toLocaleString() + ' | ';
-                    html += 'Rows: ' + uploadData.length;
+                    html += '<div class="srwm-approval-card" style="animation: slideInUp 0.6s ease ' + (index * 0.1) + 's both;">';
+                    html += '<div class="srwm-approval-card-header">';
+                    html += '<div class="srwm-approval-card-info">';
+                    html += '<div class="srwm-approval-card-title">';
+                    html += '<i class="fas fa-file-csv"></i> ' + approval.file_name;
+                    html += '</div>';
+                    html += '<div class="srwm-approval-card-meta">';
+                    html += '<span class="srwm-meta-item"><i class="fas fa-user"></i> ' + approval.supplier_email + '</span>';
+                    html += '<span class="srwm-meta-item"><i class="fas fa-clock"></i> ' + formatDate(approval.created_at) + '</span>';
+                    html += '<span class="srwm-meta-item"><i class="fas fa-list"></i> ' + uploadData.length + ' items</span>';
                     html += '</div>';
                     html += '</div>';
-                    html += '<div class="srwm-approval-status ' + statusClass + '">' + approval.status + '</div>';
+                    html += '<div class="srwm-approval-card-status">';
+                    html += '<span class="srwm-status-badge ' + statusClass + '" style="background: ' + statusColor + '">';
+                    html += '<i class="' + statusIcon + '"></i> ' + approval.status.charAt(0).toUpperCase() + approval.status.slice(1);
+                    html += '</span>';
+                    html += '</div>';
                     html += '</div>';
                     
-                    if (approval.status === 'pending') {
-                        html += '<div class="srwm-approval-actions">';
-                        html += '<button class="button button-primary" onclick="reviewUpload(' + approval.id + ')">Review</button>';
-                        html += '</div>';
-                    } else {
-                        html += '<div class="srwm-approval-meta">';
-                        if (approval.admin_notes) {
-                            html += '<strong>Admin Notes:</strong> ' + approval.admin_notes;
-                        }
-                        html += '</div>';
-                    }
-                    
+                    html += '<div class="srwm-approval-card-content">';
                     html += '<div class="srwm-upload-preview">';
-                    html += '<h4>Upload Preview:</h4>';
+                    html += '<h4><i class="fas fa-table"></i> Upload Preview</h4>';
+                    html += '<div class="srwm-upload-table-container">';
                     html += '<table class="srwm-upload-table">';
-                    html += '<thead><tr><th>SKU</th><th>Quantity</th></tr></thead><tbody>';
+                    html += '<thead><tr><th>SKU</th><th>Quantity</th><th>Status</th></tr></thead><tbody>';
                     
                     uploadData.slice(0, 5).forEach(function(row) {
-                        html += '<tr><td>' + row.sku + '</td><td>' + row.quantity + '</td></tr>';
+                        const productExists = checkProductExists(row.sku);
+                        const statusClass = productExists ? 'valid' : 'invalid';
+                        const statusIcon = productExists ? 'fas fa-check' : 'fas fa-exclamation-triangle';
+                        const statusText = productExists ? 'Valid' : 'Product not found';
+                        
+                        html += '<tr class="' + statusClass + '">';
+                        html += '<td><strong>' + row.sku + '</strong></td>';
+                        html += '<td>' + row.quantity + '</td>';
+                        html += '<td><i class="' + statusIcon + '"></i> ' + statusText + '</td>';
+                        html += '</tr>';
                     });
                     
                     if (uploadData.length > 5) {
-                        html += '<tr><td colspan="2">... and ' + (uploadData.length - 5) + ' more rows</td></tr>';
+                        html += '<tr class="more-rows">';
+                        html += '<td colspan="3"><i class="fas fa-ellipsis-h"></i> ' + (uploadData.length - 5) + ' more items</td>';
+                        html += '</tr>';
                     }
                     
                     html += '</tbody></table>';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    if (approval.status === 'pending') {
+                        html += '<div class="srwm-approval-card-actions">';
+                        html += '<button class="srwm-btn srwm-btn-danger" onclick="reviewUpload(' + approval.id + ', \'reject\')">';
+                        html += '<i class="fas fa-times"></i> Reject';
+                        html += '</button>';
+                        html += '<button class="srwm-btn srwm-btn-success" onclick="reviewUpload(' + approval.id + ', \'approve\')">';
+                        html += '<i class="fas fa-check"></i> Approve';
+                        html += '</button>';
+                        html += '</div>';
+                    } else {
+                        html += '<div class="srwm-approval-card-result">';
+                        if (approval.admin_notes) {
+                            html += '<div class="srwm-admin-notes">';
+                            html += '<strong><i class="fas fa-comment"></i> Admin Notes:</strong> ' + approval.admin_notes;
+                            html += '</div>';
+                        }
+                        html += '<div class="srwm-processed-info">';
+                        html += '<i class="fas fa-calendar-check"></i> Processed: ' + formatDate(approval.processed_at);
+                        html += '</div>';
+                        html += '</div>';
+                    }
                     html += '</div>';
                     html += '</div>';
                 });
@@ -3029,13 +3525,271 @@ class SRWM_Admin {
                 $('#srwm-approvals-container').html(html);
             }
             
+            // Helper functions
+            function getStatusIcon(status) {
+                switch(status) {
+                    case 'pending': return 'fas fa-clock';
+                    case 'approved': return 'fas fa-check-circle';
+                    case 'rejected': return 'fas fa-times-circle';
+                    default: return 'fas fa-question-circle';
+                }
+            }
+            
+            function getStatusColor(status) {
+                switch(status) {
+                    case 'pending': return '#f59e0b';
+                    case 'approved': return '#10b981';
+                    case 'rejected': return '#ef4444';
+                    default: return '#6b7280';
+                }
+            }
+            
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            function checkProductExists(sku) {
+                // This would be replaced with actual product validation
+                return sku.length > 0;
+            }
+            
+            // Update analytics dashboard
+            function updateAnalyticsDashboard(approvals) {
+                const today = new Date().toDateString();
+                let pendingCount = 0;
+                let approvedToday = 0;
+                let rejectedToday = 0;
+                let totalApprovalTime = 0;
+                let processedCount = 0;
+                
+                approvals.forEach(approval => {
+                    if (approval.status === 'pending') {
+                        pendingCount++;
+                    } else if (approval.status === 'approved') {
+                        const processedDate = new Date(approval.processed_at).toDateString();
+                        if (processedDate === today) {
+                            approvedToday++;
+                        }
+                        
+                        if (approval.processed_at && approval.created_at) {
+                            const created = new Date(approval.created_at);
+                            const processed = new Date(approval.processed_at);
+                            const timeDiff = processed - created;
+                            totalApprovalTime += timeDiff;
+                            processedCount++;
+                        }
+                    } else if (approval.status === 'rejected') {
+                        const processedDate = new Date(approval.processed_at).toDateString();
+                        if (processedDate === today) {
+                            rejectedToday++;
+                        }
+                        
+                        if (approval.processed_at && approval.created_at) {
+                            const created = new Date(approval.created_at);
+                            const processed = new Date(approval.processed_at);
+                            const timeDiff = processed - created;
+                            totalApprovalTime += timeDiff;
+                            processedCount++;
+                        }
+                    }
+                });
+                
+                // Update dashboard counts
+                $('#pending-count').text(pendingCount);
+                $('#approved-count').text(approvedToday);
+                $('#rejected-count').text(rejectedToday);
+                
+                // Calculate average approval time
+                const avgTime = processedCount > 0 ? Math.round(totalApprovalTime / processedCount / 60000) : 0;
+                $('#avg-approval-time').text(avgTime + 'm');
+                
+                // Update chart
+                updateUploadTrendsChart(approvals);
+            }
+            
+            // Update upload trends chart
+            function updateUploadTrendsChart(approvals) {
+                const ctx = document.getElementById('uploadTrendsChart');
+                if (!ctx) return;
+                
+                // Get last 7 days
+                const dates = [];
+                const approvedData = [];
+                const rejectedData = [];
+                const pendingData = [];
+                
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    dates.push(dateStr);
+                    
+                    let approved = 0, rejected = 0, pending = 0;
+                    approvals.forEach(approval => {
+                        const approvalDate = approval.created_at.split(' ')[0];
+                        if (approvalDate === dateStr) {
+                            if (approval.status === 'approved') approved++;
+                            else if (approval.status === 'rejected') rejected++;
+                            else if (approval.status === 'pending') pending++;
+                        }
+                    });
+                    
+                    approvedData.push(approved);
+                    rejectedData.push(rejected);
+                    pendingData.push(pending);
+                }
+                
+                // Create or update chart
+                if (window.uploadTrendsChart) {
+                    window.uploadTrendsChart.destroy();
+                }
+                
+                window.uploadTrendsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates.map(date => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                        datasets: [
+                            {
+                                label: 'Approved',
+                                data: approvedData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Rejected',
+                                data: rejectedData,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Pending',
+                                data: pendingData,
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
             // Review upload
-            window.reviewUpload = function(approvalId) {
+            window.reviewUpload = function(approvalId, action) {
                 currentApprovalId = approvalId;
-                $('#srwm-modal-title').text('Review Upload #' + approvalId);
-                $('#srwm-admin-notes').val('');
-                $('#srwm-approval-modal').show();
+                
+                if (action === 'approve') {
+                    approveUpload();
+                } else if (action === 'reject') {
+                    rejectUpload();
+                } else {
+                    $('#srwm-modal-title').text('Review Upload #' + approvalId);
+                    $('#srwm-admin-notes').val('');
+                    $('#srwm-approval-modal').show();
+                }
             };
+            
+            // Approve upload function
+            function approveUpload() {
+                if (!currentApprovalId) return;
+                
+                const adminNotes = $('#srwm-admin-notes').val() || '';
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_approve_csv_upload',
+                        approval_id: currentApprovalId,
+                        admin_notes: adminNotes,
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification('Upload approved successfully!', 'success');
+                            $('#srwm-approval-modal').hide();
+                            loadApprovals();
+                        } else {
+                            showNotification('Error: ' + response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Error processing approval', 'error');
+                    }
+                });
+            }
+            
+            // Reject upload function
+            function rejectUpload() {
+                if (!currentApprovalId) return;
+                
+                const adminNotes = prompt('Please provide a reason for rejection:');
+                if (adminNotes === null) return; // User cancelled
+                
+                if (!adminNotes.trim()) {
+                    showNotification('Please provide a reason for rejection', 'error');
+                    return;
+                }
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_reject_csv_upload',
+                        approval_id: currentApprovalId,
+                        admin_notes: adminNotes,
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification('Upload rejected successfully!', 'error');
+                            $('#srwm-approval-modal').hide();
+                            loadApprovals();
+                        } else {
+                            showNotification('Error: ' + response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Error processing rejection', 'error');
+                    }
+                });
+            }
+            
+            // Show notification function
+            function showNotification(message, type) {
+                const notification = $('<div class="srwm-notification srwm-notification-' + type + '">' + message + '</div>');
+                $('body').append(notification);
+                
+                setTimeout(() => {
+                    notification.addClass('show');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.removeClass('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
             
             // Close modal
             $('.srwm-modal-close').click(function() {
@@ -3108,6 +3862,56 @@ class SRWM_Admin {
             
             // Load approvals on page load
             loadApprovals();
+            
+            // Touch gestures for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            // Add touch event listeners to approval cards
+            $(document).on('touchstart', '.srwm-approval-card', function(e) {
+                touchStartX = e.originalEvent.touches[0].clientX;
+            });
+            
+            $(document).on('touchend', '.srwm-approval-card', function(e) {
+                touchEndX = e.originalEvent.changedTouches[0].clientX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    const card = $(document.elementFromPoint(touchEndX, touchEndY)).closest('.srwm-approval-card');
+                    if (card.length) {
+                        const approvalId = card.data('approval-id');
+                        
+                        if (diff > 0) {
+                            // Swipe left - Approve
+                            showNotification('Swiped to approve', 'info');
+                            setTimeout(() => {
+                                reviewUpload(approvalId, 'approve');
+                            }, 500);
+                        } else {
+                            // Swipe right - Reject
+                            showNotification('Swiped to reject', 'warning');
+                            setTimeout(() => {
+                                reviewUpload(approvalId, 'reject');
+                            }, 500);
+                        }
+                    }
+                }
+            }
+            
+            // Add data attributes to cards for touch gestures
+            function addTouchDataAttributes() {
+                $('.srwm-approval-card').each(function(index) {
+                    $(this).attr('data-approval-id', index);
+                });
+            }
+            
+            // Call after displaying approvals
+            setTimeout(addTouchDataAttributes, 100);
         });
         </script>
         <?php
