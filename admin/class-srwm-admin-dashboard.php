@@ -182,9 +182,6 @@ class SRWM_Admin_Dashboard {
                     <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary">
                         <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
                     </a>
-                    <a href="https://example.com/pro-features" class="button button-secondary" target="_blank">
-                        <?php _e('Learn More', 'smart-restock-waitlist'); ?>
-                    </a>
                 </div>
             </div>
         </div>

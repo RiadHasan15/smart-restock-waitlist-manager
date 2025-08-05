@@ -265,21 +265,7 @@ class SRWM_License_Manager {
                 </form>
             </div>
             
-            <?php if ($status !== 'valid'): ?>
-            <div class="card" style="max-width: 600px; margin-top: 20px;">
-                <h2><?php _e('Pro Features', 'smart-restock-waitlist'); ?></h2>
-                <p><?php _e('Upgrade to Pro to unlock advanced features:', 'smart-restock-waitlist'); ?></p>
-                <ul>
-                    <li><?php _e('One-Click Supplier Restock Links', 'smart-restock-waitlist'); ?></li>
-                    <li><?php _e('Automatic Purchase Order Generation', 'smart-restock-waitlist'); ?></li>
-                    <li><?php _e('Supplier CSV Upload for Bulk Restock', 'smart-restock-waitlist'); ?></li>
-                    <li><?php _e('WhatsApp & SMS Notifications', 'smart-restock-waitlist'); ?></li>
-                    <li><?php _e('Advanced Analytics & Reporting', 'smart-restock-waitlist'); ?></li>
-                    <li><?php _e('Automatic Updates', 'smart-restock-waitlist'); ?></li>
-                </ul>
-                <p><a href="https://yourwebsite.com/pro" class="button button-primary" target="_blank"><?php _e('Get Pro License', 'smart-restock-waitlist'); ?></a></p>
-            </div>
-            <?php endif; ?>
+            
         </div>
         
         <style>
