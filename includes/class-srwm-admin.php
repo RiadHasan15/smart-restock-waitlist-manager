@@ -2093,10 +2093,10 @@ class SRWM_Admin {
         }
         
         ?>
-        <div class="wrap srwm-dashboard">
-            <div class="srwm-dashboard-header">
+        <div class="wrap srwm-pro-page">
+            <div class="srwm-pro-header">
                 <h1><?php _e('Stock Thresholds', 'smart-restock-waitlist'); ?></h1>
-                <div class="srwm-dashboard-actions">
+                <div class="srwm-pro-actions">
                     <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
                         <span class="dashicons dashicons-arrow-left-alt"></span>
                         <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
