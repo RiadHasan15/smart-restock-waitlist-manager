@@ -455,7 +455,6 @@
                     supplier_email: supplierEmail
                 },
                 success: function(response) {
-                    console.log('CSV AJAX Success:', response);
                     if (response.success) {
                         showAdminMessage('success', response.message || 'CSV upload link generated successfully!');
                         if (response.data && response.data.link) {
@@ -470,7 +469,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('CSV AJAX Error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to generate CSV upload link.');
                 },
                 complete: function() {
