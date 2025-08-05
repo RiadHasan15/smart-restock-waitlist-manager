@@ -493,11 +493,6 @@ class SRWM_Pro_CSV_Upload {
                                 <button type="submit" name="srwm_csv_submit" class="upload-button">
                                     <i class="fas fa-rocket"></i> <?php _e('Process Restock Data', 'smart-restock-waitlist'); ?>
                                 </button>
-                                
-                                <!-- Debug button for testing -->
-                                <button type="submit" name="srwm_csv_submit" value="test" class="upload-button" style="margin-top: 10px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                                    <i class="fas fa-bug"></i> Test Form Submission (No File)
-                                </button>
                             </form>
                         </div>
                         
@@ -642,10 +637,7 @@ class SRWM_Pro_CSV_Upload {
         // Debug: Log upload information
         error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
         
-        // Check if this is a test submission
-        if (isset($_POST['srwm_csv_submit']) && $_POST['srwm_csv_submit'] === 'test') {
-            wp_die(__('Form submission is working! The issue is with file upload. $_FILES array is empty.', 'smart-restock-waitlist'));
-        }
+
         
         if (!isset($_FILES['csv_file'])) {
             wp_die(__('No file was uploaded. Please select a CSV file.', 'smart-restock-waitlist'));
