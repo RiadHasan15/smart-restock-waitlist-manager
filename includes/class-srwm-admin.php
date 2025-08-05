@@ -12,6 +12,7 @@ if (!defined('ABSPATH')) {
 class SRWM_Admin {
     
     private static $instance = null;
+    private $license_manager;
     
     public static function get_instance() {
         if (null === self::$instance) {
@@ -21,6 +22,8 @@ class SRWM_Admin {
     }
     
     private function __construct() {
+        $this->license_manager = SRWM_License_Manager::get_instance();
+        
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'init_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
@@ -68,6 +71,18 @@ class SRWM_Admin {
             'smart-restock-waitlist-analytics',
             array($this, 'render_analytics_page')
         );
+        
+        // Pro features menu items
+        if ($this->license_manager->is_pro_active()) {
+            add_submenu_page(
+                'smart-restock-waitlist',
+                __('Pro Features', 'smart-restock-waitlist'),
+                __('Pro Features', 'smart-restock-waitlist'),
+                'manage_woocommerce',
+                'smart-restock-waitlist-pro',
+                array($this, 'render_pro_features_page')
+            );
+        }
     }
     
     /**
@@ -80,6 +95,17 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_email_template_supplier');
         register_setting('srwm_settings', 'srwm_low_stock_threshold');
         register_setting('srwm_settings', 'srwm_auto_disable_at_zero');
+        
+        // Pro settings
+        if ($this->license_manager->is_pro_active()) {
+            register_setting('srwm_settings', 'srwm_whatsapp_enabled');
+            register_setting('srwm_settings', 'srwm_sms_enabled');
+            register_setting('srwm_settings', 'srwm_auto_generate_po');
+            register_setting('srwm_settings', 'srwm_company_name');
+            register_setting('srwm_settings', 'srwm_company_address');
+            register_setting('srwm_settings', 'srwm_company_phone');
+            register_setting('srwm_settings', 'srwm_company_email');
+        }
     }
     
     /**
@@ -108,6 +134,7 @@ class SRWM_Admin {
         wp_localize_script('srwm-admin', 'srwm_admin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('srwm_admin_nonce'),
+            'is_pro' => $this->license_manager->is_pro_active(),
             'messages' => array(
                 'restock_success' => __('Product restocked successfully!', 'smart-restock-waitlist'),
                 'restock_error' => __('Failed to restock product.', 'smart-restock-waitlist'),
@@ -127,6 +154,18 @@ class SRWM_Admin {
         <div class="wrap">
             <h1><?php _e('Smart Restock & Waitlist Manager', 'smart-restock-waitlist'); ?></h1>
             
+            <?php if (!$this->license_manager->is_pro_active()): ?>
+                <div class="notice notice-info">
+                    <p>
+                        <strong><?php _e('Upgrade to Pro:', 'smart-restock-waitlist'); ?></strong>
+                        <?php _e('Unlock advanced features like one-click supplier restock, multi-channel notifications, and automatic purchase orders.', 'smart-restock-waitlist'); ?>
+                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary" style="margin-left: 10px;">
+                            <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
+                        </a>
+                    </p>
+                </div>
+            <?php endif; ?>
+            
             <div class="srwm-dashboard-stats">
                 <div class="srwm-stat-card">
                     <h3><?php _e('Active Waitlists', 'smart-restock-waitlist'); ?></h3>
@@ -142,6 +181,13 @@ class SRWM_Admin {
                     <h3><?php _e('Products with Suppliers', 'smart-restock-waitlist'); ?></h3>
                     <div class="stat-number"><?php echo count($supplier_products); ?></div>
                 </div>
+                
+                <?php if ($this->license_manager->is_pro_active()): ?>
+                <div class="srwm-stat-card">
+                    <h3><?php _e('Pro Features Active', 'smart-restock-waitlist'); ?></h3>
+                    <div class="stat-number">✓</div>
+                </div>
+                <?php endif; ?>
             </div>
             
             <div class="srwm-dashboard-content">
@@ -188,6 +234,13 @@ class SRWM_Admin {
                                                     data-product-id="<?php echo $product_data['product_id']; ?>">
                                                 <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                             </button>
+                                            
+                                            <?php if ($this->license_manager->is_pro_active()): ?>
+                                                <button class="button button-secondary generate-restock-link" 
+                                                        data-product-id="<?php echo $product_data['product_id']; ?>">
+                                                    <?php _e('Generate Restock Link', 'smart-restock-waitlist'); ?>
+                                                </button>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -210,6 +263,7 @@ class SRWM_Admin {
                                     <th><?php _e('Current Stock', 'smart-restock-waitlist'); ?></th>
                                     <th><?php _e('Threshold', 'smart-restock-waitlist'); ?></th>
                                     <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -226,6 +280,14 @@ class SRWM_Admin {
                                                 <span class="srwm-status alert"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></span>
                                             <?php else: ?>
                                                 <span class="srwm-status ok"><?php _e('OK', 'smart-restock-waitlist'); ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($this->license_manager->is_pro_active()): ?>
+                                                <button class="button button-secondary generate-po" 
+                                                        data-product-id="<?php echo $product_data['product_id']; ?>">
+                                                    <?php _e('Generate PO', 'smart-restock-waitlist'); ?>
+                                                </button>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -279,6 +341,7 @@ class SRWM_Admin {
             <form method="post" action="options.php">
                 <?php settings_fields('srwm_settings'); ?>
                 
+                <h2><?php _e('General Settings', 'smart-restock-waitlist'); ?></h2>
                 <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('Enable Waitlist', 'smart-restock-waitlist'); ?></th>
@@ -326,6 +389,93 @@ class SRWM_Admin {
                     </tr>
                 </table>
                 
+                <?php if ($this->license_manager->is_pro_active()): ?>
+                <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php _e('WhatsApp Notifications', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="srwm_whatsapp_enabled" value="yes" 
+                                       <?php checked(get_option('srwm_whatsapp_enabled'), 'yes'); ?>>
+                                <?php _e('Enable WhatsApp notifications for suppliers', 'smart-restock-waitlist'); ?>
+                            </label>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('SMS Notifications', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="srwm_sms_enabled" value="yes" 
+                                       <?php checked(get_option('srwm_sms_enabled'), 'yes'); ?>>
+                                <?php _e('Enable SMS notifications for suppliers', 'smart-restock-waitlist'); ?>
+                            </label>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Auto-generate Purchase Orders', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="srwm_auto_generate_po" value="yes" 
+                                       <?php checked(get_option('srwm_auto_generate_po'), 'yes'); ?>>
+                                <?php _e('Automatically generate purchase orders when stock is low', 'smart-restock-waitlist'); ?>
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+                
+                <h2><?php _e('Company Information (for Purchase Orders)', 'smart-restock-waitlist'); ?></h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><?php _e('Company Name', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="text" name="srwm_company_name" 
+                                   value="<?php echo esc_attr(get_option('srwm_company_name', get_bloginfo('name'))); ?>" 
+                                   class="regular-text">
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Company Address', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <textarea name="srwm_company_address" rows="3" class="regular-text"><?php 
+                                echo esc_textarea(get_option('srwm_company_address')); 
+                            ?></textarea>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Company Phone', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="text" name="srwm_company_phone" 
+                                   value="<?php echo esc_attr(get_option('srwm_company_phone')); ?>" 
+                                   class="regular-text">
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Company Email', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="email" name="srwm_company_email" 
+                                   value="<?php echo esc_attr(get_option('srwm_company_email', get_option('admin_email'))); ?>" 
+                                   class="regular-text">
+                        </td>
+                    </tr>
+                </table>
+                <?php else: ?>
+                <div class="notice notice-info">
+                    <p>
+                        <strong><?php _e('Upgrade to Pro:', 'smart-restock-waitlist'); ?></strong>
+                        <?php _e('Unlock advanced settings including multi-channel notifications, automatic purchase orders, and company information management.', 'smart-restock-waitlist'); ?>
+                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary" style="margin-left: 10px;">
+                            <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
+                        </a>
+                    </p>
+                </div>
+                <?php endif; ?>
+                
                 <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
                 
                 <table class="form-table">
@@ -349,6 +499,9 @@ class SRWM_Admin {
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {supplier_name}, {product_name}, {sku}, {current_stock}, {waitlist_count}, {site_name}', 'smart-restock-waitlist'); ?>
+                                <?php if ($this->license_manager->is_pro_active()): ?>
+                                    <br><?php _e('Pro placeholders: {restock_link}, {po_number}', 'smart-restock-waitlist'); ?>
+                                <?php endif; ?>
                             </p>
                         </td>
                     </tr>
@@ -385,6 +538,13 @@ class SRWM_Admin {
                     <h3><?php _e('Avg. Restock Time', 'smart-restock-waitlist'); ?></h3>
                     <div class="stat-number"><?php echo $analytics_data['avg_restock_time']; ?> days</div>
                 </div>
+                
+                <?php if ($this->license_manager->is_pro_active()): ?>
+                <div class="srwm-stat-card">
+                    <h3><?php _e('Conversion Rate', 'smart-restock-waitlist'); ?></h3>
+                    <div class="stat-number"><?php echo $analytics_data['conversion_rate']; ?>%</div>
+                </div>
+                <?php endif; ?>
             </div>
             
             <div class="srwm-analytics-content">
@@ -419,6 +579,54 @@ class SRWM_Admin {
                     <?php _e('Export Analytics Data', 'smart-restock-waitlist'); ?>
                 </a>
             </p>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Render Pro features page
+     */
+    public function render_pro_features_page() {
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(__('Pro features are not available. Please activate your license.', 'smart-restock-waitlist'));
+        }
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Pro Features', 'smart-restock-waitlist'); ?></h1>
+            
+            <div class="srwm-pro-features">
+                <div class="srwm-feature-card">
+                    <h3><?php _e('One-Click Supplier Restock', 'smart-restock-waitlist'); ?></h3>
+                    <p><?php _e('Generate secure restock links for suppliers to update stock without logging in.', 'smart-restock-waitlist'); ?></p>
+                    <button class="button button-primary" id="generate-restock-link">
+                        <?php _e('Generate Restock Link', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+                
+                <div class="srwm-feature-card">
+                    <h3><?php _e('Multi-Channel Notifications', 'smart-restock-waitlist'); ?></h3>
+                    <p><?php _e('Send supplier alerts via Email, WhatsApp, and SMS.', 'smart-restock-waitlist'); ?></p>
+                    <button class="button button-primary" id="test-notifications">
+                        <?php _e('Test Notifications', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+                
+                <div class="srwm-feature-card">
+                    <h3><?php _e('Purchase Order Generation', 'smart-restock-waitlist'); ?></h3>
+                    <p><?php _e('Automatically generate and send branded purchase orders to suppliers.', 'smart-restock-waitlist'); ?></p>
+                    <button class="button button-primary" id="generate-po">
+                        <?php _e('Generate PO', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+                
+                <div class="srwm-feature-card">
+                    <h3><?php _e('CSV Upload', 'smart-restock-waitlist'); ?></h3>
+                    <p><?php _e('Allow suppliers to upload CSV files for bulk restock operations.', 'smart-restock-waitlist'); ?></p>
+                    <button class="button button-primary" id="generate-csv-link">
+                        <?php _e('Generate CSV Upload Link', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+            </div>
         </div>
         <?php
     }

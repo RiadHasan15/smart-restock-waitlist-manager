@@ -1,9 +1,8 @@
 <?php
 /**
- * Waitlist Management Class
+ * Customer Waitlist Class
  * 
- * Handles customer waitlist functionality including adding customers,
- * managing waitlist data, and sending notifications on restock.
+ * Handles customer waitlist functionality, form display, and restock notifications.
  */
 
 if (!defined('ABSPATH')) {
@@ -13,6 +12,7 @@ if (!defined('ABSPATH')) {
 class SRWM_Waitlist {
     
     private static $instance = null;
+    private $license_manager;
     
     public static function get_instance() {
         if (null === self::$instance) {
@@ -22,120 +22,88 @@ class SRWM_Waitlist {
     }
     
     private function __construct() {
+        $this->license_manager = SRWM_License_Manager::get_instance();
+        
         add_action('woocommerce_single_product_summary', array($this, 'display_waitlist_form'), 25);
-        add_action('woocommerce_after_shop_loop_item', array($this, 'display_waitlist_form_loop'), 15);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('woocommerce_product_set_stock_status', array($this, 'check_stock_status_change'), 10, 3);
+        add_action('woocommerce_product_set_stock_status', array($this, 'check_restock_notification'), 10, 3);
     }
     
     /**
-     * Display waitlist form on single product page
+     * Display waitlist form on product page
      */
     public function display_waitlist_form() {
         global $product;
         
-        if (!$product || !$this->should_show_waitlist($product)) {
+        if (!$product) {
             return;
         }
         
-        $this->render_waitlist_form($product);
-    }
-    
-    /**
-     * Display waitlist form in product loop
-     */
-    public function display_waitlist_form_loop() {
-        global $product;
-        
-        if (!$product || !$this->should_show_waitlist($product)) {
+        // Only show on out-of-stock products
+        if ($product->is_in_stock()) {
             return;
-        }
-        
-        $this->render_waitlist_form($product, 'loop');
-    }
-    
-    /**
-     * Check if waitlist should be shown for a product
-     */
-    private function should_show_waitlist($product) {
-        if (!$product || !is_object($product)) {
-            return false;
         }
         
         // Check if waitlist is enabled
         if (get_option('srwm_waitlist_enabled') !== 'yes') {
-            return false;
+            return;
         }
         
-        // Check if product is out of stock
-        if ($product->is_in_stock()) {
-            return false;
-        }
-        
-        // Check if product type is supported
-        $supported_types = array('simple', 'variable');
-        if (!in_array($product->get_type(), $supported_types)) {
-            return false;
-        }
-        
-        return true;
-    }
-    
-    /**
-     * Render waitlist form
-     */
-    private function render_waitlist_form($product, $context = 'single') {
-        $product_id = $product->get_id();
-        $waitlist_count = $this->get_waitlist_count($product_id);
-        $is_on_waitlist = $this->is_customer_on_waitlist($product_id);
+        $waitlist_count = self::get_waitlist_count($product->get_id());
+        $is_on_waitlist = self::is_customer_on_waitlist($product->get_id(), $this->get_current_customer_email());
         
         ?>
-        <div class="srwm-waitlist-form" data-product-id="<?php echo esc_attr($product_id); ?>">
+        <div class="srwm-waitlist-container">
+            <h3><?php _e('Join the Waitlist', 'smart-restock-waitlist'); ?></h3>
+            
             <?php if ($is_on_waitlist): ?>
                 <div class="srwm-waitlist-message success">
-                    <p><?php _e('You are on the waitlist for this product!', 'smart-restock-waitlist'); ?></p>
-                    <?php if ($waitlist_count > 1): ?>
-                        <small><?php printf(__('There are %d other customers waiting.', 'smart-restock-waitlist'), $waitlist_count - 1); ?></small>
-                    <?php endif; ?>
+                    <?php _e('You are already on the waitlist for this product!', 'smart-restock-waitlist'); ?>
                 </div>
             <?php else: ?>
-                <div class="srwm-waitlist-form-container">
-                    <h4><?php _e('Join the Waitlist', 'smart-restock-waitlist'); ?></h4>
-                    <p><?php _e('Get notified when this product is back in stock!', 'smart-restock-waitlist'); ?></p>
+                <form class="srwm-waitlist-form" method="post">
+                    <?php wp_nonce_field('srwm_waitlist_nonce', 'srwm_waitlist_nonce'); ?>
+                    <input type="hidden" name="product_id" value="<?php echo $product->get_id(); ?>">
                     
-                    <form class="srwm-waitlist-form" method="post">
-                        <?php wp_nonce_field('srwm_waitlist_nonce', 'srwm_nonce'); ?>
-                        <input type="hidden" name="product_id" value="<?php echo esc_attr($product_id); ?>">
-                        
-                        <div class="form-row">
-                            <label for="srwm_name_<?php echo $product_id; ?>"><?php _e('Name:', 'smart-restock-waitlist'); ?></label>
-                            <input type="text" id="srwm_name_<?php echo $product_id; ?>" name="name" required>
-                        </div>
-                        
-                        <div class="form-row">
-                            <label for="srwm_email_<?php echo $product_id; ?>"><?php _e('Email:', 'smart-restock-waitlist'); ?></label>
-                            <input type="email" id="srwm_email_<?php echo $product_id; ?>" name="email" required>
-                        </div>
-                        
-                        <button type="submit" class="button srwm-waitlist-submit">
-                            <?php _e('Join Waitlist', 'smart-restock-waitlist'); ?>
-                        </button>
-                    </form>
+                    <p>
+                        <label for="srwm_customer_name"><?php _e('Name:', 'smart-restock-waitlist'); ?></label>
+                        <input type="text" id="srwm_customer_name" name="name" 
+                               value="<?php echo esc_attr($this->get_current_customer_name()); ?>" required>
+                    </p>
                     
-                    <?php if ($waitlist_count > 0): ?>
-                        <small><?php printf(__('%d customers are waiting for this product.', 'smart-restock-waitlist'), $waitlist_count); ?></small>
-                    <?php endif; ?>
+                    <p>
+                        <label for="srwm_customer_email"><?php _e('Email:', 'smart-restock-waitlist'); ?></label>
+                        <input type="email" id="srwm_customer_email" name="email" 
+                               value="<?php echo esc_attr($this->get_current_customer_email()); ?>" required>
+                    </p>
+                    
+                    <button type="submit" class="srwm-waitlist-submit button">
+                        <?php _e('Join Waitlist', 'smart-restock-waitlist'); ?>
+                    </button>
+                </form>
+            <?php endif; ?>
+            
+            <?php if ($waitlist_count > 0): ?>
+                <div class="srwm-waitlist-count">
+                    <small>
+                        <?php printf(
+                            _n('%d person is waiting for this product', '%d people are waiting for this product', $waitlist_count, 'smart-restock-waitlist'),
+                            $waitlist_count
+                        ); ?>
+                    </small>
                 </div>
             <?php endif; ?>
+            
+            <div class="srwm-waitlist-message" style="display: none;"></div>
         </div>
         <?php
     }
     
     /**
-     * Enqueue scripts and styles
+     * Enqueue frontend scripts and styles
      */
     public function enqueue_scripts() {
-        if (!is_product() && !is_shop() && !is_product_category()) {
+        if (!is_product()) {
             return;
         }
         
@@ -159,8 +127,8 @@ class SRWM_Waitlist {
             'nonce' => wp_create_nonce('srwm_waitlist_nonce'),
             'messages' => array(
                 'success' => __('Successfully added to waitlist!', 'smart-restock-waitlist'),
-                'error' => __('Failed to add to waitlist.', 'smart-restock-waitlist'),
-                'already_on_list' => __('You are already on the waitlist for this product.', 'smart-restock-waitlist')
+                'error' => __('Failed to add to waitlist. Please try again.', 'smart-restock-waitlist'),
+                'already_on_waitlist' => __('You are already on the waitlist for this product.', 'smart-restock-waitlist')
             )
         ));
     }
@@ -198,7 +166,6 @@ class SRWM_Waitlist {
         );
         
         if ($result) {
-            // Trigger action for other plugins
             do_action('srwm_customer_added_to_waitlist', $product_id, $email, $name);
             
             // Check if supplier notification is needed
@@ -213,16 +180,8 @@ class SRWM_Waitlist {
     /**
      * Check if customer is on waitlist
      */
-    public static function is_customer_on_waitlist($product_id, $email = null) {
+    public static function is_customer_on_waitlist($product_id, $email) {
         global $wpdb;
-        
-        if (!$email) {
-            $email = wp_get_current_user()->user_email;
-        }
-        
-        if (!$email) {
-            return false;
-        }
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
@@ -266,7 +225,7 @@ class SRWM_Waitlist {
     /**
      * Restock product and notify waitlist customers
      */
-    public static function restock_and_notify($product_id, $quantity = 0) {
+    public static function restock_and_notify($product_id, $quantity = 10) {
         $product = wc_get_product($product_id);
         
         if (!$product) {
@@ -274,62 +233,89 @@ class SRWM_Waitlist {
         }
         
         // Update stock
-        if ($quantity > 0) {
-            $current_stock = $product->get_stock_quantity();
-            $product->set_stock_quantity($current_stock + $quantity);
-        }
+        $current_stock = $product->get_stock_quantity();
+        $new_stock = $current_stock + $quantity;
         
-        $product->set_stock_status('instock');
+        $product->set_stock_quantity($new_stock);
         $product->save();
         
-        // Get waitlist customers
+        // Log restock action
+        self::log_restock_action($product_id, $quantity);
+        
+        // Notify waitlist customers
         $customers = self::get_waitlist_customers($product_id);
         
         if (!empty($customers)) {
-            // Send notifications
+            $email = new SRWM_Email();
+            
             foreach ($customers as $customer) {
-                self::send_restock_notification($customer, $product);
+                $email->send_restock_notification($customer, $product);
+                
+                // Mark as notified
+                self::mark_customer_notified($customer->id);
             }
-            
-            // Mark customers as notified
-            self::mark_customers_notified($product_id);
-            
-            // Log restock action
-            self::log_restock_action($product_id, $quantity);
         }
+        
+        // Clear waitlist (optional - you might want to keep it for future restocks)
+        // self::clear_waitlist($product_id);
+        
+        do_action('srwm_product_restocked', $product_id, $quantity, $customers);
         
         return true;
     }
     
     /**
-     * Send restock notification to customer
+     * Check restock notification when stock status changes
      */
-    private static function send_restock_notification($customer, $product) {
-        $email = new SRWM_Email();
-        $email->send_restock_notification($customer, $product);
+    public function check_restock_notification($product_id, $status, $product) {
+        if ($status !== 'instock') {
+            return;
+        }
+        
+        // Check if there are waitlist customers
+        $waitlist_count = self::get_waitlist_count($product_id);
+        
+        if ($waitlist_count > 0) {
+            // Notify waitlist customers
+            $customers = self::get_waitlist_customers($product_id);
+            $email = new SRWM_Email();
+            
+            foreach ($customers as $customer) {
+                $email->send_restock_notification($customer, $product);
+                self::mark_customer_notified($customer->id);
+            }
+        }
     }
     
     /**
-     * Mark customers as notified
+     * Check if supplier notification is needed
      */
-    private static function mark_customers_notified($product_id) {
-        global $wpdb;
+    private static function check_supplier_notification($product_id) {
+        $product = wc_get_product($product_id);
         
-        $table = $wpdb->prefix . 'srwm_waitlist';
+        if (!$product) {
+            return;
+        }
         
-        $wpdb->update(
-            $table,
-            array('notified' => 1),
-            array('product_id' => $product_id),
-            array('%d'),
-            array('%d')
-        );
+        $current_stock = $product->get_stock_quantity();
+        
+        // Check if stock is at or below threshold
+        $threshold = get_option('srwm_low_stock_threshold', 5);
+        
+        if ($current_stock <= $threshold) {
+            $supplier = new SRWM_Supplier();
+            $supplier_data = $supplier->get_supplier_data($product_id);
+            
+            if (!empty($supplier_data['email'])) {
+                $supplier->notify_supplier($product_id, $supplier_data, $current_stock);
+            }
+        }
     }
     
     /**
      * Log restock action
      */
-    private static function log_restock_action($product_id, $quantity) {
+    private static function log_restock_action($product_id, $quantity, $method = 'manual') {
         global $wpdb;
         
         $table = $wpdb->prefix . 'srwm_restock_logs';
@@ -339,7 +325,7 @@ class SRWM_Waitlist {
             array(
                 'product_id' => $product_id,
                 'quantity' => $quantity,
-                'method' => 'manual',
+                'method' => $method,
                 'ip_address' => self::get_client_ip(),
                 'timestamp' => current_time('mysql')
             ),
@@ -348,20 +334,59 @@ class SRWM_Waitlist {
     }
     
     /**
-     * Check supplier notification on stock change
+     * Mark customer as notified
      */
-    public function check_stock_status_change($product_id, $status, $product) {
-        if ($status === 'outofstock') {
-            self::check_supplier_notification($product_id);
-        }
+    private static function mark_customer_notified($customer_id) {
+        global $wpdb;
+        
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        $wpdb->update(
+            $table,
+            array('notified' => 1),
+            array('id' => $customer_id),
+            array('%d'),
+            array('%d')
+        );
     }
     
     /**
-     * Check if supplier notification is needed
+     * Clear waitlist for a product
      */
-    private static function check_supplier_notification($product_id) {
-        $supplier = new SRWM_Supplier();
-        $supplier->check_and_send_notification($product_id);
+    public static function clear_waitlist($product_id) {
+        global $wpdb;
+        
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        return $wpdb->delete(
+            $table,
+            array('product_id' => $product_id),
+            array('%d')
+        );
+    }
+    
+    /**
+     * Get current customer email
+     */
+    private function get_current_customer_email() {
+        if (is_user_logged_in()) {
+            $user = wp_get_current_user();
+            return $user->user_email;
+        }
+        
+        return '';
+    }
+    
+    /**
+     * Get current customer name
+     */
+    private function get_current_customer_name() {
+        if (is_user_logged_in()) {
+            $user = wp_get_current_user();
+            return $user->display_name;
+        }
+        
+        return '';
     }
     
     /**
@@ -382,5 +407,23 @@ class SRWM_Waitlist {
         }
         
         return $_SERVER['REMOTE_ADDR'] ?? '';
+    }
+    
+    /**
+     * Get waitlist statistics
+     */
+    public static function get_waitlist_stats() {
+        global $wpdb;
+        
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        $stats = array(
+            'total_waitlists' => $wpdb->get_var("SELECT COUNT(DISTINCT product_id) FROM $table"),
+            'total_customers' => $wpdb->get_var("SELECT COUNT(*) FROM $table"),
+            'notified_customers' => $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE notified = 1"),
+            'pending_customers' => $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE notified = 0")
+        );
+        
+        return $stats;
     }
 }
