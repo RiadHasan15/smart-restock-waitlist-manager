@@ -446,7 +446,7 @@ class SRWM_Admin {
                         </td>
                     </tr>
                 </table>
-
+                <?php endif; ?>
                 
                 <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
                 
