@@ -1849,10 +1849,16 @@ class SmartRestockWaitlistManager {
                 supplier_email varchar(255) NOT NULL,
                 token varchar(255) NOT NULL,
                 expires_at datetime NOT NULL,
+                used tinyint(1) NOT NULL DEFAULT 0,
+                used_at datetime DEFAULT NULL,
+                ip_address varchar(45) DEFAULT NULL,
                 created_at datetime DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
-                KEY token (token),
-                KEY expires_at (expires_at)
+                UNIQUE KEY token (token),
+                KEY product_id (product_id),
+                KEY supplier_email (supplier_email),
+                KEY expires_at (expires_at),
+                KEY used (used)
             ) $charset_collate;";
             
             // CSV upload tokens table
@@ -1919,7 +1925,8 @@ class SmartRestockWaitlistManager {
         
         dbDelta($sql_approvals);
         
-
+        // Migrate existing tables if needed
+        $this->migrate_restock_tokens_table();
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql_waitlist);
@@ -1975,6 +1982,62 @@ class SmartRestockWaitlistManager {
         
         // Mark migration as done
         update_option('srwm_supplier_migration_done', true);
+    }
+    
+    /**
+     * Migrate restock tokens table to include missing columns
+     */
+    private function migrate_restock_tokens_table() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_restock_tokens';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table_name'");
+        if (!$table_exists) {
+            return; // Table doesn't exist, will be created by dbDelta
+        }
+        
+        // Check if migration is needed
+        $migration_done = get_option('srwm_restock_tokens_migration_done', false);
+        if ($migration_done) {
+            return; // Migration already done
+        }
+        
+        // Check if 'used' column exists
+        $used_column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'used'");
+        if (!$used_column_exists) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN used tinyint(1) NOT NULL DEFAULT 0");
+        }
+        
+        // Check if 'used_at' column exists
+        $used_at_column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'used_at'");
+        if (!$used_at_column_exists) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN used_at datetime DEFAULT NULL");
+        }
+        
+        // Check if 'ip_address' column exists
+        $ip_address_column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'ip_address'");
+        if (!$ip_address_column_exists) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN ip_address varchar(45) DEFAULT NULL");
+        }
+        
+        // Add indexes if they don't exist
+        $indexes = array(
+            'product_id' => "ALTER TABLE $table_name ADD KEY product_id (product_id)",
+            'supplier_email' => "ALTER TABLE $table_name ADD KEY supplier_email (supplier_email)",
+            'used' => "ALTER TABLE $table_name ADD KEY used (used)"
+        );
+        
+        foreach ($indexes as $index_name => $sql) {
+            $index_exists = $wpdb->get_var("SHOW INDEX FROM $table_name WHERE Key_name = '$index_name'");
+            if (!$index_exists) {
+                $wpdb->query($sql);
+            }
+        }
+        
+        // Mark migration as complete
+        update_option('srwm_restock_tokens_migration_done', true);
     }
     
     /**
