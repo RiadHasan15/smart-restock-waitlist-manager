@@ -64,7 +64,7 @@ class SRWM_Admin {
             array($this, 'render_analytics_page')
         );
         
-        // Pro features menu items
+        // Pro features menu items - always check current license status
         if ($this->license_manager->is_pro_active()) {
             add_submenu_page(
                 'smart-restock-waitlist',
