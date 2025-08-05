@@ -146,17 +146,7 @@ class SRWM_Admin {
         <div class="wrap">
             <h1><?php _e('Smart Restock & Waitlist Manager', 'smart-restock-waitlist'); ?></h1>
             
-            <?php if (!$this->license_manager->is_pro_active()): ?>
-                <div class="notice notice-info">
-                    <p>
-                        <strong><?php _e('Upgrade to Pro:', 'smart-restock-waitlist'); ?></strong>
-                        <?php _e('Unlock advanced features like one-click supplier restock, multi-channel notifications, and automatic purchase orders.', 'smart-restock-waitlist'); ?>
-                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary" style="margin-left: 10px;">
-                            <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
-                        </a>
-                    </p>
-                </div>
-            <?php endif; ?>
+
             
             <div class="srwm-dashboard-stats">
                 <div class="srwm-stat-card">
@@ -456,17 +446,7 @@ class SRWM_Admin {
                         </td>
                     </tr>
                 </table>
-                <?php else: ?>
-                <div class="notice notice-info">
-                    <p>
-                        <strong><?php _e('Upgrade to Pro:', 'smart-restock-waitlist'); ?></strong>
-                        <?php _e('Unlock advanced settings including multi-channel notifications, automatic purchase orders, and company information management.', 'smart-restock-waitlist'); ?>
-                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary" style="margin-left: 10px;">
-                            <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
-                        </a>
-                    </p>
-                </div>
-                <?php endif; ?>
+
                 
                 <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
                 
