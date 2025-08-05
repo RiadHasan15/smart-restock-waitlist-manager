@@ -70,7 +70,7 @@ class SRWM_Admin_Dashboard {
      * Render main dashboard page
      */
     public function render_dashboard() {
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $dashboard_data = $analytics->get_dashboard_data();
         ?>
         <div class="wrap srwm-dashboard">
@@ -303,7 +303,7 @@ class SRWM_Admin_Dashboard {
             wp_die(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
         
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $data = array(
             'dashboard_data' => $analytics->get_dashboard_data(),
             'waitlist_growth' => $analytics->get_waitlist_growth_trend(30),
@@ -324,7 +324,7 @@ class SRWM_Admin_Dashboard {
             wp_die(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
         
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $analytics->export_analytics_csv();
     }
 }

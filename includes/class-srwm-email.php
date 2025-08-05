@@ -14,15 +14,15 @@ class SRWM_Email {
     private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
+    public static function get_instance($license_manager = null) {
         if (null === self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($license_manager);
         }
         return self::$instance;
     }
     
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    private function __construct($license_manager = null) {
+        $this->license_manager = $license_manager;
     }
     
     /**
@@ -72,7 +72,7 @@ class SRWM_Email {
         );
         
         // Add Pro placeholders if license is active
-        if ($this->license_manager->is_pro_active()) {
+        if ($this->license_manager && $this->license_manager->is_pro_active()) {
             $placeholders['{restock_link}'] = $this->generate_restock_link($product->get_id(), $supplier_data['email']);
             $placeholders['{po_number}'] = $this->generate_po_number($product->get_id());
         }
@@ -97,7 +97,7 @@ class SRWM_Email {
      * Send one-click restock link (Pro feature)
      */
     public function send_restock_link($product, $supplier_data) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return false;
         }
         
@@ -131,7 +131,7 @@ class SRWM_Email {
      * Send purchase order (Pro feature)
      */
     public function send_purchase_order($product, $supplier_data, $po_data) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return false;
         }
         
@@ -175,7 +175,7 @@ class SRWM_Email {
      * Send CSV upload link (Pro feature)
      */
     public function send_csv_upload_link($supplier_email, $csv_link) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return false;
         }
         

@@ -14,15 +14,15 @@ class SRWM_Analytics {
     private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
+    public static function get_instance($license_manager = null) {
         if (null === self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($license_manager);
         }
         return self::$instance;
     }
     
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    private function __construct($license_manager = null) {
+        $this->license_manager = $license_manager;
     }
     
     /**
@@ -120,7 +120,7 @@ class SRWM_Analytics {
      * Get supplier performance (Pro feature)
      */
     public function get_supplier_performance() {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return array();
         }
         
@@ -186,7 +186,7 @@ class SRWM_Analytics {
      * Get conversion rate (Pro feature)
      */
     public function get_conversion_rate() {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return 0;
         }
         
@@ -256,7 +256,7 @@ class SRWM_Analytics {
             ));
         }
         
-        if ($this->license_manager->is_pro_active() && !empty($data['supplier_performance'])) {
+        if ($this->license_manager && $this->license_manager->is_pro_active() && !empty($data['supplier_performance'])) {
             fputcsv($output, array('')); // Empty row
             
             // Export supplier performance

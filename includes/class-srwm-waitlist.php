@@ -14,15 +14,15 @@ class SRWM_Waitlist {
     private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
+    public static function get_instance($license_manager = null) {
         if (null === self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($license_manager);
         }
         return self::$instance;
     }
     
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    private function __construct($license_manager = null) {
+        $this->license_manager = $license_manager;
         
         add_action('woocommerce_single_product_summary', array($this, 'display_waitlist_form'), 25);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
@@ -246,7 +246,7 @@ class SRWM_Waitlist {
         $customers = self::get_waitlist_customers($product_id);
         
         if (!empty($customers)) {
-            $email = SRWM_Email::get_instance();
+            $email = SRWM_Email::get_instance($this->license_manager);
             
             foreach ($customers as $customer) {
                 $email->send_restock_notification($customer, $product);
@@ -278,7 +278,7 @@ class SRWM_Waitlist {
         if ($waitlist_count > 0) {
             // Notify waitlist customers
             $customers = self::get_waitlist_customers($product_id);
-            $email = SRWM_Email::get_instance();
+            $email = SRWM_Email::get_instance($this->license_manager);
             
             foreach ($customers as $customer) {
                 $email->send_restock_notification($customer, $product);
@@ -303,7 +303,7 @@ class SRWM_Waitlist {
         $threshold = get_option('srwm_low_stock_threshold', 5);
         
         if ($current_stock <= $threshold) {
-            $supplier = SRWM_Supplier::get_instance();
+            $supplier = SRWM_Supplier::get_instance($this->license_manager);
             $supplier_data = $supplier->get_supplier_data($product_id);
             
             if (!empty($supplier_data['email'])) {
