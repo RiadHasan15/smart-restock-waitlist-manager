@@ -2510,16 +2510,80 @@ class SmartRestockWaitlistManager {
             wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
         }
         
+        // Get pagination parameters
+        $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 10;
+        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+        $supplier_filter = isset($_POST['supplier']) ? sanitize_text_field($_POST['supplier']) : '';
+        $status_filter = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+        
         global $wpdb;
         $csv_tokens_table = $wpdb->prefix . 'srwm_csv_tokens';
         $suppliers_table = $wpdb->prefix . 'srwm_suppliers';
         
-        $links = $wpdb->get_results("
+        // Build WHERE clause
+        $where_clauses = array();
+        $query_params = array();
+        
+        if (!empty($search)) {
+            $where_clauses[] = "(s.supplier_name LIKE %s OR s.company_name LIKE %s OR t.supplier_email LIKE %s)";
+            $query_params[] = '%' . $wpdb->esc_like($search) . '%';
+            $query_params[] = '%' . $wpdb->esc_like($search) . '%';
+            $query_params[] = '%' . $wpdb->esc_like($search) . '%';
+        }
+        
+        if (!empty($supplier_filter)) {
+            $where_clauses[] = "t.supplier_email = %s";
+            $query_params[] = $supplier_filter;
+        }
+        
+        if (!empty($status_filter)) {
+            switch ($status_filter) {
+                case 'active':
+                    $where_clauses[] = "t.expires_at > NOW() AND t.used = 0";
+                    break;
+                case 'used':
+                    $where_clauses[] = "t.used = 1";
+                    break;
+                case 'expired':
+                    $where_clauses[] = "t.expires_at <= NOW() AND t.used = 0";
+                    break;
+            }
+        }
+        
+        $where_sql = count($where_clauses) > 0 ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
+        
+        // Get total count for pagination
+        $count_query = "
+            SELECT COUNT(*)
+            FROM $csv_tokens_table t
+            LEFT JOIN $suppliers_table s ON t.supplier_email = s.supplier_email
+            $where_sql
+        ";
+        
+        if (!empty($query_params)) {
+            $count_query = $wpdb->prepare($count_query, $query_params);
+        }
+        
+        $total_count = $wpdb->get_var($count_query);
+        
+        // Calculate offset
+        $offset = ($page - 1) * $per_page;
+        
+        // Get paginated results
+        $query = "
             SELECT t.*, s.supplier_name, s.company_name
             FROM $csv_tokens_table t
             LEFT JOIN $suppliers_table s ON t.supplier_email = s.supplier_email
+            $where_sql
             ORDER BY t.created_at DESC
-        ");
+            LIMIT %d OFFSET %d
+        ";
+        
+        $query_params[] = $per_page;
+        $query_params[] = $offset;
+        
+        $links = $wpdb->get_results($wpdb->prepare($query, $query_params));
         
         // Add upload count for each link
         foreach ($links as $link) {
@@ -2527,9 +2591,30 @@ class SmartRestockWaitlistManager {
                 "SELECT COUNT(*) FROM {$wpdb->prefix}srwm_csv_approvals WHERE token = %s",
                 $link->token
             ));
+            
+            // Add status information
+            $link->status = 'active';
+            if ($link->used == 1) {
+                $link->status = 'used';
+            } elseif (strtotime($link->expires_at) <= time()) {
+                $link->status = 'expired';
+            }
         }
         
-        wp_send_json_success($links);
+        // Calculate pagination info
+        $total_pages = ceil($total_count / $per_page);
+        
+        wp_send_json_success(array(
+            'links' => $links,
+            'pagination' => array(
+                'current_page' => $page,
+                'per_page' => $per_page,
+                'total_count' => $total_count,
+                'total_pages' => $total_pages,
+                'has_next' => $page < $total_pages,
+                'has_prev' => $page > 1
+            )
+        ));
     }
     
     /**
