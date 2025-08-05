@@ -2393,12 +2393,11 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Failed to generate upload link. Please try again.', 'smart-restock-waitlist'));
         }
         
-        // Generate the upload URL - use admin URL for proper routing
+        // Generate the upload URL - use site URL for frontend form
         $upload_url = add_query_arg(array(
-            'srwm_upload' => 'csv',
-            'token' => $token,
-            'supplier' => $supplier_id
-        ), admin_url('admin-ajax.php'));
+            'srwm_csv_upload' => '1',
+            'token' => $token
+        ), site_url());
         
         // Send email notification to supplier
         $this->send_upload_link_email($supplier, $upload_url, $expires_at);
