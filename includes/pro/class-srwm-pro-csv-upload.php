@@ -885,6 +885,8 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Show preview button
                 function showPreviewButton(csvData, validation, hasWarnings = false) {
+                    console.log('Creating preview button...');
+                    
                     // Remove existing preview button
                     const existingButton = document.querySelector('.srwm-preview-btn');
                     if (existingButton) {
@@ -907,14 +909,18 @@ class SRWM_Pro_CSV_Upload {
                     `;
                     
                     button.addEventListener('click', function() {
+                        console.log('Preview button clicked!');
                         showPreviewModal(csvData, validation);
                     });
                     
                     fileUploadArea.appendChild(button);
+                    console.log('Preview button added to DOM');
                 }
                 
                 // Show preview modal
                 function showPreviewModal(csvData, validation) {
+                    console.log('Showing preview modal...');
+                    
                     // Remove existing modal
                     const existingModal = document.querySelector('.srwm-preview-modal');
                     if (existingModal) {
@@ -928,7 +934,7 @@ class SRWM_Pro_CSV_Upload {
                             <div class="srwm-preview-content">
                                 <div class="srwm-preview-header">
                                     <h3><i class="fas fa-table"></i> Data Preview</h3>
-                                    <button class="srwm-preview-close" onclick="closePreviewModal()">
+                                    <button class="srwm-preview-close">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
@@ -964,8 +970,8 @@ class SRWM_Pro_CSV_Upload {
                                     ` : ''}
                                 </div>
                                 <div class="srwm-preview-footer">
-                                    <button class="srwm-btn-secondary" onclick="closePreviewModal()">Cancel</button>
-                                    <button class="srwm-btn-primary" onclick="proceedWithUpload()">
+                                    <button class="srwm-btn-secondary">Cancel</button>
+                                    <button class="srwm-btn-primary">
                                         <i class="fas fa-upload"></i> Proceed with Upload
                                     </button>
                                 </div>
@@ -975,11 +981,30 @@ class SRWM_Pro_CSV_Upload {
                     
                     document.body.appendChild(modal);
                     
+                    // Add event listeners
+                    const closeButton = modal.querySelector('.srwm-preview-close');
+                    const cancelButton = modal.querySelector('.srwm-btn-secondary');
+                    const proceedButton = modal.querySelector('.srwm-btn-primary');
+                    
+                    closeButton.addEventListener('click', function() {
+                        closePreviewModal();
+                    });
+                    
+                    cancelButton.addEventListener('click', function() {
+                        closePreviewModal();
+                    });
+                    
+                    proceedButton.addEventListener('click', function() {
+                        proceedWithUpload();
+                    });
+                    
                     // Add animation
                     setTimeout(() => {
                         modal.querySelector('.srwm-preview-content').style.transform = 'scale(1)';
                         modal.querySelector('.srwm-preview-content').style.opacity = '1';
                     }, 10);
+                    
+                    console.log('Preview modal created and displayed');
                 }
                 
                 // Generate preview table
@@ -1021,21 +1046,23 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Close preview modal
                 function closePreviewModal() {
+                    console.log('Closing preview modal...');
                     const modal = document.querySelector('.srwm-preview-modal');
                     if (modal) {
                         modal.querySelector('.srwm-preview-content').style.transform = 'scale(0.9)';
                         modal.querySelector('.srwm-preview-content').style.opacity = '0';
                         setTimeout(() => {
                             modal.remove();
+                            console.log('Preview modal removed');
                         }, 300);
                     }
                 }
                 
                 // Proceed with upload
                 function proceedWithUpload() {
+                    console.log('Proceeding with upload...');
                     closePreviewModal();
                     // The form will be submitted normally
-                    console.log('Proceeding with upload...');
                 }
                 
                 // Drag and drop functionality
