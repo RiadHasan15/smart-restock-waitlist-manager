@@ -546,6 +546,11 @@ class SmartRestockWaitlistManager {
             add_action('wp_ajax_srwm_generate_restock_link', array($this, 'ajax_generate_restock_link'));
             add_action('wp_ajax_srwm_generate_po', array($this, 'ajax_generate_po'));
             add_action('wp_ajax_srwm_generate_csv_upload_link', array($this, 'ajax_generate_csv_upload_link'));
+            add_action('wp_ajax_srwm_save_threshold', array($this, 'ajax_save_threshold'));
+            add_action('wp_ajax_srwm_reset_threshold', array($this, 'ajax_reset_threshold'));
+            add_action('wp_ajax_srwm_save_notification_settings', array($this, 'ajax_save_notification_settings'));
+            add_action('wp_ajax_srwm_save_email_templates', array($this, 'ajax_save_email_templates'));
+            add_action('wp_ajax_srwm_save_global_threshold', array($this, 'ajax_save_global_threshold'));
         }
     }
     
@@ -740,6 +745,120 @@ class SmartRestockWaitlistManager {
         }
         
         wp_die(json_encode(array('success' => false, 'message' => __('Pro feature not available.', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Save product threshold (Pro)
+     */
+    public function ajax_save_threshold() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $threshold = intval($_POST['threshold']);
+        
+        if ($threshold < 0) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Threshold must be a positive number.', 'smart-restock-waitlist'))));
+        }
+        
+        // Save threshold as product meta
+        update_post_meta($product_id, '_srwm_threshold', $threshold);
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Threshold saved successfully!', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Reset product threshold (Pro)
+     */
+    public function ajax_reset_threshold() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        
+        // Delete the custom threshold meta to use global default
+        delete_post_meta($product_id, '_srwm_threshold');
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Threshold reset to global default!', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Save notification settings (Pro)
+     */
+    public function ajax_save_notification_settings() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        // Save notification channel settings
+        $notification_settings = array(
+            'email_enabled' => isset($_POST['email_enabled']) ? 1 : 0,
+            'whatsapp_enabled' => isset($_POST['whatsapp_enabled']) ? 1 : 0,
+            'sms_enabled' => isset($_POST['sms_enabled']) ? 1 : 0,
+            'whatsapp_api_key' => sanitize_text_field($_POST['whatsapp_api_key'] ?? ''),
+            'whatsapp_phone' => sanitize_text_field($_POST['whatsapp_phone'] ?? ''),
+            'sms_api_key' => sanitize_text_field($_POST['sms_api_key'] ?? ''),
+            'sms_phone' => sanitize_text_field($_POST['sms_phone'] ?? ''),
+            'sms_provider' => sanitize_text_field($_POST['sms_provider'] ?? 'twilio')
+        );
+        
+        update_option('srwm_notification_settings', $notification_settings);
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Notification settings saved successfully!', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Save email templates (Pro)
+     */
+    public function ajax_save_email_templates() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        // Save email templates
+        $templates = array(
+            'waitlist_email_template' => wp_kses_post($_POST['srwm_waitlist_email_template'] ?? ''),
+            'restock_email_template' => wp_kses_post($_POST['srwm_restock_email_template'] ?? ''),
+            'supplier_email_template' => wp_kses_post($_POST['srwm_supplier_email_template'] ?? ''),
+            'po_email_template' => wp_kses_post($_POST['srwm_po_email_template'] ?? '')
+        );
+        
+        foreach ($templates as $key => $template) {
+            update_option($key, $template);
+        }
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Email templates saved successfully!', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Save global threshold (Pro)
+     */
+    public function ajax_save_global_threshold() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        $global_threshold = intval($_POST['global_threshold']);
+        
+        if ($global_threshold < 0) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Global threshold must be a positive number.', 'smart-restock-waitlist'))));
+        }
+        
+        update_option('srwm_global_threshold', $global_threshold);
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Global threshold saved successfully!', 'smart-restock-waitlist'))));
     }
     
     /**
