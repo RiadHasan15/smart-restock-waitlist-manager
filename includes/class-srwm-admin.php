@@ -201,6 +201,14 @@ class SRWM_Admin {
             SRWM_VERSION
         );
         
+        // Enqueue Font Awesome for icons
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
+            array(),
+            '6.0.0'
+        );
+        
         wp_localize_script('srwm-admin', 'srwm_admin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'admin_url' => admin_url(),
@@ -6456,6 +6464,17 @@ class SRWM_Admin {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
+        .srwm-table-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .srwm-table-action-btn i {
+            font-size: 14px;
+            display: inline-block;
+        }
+        
         /* Highlight newly generated links */
         .srwm-new-link {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
@@ -6854,6 +6873,11 @@ class SRWM_Admin {
                 openUploadLinkModal(supplierId);
             };
             
+            // Global functions for upload link actions
+            window.copyLinkToClipboard = copyLinkToClipboard;
+            window.viewLinkDetails = viewLinkDetails;
+            window.deleteUploadLink = deleteUploadLink;
+            
             function openUploadLinkModal(supplierId) {
                 currentSupplierId = supplierId;
                 $('#upload-link-modal').show();
@@ -7023,6 +7047,7 @@ class SRWM_Admin {
                     `;
                 });
                 
+                console.log('Generated HTML for upload links table:', html);
                 $('#upload-links-tbody').html(html);
             }
             
@@ -7056,7 +7081,9 @@ class SRWM_Admin {
             }
             
             function copyLinkToClipboard(token) {
+                console.log('Copy link clicked for token:', token);
                 const uploadUrl = '<?php echo site_url(); ?>/?srwm_csv_upload=1&token=' + token;
+                console.log('Generated URL:', uploadUrl);
                 
                 navigator.clipboard.writeText(uploadUrl).then(function() {
                     showNotification('Upload link copied to clipboard!', 'success');
@@ -7073,11 +7100,13 @@ class SRWM_Admin {
             }
             
             function viewLinkDetails(token) {
+                console.log('View details clicked for token:', token);
                 // TODO: Implement link details modal
                 showNotification('Link details feature coming soon!', 'info');
             }
             
             function deleteUploadLink(token) {
+                console.log('Delete link clicked for token:', token);
                 if (confirm('Are you sure you want to delete this upload link? This action cannot be undone.')) {
                     $.ajax({
                         url: ajaxurl,
