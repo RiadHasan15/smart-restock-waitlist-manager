@@ -96,7 +96,16 @@ class SRWM_License_Manager {
         update_option($this->plugin_slug . '_license_status', 'valid');
         update_option($this->plugin_slug . '_license_last_check', time());
         
-        $this->add_notice('success', __('License activated successfully! Pro features are now enabled.', 'smart-restock-waitlist'));
+        $this->add_notice('success', __('License activated successfully! Pro features are now enabled. Please refresh the page to see the changes.', 'smart-restock-waitlist'));
+        
+        // Force page reload to update admin menu
+        add_action('admin_footer', function() {
+            echo '<script>
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            </script>';
+        });
     }
     
 
@@ -109,7 +118,16 @@ class SRWM_License_Manager {
         update_option($this->plugin_slug . '_license_status', 'inactive');
         update_option($this->plugin_slug . '_license_last_check', time());
         
-        $this->add_notice('success', __('License deactivated successfully! Pro features are now disabled.', 'smart-restock-waitlist'));
+        $this->add_notice('success', __('License deactivated successfully! Pro features are now disabled. Please refresh the page to see the changes.', 'smart-restock-waitlist'));
+        
+        // Force page reload to update admin menu
+        add_action('admin_footer', function() {
+            echo '<script>
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            </script>';
+        });
     }
     
 
@@ -175,8 +193,8 @@ class SRWM_License_Manager {
                                     <span style="color: orange; font-weight: bold;">⚠ <?php _e('Expired', 'smart-restock-waitlist'); ?></span>
                                     <p class="description"><?php _e('Your license has expired. Please renew to continue receiving updates.', 'smart-restock-waitlist'); ?></p>
                                 <?php else: ?>
-                                    <span style="color: gray;"><?php _e('Not activated', 'smart-restock-waitlist'); ?></span>
-                                    <p class="description"><?php _e('Enter your license key and activate to enable Pro features.', 'smart-restock-waitlist'); ?></p>
+                                    <span style="color: red; font-weight: bold;">✗ <?php _e('Inactive', 'smart-restock-waitlist'); ?></span>
+                                    <p class="description"><?php _e('Pro features are disabled. Enter any license key and activate to enable Pro features.', 'smart-restock-waitlist'); ?></p>
                                 <?php endif; ?>
                                 
                                 <?php if ($last_check): ?>
@@ -245,22 +263,22 @@ class SRWM_License_Manager {
      * Check if Pro license is active
      */
     public function is_pro_active() {
-        // For local testing, always return true
-        return true;
+        $status = get_option($this->plugin_slug . '_license_status', 'inactive');
+        return $status === 'valid';
     }
     
     /**
      * Get license key
      */
     public function get_license_key() {
-        return $this->license_key;
+        return get_option($this->plugin_slug . '_license_key', '');
     }
     
     /**
      * Get license status
      */
     public function get_license_status() {
-        return $this->license_status;
+        return get_option($this->plugin_slug . '_license_status', 'inactive');
     }
     
     /**
@@ -673,21 +691,14 @@ class SmartRestockWaitlistManager {
     public function ajax_save_threshold() {
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
-        // Debug logging
-        error_log('SRWM Save Threshold - User can manage WooCommerce: ' . (current_user_can('manage_woocommerce') ? 'Yes' : 'No'));
-        error_log('SRWM Save Threshold - Pro license active: ' . ($this->license_manager->is_pro_active() ? 'Yes' : 'No'));
-        error_log('SRWM Save Threshold - POST data: ' . print_r($_POST, true));
+
         
         if (!current_user_can('manage_woocommerce')) {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
         if (!$this->license_manager->is_pro_active()) {
-            // For development, allow threshold saving even without license
-            $current_key = get_option($this->plugin_slug . '_license_key', '');
-            if (empty($current_key)) {
-                wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first. Use DEV-LICENSE-12345 for testing.', 'smart-restock-waitlist'))));
-            }
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
         }
         
         if (!isset($_POST['product_id']) || !isset($_POST['threshold'])) {
