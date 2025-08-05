@@ -341,7 +341,7 @@ class SRWM_License_Manager {
                                 <a href="#" class="srwm-btn srwm-btn-primary srwm-btn-large">
                                     <?php _e('Get Pro License', 'smart-restock-waitlist'); ?>
                                 </a>
-                                <a href="#" class="srwm-btn srwm-btn-outline srwm-btn-large">
+                                <a href="#" class="srwm-btn srwm-btn-secondary srwm-btn-large">
                                     <?php _e('View Demo', 'smart-restock-waitlist'); ?>
                                 </a>
                             </div>
@@ -359,6 +359,7 @@ class SRWM_License_Manager {
             gap: 30px;
             max-width: 1400px;
             margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
         }
         
         /* License Management Card */
@@ -403,7 +404,7 @@ class SRWM_License_Manager {
         }
         
         .srwm-license-badge.inactive {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #6b7280, #4b5563);
             color: white;
         }
         
@@ -545,14 +546,14 @@ class SRWM_License_Manager {
         }
         
         .srwm-btn-secondary {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             color: white;
         }
         
         .srwm-btn-secondary:hover {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
         
         .srwm-btn-outline {
@@ -565,6 +566,8 @@ class SRWM_License_Manager {
             background: #f9fafb;
             border-color: #d1d5db;
             color: #374151;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-btn-large {
@@ -585,17 +588,16 @@ class SRWM_License_Manager {
         .srwm-pro-header {
             text-align: center;
             margin-bottom: 40px;
+            padding: 0 20px;
         }
         
         .srwm-pro-header h2 {
             font-size: 28px;
             font-weight: 700;
-            color: #1f2937;
             margin: 0 0 12px 0;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #1f2937;
+            line-height: 1.2;
+            word-wrap: break-word;
         }
         
         .srwm-pro-header p {
@@ -629,7 +631,7 @@ class SRWM_License_Manager {
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
         
         .srwm-feature-card:hover {
@@ -682,22 +684,24 @@ class SRWM_License_Manager {
         
         /* Call to Action */
         .srwm-cta-section {
-            background: linear-gradient(135deg, #1f2937, #111827);
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
             padding: 40px;
             text-align: center;
-            color: white;
+            color: #1f2937;
         }
         
         .srwm-cta-content h3 {
             font-size: 24px;
             font-weight: 600;
             margin: 0 0 12px 0;
+            color: #1f2937;
         }
         
         .srwm-cta-content p {
             font-size: 16px;
-            color: #d1d5db;
+            color: #6b7280;
             margin: 0 0 30px 0;
         }
         
