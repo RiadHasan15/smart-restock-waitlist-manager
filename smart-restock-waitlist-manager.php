@@ -578,8 +578,9 @@ class SmartRestockWaitlistManager {
      * Initialize frontend functionality
      */
     private function init_frontend() {
-        $waitlist = SRWM_Waitlist::get_instance();
-        $supplier = SRWM_Supplier::get_instance();
+        // Initialize core classes with license manager
+        $waitlist = SRWM_Waitlist::get_instance($this->license_manager);
+        $supplier = SRWM_Supplier::get_instance($this->license_manager);
         
         // Add waitlist form to product pages
         add_action('woocommerce_single_product_summary', array($waitlist, 'display_waitlist_form'), 25);
@@ -720,7 +721,7 @@ class SmartRestockWaitlistManager {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $data = $analytics->get_dashboard_data();
         
         wp_die(json_encode(array('success' => true, 'data' => $data)));
@@ -736,7 +737,7 @@ class SmartRestockWaitlistManager {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $analytics->export_analytics_csv();
     }
     

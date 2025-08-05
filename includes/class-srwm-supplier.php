@@ -14,15 +14,15 @@ class SRWM_Supplier {
     private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
+    public static function get_instance($license_manager = null) {
         if (null === self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($license_manager);
         }
         return self::$instance;
     }
     
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    private function __construct($license_manager = null) {
+        $this->license_manager = $license_manager;
         
         add_action('add_meta_boxes', array($this, 'add_supplier_meta_box'));
         add_action('save_post', array($this, 'save_supplier_data'));
@@ -288,7 +288,7 @@ class SRWM_Supplier {
         }
         
         // Pro features
-        if ($this->license_manager->is_pro_active()) {
+        if ($this->license_manager && $this->license_manager->is_pro_active()) {
             // WhatsApp notification
             if (isset($supplier_data['channels']['whatsapp'])) {
                 $this->send_whatsapp_notification($product, $supplier_data, $current_stock, $waitlist_count);
@@ -310,7 +310,7 @@ class SRWM_Supplier {
      * Send email notification to supplier
      */
     private function send_email_notification($product, $supplier_data, $current_stock, $waitlist_count) {
-        $email = SRWM_Email::get_instance();
+        $email = SRWM_Email::get_instance($this->license_manager);
         $email->send_supplier_notification($product, $supplier_data, $current_stock, $waitlist_count);
     }
     
@@ -318,7 +318,7 @@ class SRWM_Supplier {
      * Send WhatsApp notification (Pro feature)
      */
     private function send_whatsapp_notification($product, $supplier_data, $current_stock, $waitlist_count) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return;
         }
         
@@ -336,7 +336,7 @@ class SRWM_Supplier {
      * Send SMS notification (Pro feature)
      */
     private function send_sms_notification($product, $supplier_data, $current_stock, $waitlist_count) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return;
         }
         
@@ -354,7 +354,7 @@ class SRWM_Supplier {
      * Generate purchase order (Pro feature)
      */
     private function generate_purchase_order($product_id, $supplier_data) {
-        if (!$this->license_manager->is_pro_active()) {
+        if (!$this->license_manager || !$this->license_manager->is_pro_active()) {
             return;
         }
         

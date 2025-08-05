@@ -509,7 +509,7 @@ class SRWM_Admin {
      * Render analytics page
      */
     public function render_analytics_page() {
-        $analytics = SRWM_Analytics::get_instance();
+        $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $analytics_data = $analytics->get_analytics_data();
         ?>
         <div class="wrap">
