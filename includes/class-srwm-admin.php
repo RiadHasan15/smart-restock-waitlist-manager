@@ -473,7 +473,6 @@ class SRWM_Admin {
                     </div>
                     <?php endif; ?>
                 </div>
-                <?php endif; ?>
             </div>
         </div>
         
