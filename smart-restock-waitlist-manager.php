@@ -1007,6 +1007,8 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_delete_supplier', array($this, 'ajax_delete_supplier'));
         add_action('wp_ajax_srwm_get_supplier', array($this, 'ajax_get_supplier'));
         add_action('wp_ajax_srwm_generate_supplier_upload_link', array($this, 'ajax_generate_supplier_upload_link'));
+        add_action('wp_ajax_srwm_get_csv_upload_links', array($this, 'ajax_get_csv_upload_links'));
+        add_action('wp_ajax_srwm_delete_upload_link', array($this, 'ajax_delete_upload_link'));
         add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
     }
     
@@ -2360,12 +2362,12 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Failed to generate upload link. Please try again.', 'smart-restock-waitlist'));
         }
         
-        // Generate the upload URL
+        // Generate the upload URL - use admin URL for proper routing
         $upload_url = add_query_arg(array(
             'srwm_upload' => 'csv',
             'token' => $token,
             'supplier' => $supplier_id
-        ), home_url());
+        ), admin_url('admin-ajax.php'));
         
         // Send email notification to supplier
         $this->send_upload_link_email($supplier, $upload_url, $expires_at);
@@ -2396,6 +2398,66 @@ class SmartRestockWaitlistManager {
         $headers = array('Content-Type: text/html; charset=UTF-8');
         
         wp_mail($supplier->supplier_email, $subject, nl2br($message), $headers);
+    }
+    
+    /**
+     * Get CSV upload links
+     */
+    public function ajax_get_csv_upload_links() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $csv_tokens_table = $wpdb->prefix . 'srwm_csv_tokens';
+        $suppliers_table = $wpdb->prefix . 'srwm_suppliers';
+        
+        $links = $wpdb->get_results("
+            SELECT t.*, s.supplier_name, s.company_name
+            FROM $csv_tokens_table t
+            LEFT JOIN $suppliers_table s ON t.supplier_email = s.supplier_email
+            ORDER BY t.created_at DESC
+        ");
+        
+        // Add upload count for each link
+        foreach ($links as $link) {
+            $link->upload_count = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}srwm_csv_approvals WHERE token = %s",
+                $link->token
+            ));
+        }
+        
+        wp_send_json_success($links);
+    }
+    
+    /**
+     * Delete upload link
+     */
+    public function ajax_delete_upload_link() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $token = sanitize_text_field($_POST['token']);
+        
+        global $wpdb;
+        $csv_tokens_table = $wpdb->prefix . 'srwm_csv_tokens';
+        
+        $result = $wpdb->delete(
+            $csv_tokens_table,
+            array('token' => $token),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to delete upload link. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        wp_send_json_success(__('Upload link deleted successfully!', 'smart-restock-waitlist'));
     }
     
     /**
