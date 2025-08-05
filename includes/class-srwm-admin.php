@@ -5404,6 +5404,27 @@ class SRWM_Admin {
             overflow: hidden;
         }
         
+        .srwm-quick-restock-links-section {
+            padding: 0;
+        }
+        
+        .srwm-quick-restock-links-section .srwm-table-container {
+            margin: 0;
+            border-radius: 0;
+            border: none;
+        }
+        
+        .srwm-quick-restock-links-table {
+            table-layout: fixed;
+        }
+        
+        .srwm-quick-restock-links-table th:nth-child(1) { width: 20%; } /* Product */
+        .srwm-quick-restock-links-table th:nth-child(2) { width: 25%; } /* Restock Link */
+        .srwm-quick-restock-links-table th:nth-child(3) { width: 20%; } /* Supplier */
+        .srwm-quick-restock-links-table th:nth-child(4) { width: 15%; } /* Expires */
+        .srwm-quick-restock-links-table th:nth-child(5) { width: 10%; } /* Status */
+        .srwm-quick-restock-links-table th:nth-child(6) { width: 10%; } /* Actions */
+        
         .srwm-quick-restock-form {
             padding: 24px;
             background: #f8fafc;
@@ -6267,12 +6288,14 @@ class SRWM_Admin {
             overflow: hidden;
         }
         
-        .srwm-upload-links-table {
+        .srwm-upload-links-table,
+        .srwm-quick-restock-links-table {
             width: 100%;
             border-collapse: collapse;
         }
         
-        .srwm-upload-links-table th {
+        .srwm-upload-links-table th,
+        .srwm-quick-restock-links-table th {
             background: #f8fafc;
             padding: 16px 12px;
             text-align: left;
@@ -6282,18 +6305,21 @@ class SRWM_Admin {
             font-size: 0.9rem;
         }
         
-        .srwm-upload-links-table td {
+        .srwm-upload-links-table td,
+        .srwm-quick-restock-links-table td {
             padding: 16px 12px;
             border-bottom: 1px solid #f3f4f6;
             color: #4b5563;
             font-size: 0.9rem;
         }
         
-        .srwm-upload-links-table tr:hover {
+        .srwm-upload-links-table tr:hover,
+        .srwm-quick-restock-links-table tr:hover {
             background: #f8fafc;
         }
         
-        .srwm-upload-links-table tr:last-child td {
+        .srwm-upload-links-table tr:last-child td,
+        .srwm-quick-restock-links-table tr:last-child td {
             border-bottom: none;
         }
         
@@ -6403,6 +6429,54 @@ class SRWM_Admin {
             display: flex;
             gap: 8px;
             align-items: center;
+        }
+        
+        /* Quick Restock Table Specific Styles */
+        .srwm-quick-restock-links-table .srwm-table-action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #374151;
+            background: #f3f4f6;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.copy {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.copy:hover {
+            background: #bfdbfe;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.view {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.view:hover {
+            background: #bbf7d0;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.delete {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.delete:hover {
+            background: #fecaca;
         }
         
         .srwm-table-action-btn i {
