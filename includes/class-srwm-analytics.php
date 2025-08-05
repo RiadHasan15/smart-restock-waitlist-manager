@@ -67,7 +67,7 @@ class SRWM_Analytics {
             ) as subquery"
         );
         
-        return round($result, 1);
+        return round($result ?: 0, 1);
     }
     
     /**
@@ -87,7 +87,7 @@ class SRWM_Analytics {
              AND w.notified = 1"
         );
         
-        return round($result, 1);
+        return round($result ?: 0, 1);
     }
     
     /**
@@ -238,7 +238,7 @@ class SRWM_Analytics {
                 $product['name'],
                 $product['waitlist_count'],
                 $product['restock_count'],
-                round($product['avg_restock_time'], 1)
+                round($product['avg_restock_time'] ?: 0, 1)
             ));
         }
         
@@ -268,8 +268,8 @@ class SRWM_Analytics {
                     $supplier['supplier_name'],
                     $supplier['products_managed'],
                     $supplier['total_restocks'],
-                    round($supplier['avg_restock_quantity'], 1),
-                    round($supplier['avg_response_time'], 1)
+                    round($supplier['avg_restock_quantity'] ?: 0, 1),
+                    round($supplier['avg_response_time'] ?: 0, 1)
                 ));
             }
         }

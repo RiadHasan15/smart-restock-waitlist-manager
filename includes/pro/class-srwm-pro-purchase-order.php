@@ -49,7 +49,7 @@ class SRWM_Pro_Purchase_Order {
             $po_data['pdf_path'] = $pdf_path;
             
             // Send PO to supplier
-            $email = new SRWM_Email();
+            $email = SRWM_Email::get_instance();
             $email->send_purchase_order($product, $supplier_data, $po_data);
             
             // Log PO generation

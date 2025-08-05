@@ -237,14 +237,15 @@ class SRWM_Supplier {
         
         $table = $wpdb->prefix . 'srwm_suppliers';
         
-        return $wpdb->get_results($wpdb->prepare(
+        return $wpdb->get_results(
             "SELECT s.*, p.post_title as product_name, wc.stock_quantity as current_stock
              FROM $table s
              JOIN {$wpdb->posts} p ON s.product_id = p.ID
              LEFT JOIN {$wpdb->prefix}wc_product_meta_lookup wc ON s.product_id = wc.product_id
              WHERE p.post_type = 'product' AND p.post_status = 'publish'
              ORDER BY p.post_title",
-        ), ARRAY_A);
+            ARRAY_A
+        );
     }
     
     /**
@@ -309,7 +310,7 @@ class SRWM_Supplier {
      * Send email notification to supplier
      */
     private function send_email_notification($product, $supplier_data, $current_stock, $waitlist_count) {
-        $email = new SRWM_Email();
+        $email = SRWM_Email::get_instance();
         $email->send_supplier_notification($product, $supplier_data, $current_stock, $waitlist_count);
     }
     
