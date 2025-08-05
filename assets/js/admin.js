@@ -125,7 +125,9 @@
                 data: ajaxData,
                 success: function(response) {
                     console.log('Threshold save response:', response);
-                    if (response.success) {
+                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
+                    
+                    if (response.success === true || response.success === 'true') {
                         showAdminMessage('success', response.message || 'Threshold saved successfully!');
                     } else {
                         showAdminMessage('error', response.message || 'Failed to save threshold.');
@@ -171,7 +173,9 @@
                 data: ajaxData,
                 success: function(response) {
                     console.log('Reset threshold response:', response);
-                    if (response.success) {
+                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
+                    
+                    if (response.success === true || response.success === 'true') {
                         showAdminMessage('success', response.message || 'Threshold reset successfully!');
                         // Reload the page to update the display
                         setTimeout(function() {
