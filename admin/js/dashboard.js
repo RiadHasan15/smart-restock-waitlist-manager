@@ -21,6 +21,11 @@
      * Initialize dashboard
      */
     function initDashboard() {
+        // Only initialize if we're on the dashboard page
+        if (!$('.srwm-dashboard').length) {
+            return;
+        }
+        
         initCharts();
         initEventHandlers();
         initRealtimeUpdates();

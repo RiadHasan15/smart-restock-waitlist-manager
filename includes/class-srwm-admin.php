@@ -158,6 +158,11 @@ class SRWM_Admin {
      * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts($hook) {
+        // Don't enqueue on license page - it doesn't need these scripts
+        if (strpos($hook, 'smart-restock-waitlist-license') !== false) {
+            return;
+        }
+        
         if (strpos($hook, 'smart-restock-waitlist') === false) {
             return;
         }

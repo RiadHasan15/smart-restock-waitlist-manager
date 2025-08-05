@@ -24,7 +24,8 @@ class SRWM_Admin_Dashboard {
      * Enqueue dashboard-specific scripts and styles
      */
     public function enqueue_dashboard_scripts($hook) {
-        if (strpos($hook, 'smart-restock-waitlist') === false) {
+        // Only enqueue on the main dashboard page, not on other plugin pages
+        if ($hook !== 'toplevel_page_smart-restock-waitlist') {
             return;
         }
         
