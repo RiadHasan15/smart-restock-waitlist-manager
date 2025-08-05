@@ -5006,11 +5006,6 @@ class SRWM_Admin {
                     <div class="srwm-quick-restock-section">
                         <div class="srwm-section-header">
                             <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
-                            <div class="srwm-section-actions">
-                                <button class="button button-primary" id="generate-quick-restock-btn">
-                                    <i class="fas fa-plus"></i> <?php _e('Generate Quick Restock Link', 'smart-restock-waitlist'); ?>
-                                </button>
-                            </div>
                         </div>
                     
                     <!-- Quick Restock Info Cards -->
@@ -5075,6 +5070,9 @@ class SRWM_Admin {
                                 </button>
                                 <button type="button" class="button button-secondary" id="clear-selection">
                                     <i class="fas fa-square"></i> <?php _e('Clear Selection', 'smart-restock-waitlist'); ?>
+                                </button>
+                                <button type="button" class="button button-primary" id="generate-links-for-selected" style="display: none;">
+                                    <i class="fas fa-link"></i> <?php _e('Generate Links for Selected Products', 'smart-restock-waitlist'); ?>
                                 </button>
                             </div>
                         </div>
@@ -5651,6 +5649,43 @@ class SRWM_Admin {
         
         .srwm-product-stock.lowstock {
             color: #d97706;
+        }
+        
+        /* Selected Products Display */
+        .srwm-selected-products-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-selected-products-info h4 {
+            margin: 0 0 12px 0;
+            color: #374151;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-selected-products-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .srwm-selected-product {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        
+        .srwm-selected-product:last-child {
+            margin-bottom: 0;
         }
         
         .srwm-quick-restock-form {
@@ -6888,9 +6923,13 @@ class SRWM_Admin {
                 loadUploadLinks();
             });
             
-            // Quick Restock functionality
-            $('#generate-quick-restock-btn').on('click', function() {
-                openQuickRestockModal();
+            // Quick Restock functionality - Generate links for selected products
+            $('#generate-links-for-selected').on('click', function() {
+                if (selectedProducts.size === 0) {
+                    showNotification('Please select at least one product first.', 'warning');
+                    return;
+                }
+                openBulkQuickRestockModal();
             });
             
             // Refresh quick restock links
@@ -7827,10 +7866,88 @@ class SRWM_Admin {
             
             function updateSelectedCount() {
                 $('#selected-products-count').text(selectedProducts.size);
+                
+                // Show/hide generate button based on selection
+                if (selectedProducts.size > 0) {
+                    $('#generate-links-for-selected').show();
+                } else {
+                    $('#generate-links-for-selected').hide();
+                }
             }
             
             // Global function for product selection
             window.toggleProductSelection = toggleProductSelection;
+            
+            function openBulkQuickRestockModal() {
+                // Get selected product details
+                const selectedProductDetails = [];
+                selectedProducts.forEach(function(productId) {
+                    const product = allProducts.find(p => p.id == productId);
+                    if (product) {
+                        selectedProductDetails.push(product);
+                    }
+                });
+                
+                // Update modal content for bulk generation
+                let productsList = '';
+                selectedProductDetails.forEach(function(product) {
+                    productsList += `
+                        <div class="srwm-selected-product">
+                            <strong>${product.name}</strong> (SKU: ${product.sku || 'N/A'})
+                        </div>
+                    `;
+                });
+                
+                // Show selected products in modal
+                $('#quick-restock-content').html(`
+                    <div class="srwm-selected-products-info">
+                        <h4><i class="fas fa-list"></i> Selected Products (${selectedProductDetails.length})</h4>
+                        <div class="srwm-selected-products-list">
+                            ${productsList}
+                        </div>
+                    </div>
+                    
+                    <form id="bulk-quick-restock-form">
+                        <div class="srwm-form-group">
+                            <label for="bulk-quick-restock-supplier"><?php _e('Select Supplier *', 'smart-restock-waitlist'); ?></label>
+                            <select id="bulk-quick-restock-supplier" name="supplier_email" required>
+                                <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
+                            </select>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label for="bulk-quick-restock-expires"><?php _e('Link Expiration', 'smart-restock-waitlist'); ?></label>
+                            <select id="bulk-quick-restock-expires" name="expires">
+                                <option value="1"><?php _e('1 day', 'smart-restock-waitlist'); ?></option>
+                                <option value="3"><?php _e('3 days', 'smart-restock-waitlist'); ?></option>
+                                <option value="7" selected><?php _e('7 days', 'smart-restock-waitlist'); ?></option>
+                                <option value="14"><?php _e('14 days', 'smart-restock-waitlist'); ?></option>
+                                <option value="30"><?php _e('30 days', 'smart-restock-waitlist'); ?></option>
+                            </select>
+                        </div>
+                    </form>
+                    
+                    <div class="srwm-info-card">
+                        <h4><i class="fas fa-info-circle"></i> <?php _e('Bulk Quick Restock Details', 'smart-restock-waitlist'); ?></h4>
+                        <ul>
+                            <li><strong><?php _e('Products:', 'smart-restock-waitlist'); ?></strong> ${selectedProductDetails.length} products selected</li>
+                            <li><strong><?php _e('Instant Updates:', 'smart-restock-waitlist'); ?></strong> <?php _e('Stock updates immediately without approval', 'smart-restock-waitlist'); ?></li>
+                            <li><strong><?php _e('Email Notification:', 'smart-restock-waitlist'); ?></strong> <?php _e('Automatically sent to supplier', 'smart-restock-waitlist'); ?></li>
+                            <li><strong><?php _e('Secure Access:', 'smart-restock-waitlist'); ?></strong> <?php _e('Unique token-based authentication', 'smart-restock-waitlist'); ?></li>
+                        </ul>
+                    </div>
+                `);
+                
+                // Load suppliers for the dropdown
+                loadQuickRestockSuppliers();
+                
+                // Show modal
+                $('#quick-restock-modal').show();
+                
+                // Update modal title and button
+                $('#quick-restock-modal .srwm-modal-header h3').text('Generate Quick Restock Links for Selected Products');
+                $('#generate-quick-restock-link-btn').text('Generate Links for ' + selectedProductDetails.length + ' Products');
+            }
         });
         </script>
         <?php
