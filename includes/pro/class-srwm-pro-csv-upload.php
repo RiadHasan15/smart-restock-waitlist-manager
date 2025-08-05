@@ -684,18 +684,24 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Parse CSV data
                 function parseCSVData(csvText) {
-                    const lines = csvText.split('\n');
+                    console.log('Parsing CSV text:', csvText.substring(0, 500) + '...');
+                    
+                    const lines = csvText.split('\n').filter(line => line.trim());
                     const data = [];
                     
                     if (lines.length < 2) {
                         throw new Error('File must contain at least a header row and one data row');
                     }
                     
-                    const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                    // Parse header - handle quoted values and different separators
+                    const headerLine = lines[0];
+                    const header = parseCSVLine(headerLine).map(h => h.trim().replace(/"/g, ''));
+                    
+                    console.log('Parsed header:', header);
                     
                     for (let i = 1; i < lines.length; i++) {
                         if (lines[i].trim()) {
-                            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                            const values = parseCSVLine(lines[i]).map(v => v.trim().replace(/"/g, ''));
                             const row = {};
                             
                             header.forEach((key, index) => {
@@ -706,11 +712,37 @@ class SRWM_Pro_CSV_Upload {
                         }
                     }
                     
+                    console.log('Parsed data sample:', data.slice(0, 2));
                     return { header, data };
+                }
+                
+                // Helper function to parse CSV line properly
+                function parseCSVLine(line) {
+                    const result = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            result.push(current);
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    
+                    result.push(current);
+                    return result;
                 }
                 
                 // Validate CSV data
                 function validateCSVData(csvData) {
+                    console.log('Validating CSV data:', csvData);
+                    
                     const validation = {
                         valid: true,
                         errors: [],
@@ -720,24 +752,41 @@ class SRWM_Pro_CSV_Upload {
                         invalidRows: 0
                     };
                     
+                    // Check if we have data
+                    if (!csvData.data || csvData.data.length === 0) {
+                        validation.errors.push('No data rows found in file');
+                        validation.valid = false;
+                        return validation;
+                    }
+                    
+                    // Log the first row to see what columns we have
+                    console.log('First row data:', csvData.data[0]);
+                    console.log('Available columns:', Object.keys(csvData.data[0]));
+                    
                     csvData.data.forEach((row, index) => {
                         let rowValid = true;
                         
+                        // Get all possible field names for SKU and quantity
+                        const skuValue = row.sku || row['product_sku'] || row['product sku'] || row['product-sku'] || row['product_id'] || row['product id'] || row['product-id'] || row['Product ID'] || row['SKU'];
+                        const quantityValue = row.quantity || row.qty || row.stock || row['stock_quantity'] || row['stock quantity'] || row['stock-quantity'] || row['Quantity'];
+                        
                         // Check for required fields
-                        if (!row.sku && !row['product_sku'] && !row['product sku']) {
-                            validation.errors.push(`Row ${index + 1}: Missing SKU`);
+                        if (!skuValue || skuValue.trim() === '') {
+                            validation.errors.push(`Row ${index + 1}: Missing SKU (available fields: ${Object.keys(row).join(', ')})`);
                             rowValid = false;
                         }
                         
-                        if (!row.quantity && !row.qty && !row.stock) {
-                            validation.errors.push(`Row ${index + 1}: Missing quantity`);
+                        if (!quantityValue || quantityValue.toString().trim() === '') {
+                            validation.errors.push(`Row ${index + 1}: Missing quantity (available fields: ${Object.keys(row).join(', ')})`);
                             rowValid = false;
                         }
                         
                         // Validate quantity
-                        const qty = parseInt(row.quantity || row.qty || row.stock);
-                        if (isNaN(qty) || qty < 0) {
-                            validation.warnings.push(`Row ${index + 1}: Invalid quantity (${row.quantity || row.qty || row.stock})`);
+                        const qty = parseInt(quantityValue);
+                        if (isNaN(qty)) {
+                            validation.warnings.push(`Row ${index + 1}: Invalid quantity format (${quantityValue})`);
+                        } else if (qty < 0) {
+                            validation.warnings.push(`Row ${index + 1}: Negative quantity not allowed (${qty})`);
                         }
                         
                         if (rowValid) {
@@ -748,6 +797,7 @@ class SRWM_Pro_CSV_Upload {
                     });
                     
                     validation.valid = validation.errors.length === 0;
+                    console.log('Validation result:', validation);
                     return validation;
                 }
                 
