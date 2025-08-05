@@ -982,12 +982,37 @@ class SmartRestockWaitlistManager {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
         }
         
+        if (!isset($_POST['supplier_email'])) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Supplier email is required.', 'smart-restock-waitlist'))));
+        }
+        
         $supplier_email = sanitize_email($_POST['supplier_email']);
+        
+        if (!$supplier_email) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Please enter a valid email address.', 'smart-restock-waitlist'))));
+        }
         
         if (class_exists('SRWM_Pro_CSV_Upload')) {
             $csv = SRWM_Pro_CSV_Upload::get_instance();
-            $result = $csv->generate_csv_upload_link($supplier_email);
-            wp_die(json_encode($result));
+            $token = $csv->generate_csv_token($supplier_email);
+            
+            if ($token) {
+                $upload_url = add_query_arg(array(
+                    'srwm_csv_upload' => '1',
+                    'token' => $token
+                ), home_url());
+                
+                wp_die(json_encode(array(
+                    'success' => true, 
+                    'message' => __('CSV upload link generated successfully!', 'smart-restock-waitlist'),
+                    'data' => array(
+                        'link' => $upload_url,
+                        'token' => $token
+                    )
+                )));
+            } else {
+                wp_die(json_encode(array('success' => false, 'message' => __('Failed to generate CSV upload link.', 'smart-restock-waitlist'))));
+            }
         }
         
         wp_die(json_encode(array('success' => false, 'message' => __('Pro feature not available.', 'smart-restock-waitlist'))));

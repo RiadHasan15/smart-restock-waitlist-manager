@@ -19,8 +19,7 @@ class SRWM_Admin {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'init_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-        add_action('wp_ajax_srwm_get_waitlist_data', array($this, 'ajax_get_waitlist_data'));
-        add_action('wp_ajax_srwm_export_waitlist', array($this, 'ajax_export_waitlist'));
+        // AJAX handlers moved to main plugin file to avoid conflicts
     }
     
     /**

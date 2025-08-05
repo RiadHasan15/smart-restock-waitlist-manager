@@ -17,8 +17,7 @@ class SRWM_Admin_Dashboard {
         $this->license_manager = $license_manager;
         
         add_action('admin_enqueue_scripts', array($this, 'enqueue_dashboard_scripts'));
-        add_action('wp_ajax_srwm_get_dashboard_data', array($this, 'ajax_get_dashboard_data'));
-        add_action('wp_ajax_srwm_export_dashboard_report', array($this, 'ajax_export_dashboard_report'));
+        // AJAX handlers moved to main plugin file to avoid conflicts
     }
     
     /**
