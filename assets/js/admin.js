@@ -428,14 +428,14 @@
             });
         });
         
-        // Handle generate CSV upload link buttons
-        $(document).on('click', '#srwm-generate-csv-link, .generate-csv-link', function(e) {
+        // Handle CSV upload link form submission
+        $(document).on('submit', '#srwm-generate-csv-form', function(e) {
             e.preventDefault();
             
-            var $btn = $(this);
-            var supplierEmail = prompt('Enter supplier email address:');
-            
-            console.log('CSV upload link generation attempt:', { supplierEmail: supplierEmail });
+            var $form = $(this);
+            var $submitBtn = $form.find('button[type="submit"]');
+            var originalText = $submitBtn.html();
+            var supplierEmail = $('#srwm_supplier_email').val();
             
             if (!supplierEmail || !isValidEmail(supplierEmail)) {
                 showAdminMessage('error', 'Please enter a valid email address.');
@@ -443,18 +443,18 @@
             }
             
             // Disable button and show loading
-            $btn.prop('disabled', true).text('Generating...');
+            $submitBtn.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Generating...');
             
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
+                dataType: 'json',
                 data: {
                     action: 'srwm_generate_csv_upload_link',
                     nonce: srwm_admin.nonce,
                     supplier_email: supplierEmail
                 },
                 success: function(response) {
-                    console.log('CSV upload link response:', response);
                     if (response.success) {
                         showAdminMessage('success', response.message || 'CSV upload link generated successfully!');
                         if (response.data && response.data.link) {
@@ -462,18 +462,91 @@
                             var linkText = 'CSV Upload Link: ' + response.data.link;
                             showAdminMessage('info', linkText);
                         }
+                        // Clear the form
+                        $form[0].reset();
                     } else {
                         showAdminMessage('error', response.message || 'Failed to generate CSV upload link.');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('CSV upload link error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to generate CSV upload link.');
                 },
                 complete: function() {
-                    $btn.prop('disabled', false).text('Generate Link');
+                    $submitBtn.prop('disabled', false).html(originalText);
                 }
             });
+        });
+        
+        // Handle CSV template download
+        $(document).on('click', '#srwm-download-template', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var originalText = $btn.html();
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Downloading...');
+            
+            // Create a temporary form to trigger download
+            var $form = $('<form>', {
+                method: 'POST',
+                action: srwm_admin.ajax_url,
+                target: '_blank'
+            });
+            
+            $form.append($('<input>', {
+                type: 'hidden',
+                name: 'action',
+                value: 'srwm_download_csv_template'
+            }));
+            
+            $form.append($('<input>', {
+                type: 'hidden',
+                name: 'nonce',
+                value: srwm_admin.nonce
+            }));
+            
+            $('body').append($form);
+            $form.submit();
+            $form.remove();
+            
+            // Re-enable button after a short delay
+            setTimeout(function() {
+                $btn.prop('disabled', false).html(originalText);
+            }, 2000);
+        });
+        
+        // Handle copy CSV link
+        $(document).on('click', '.copy-link', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var token = $btn.data('token');
+            var link = window.location.origin + '/?srwm_csv_upload=1&token=' + token;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(link).then(function() {
+                showAdminMessage('success', 'Link copied to clipboard!');
+            }).catch(function() {
+                // Fallback for older browsers
+                var textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showAdminMessage('success', 'Link copied to clipboard!');
+            });
+        });
+        
+        // Handle view uploads
+        $(document).on('click', '.view-uploads', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var token = $btn.data('token');
+            
+            showAdminMessage('info', 'Upload history feature coming soon!');
         });
         
         // Initialize tooltips
