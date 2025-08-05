@@ -1010,6 +1010,12 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_get_csv_upload_links', array($this, 'ajax_get_csv_upload_links'));
         add_action('wp_ajax_srwm_delete_upload_link', array($this, 'ajax_delete_upload_link'));
         add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
+        
+        // Quick Restock AJAX handlers
+        add_action('wp_ajax_srwm_get_products_for_restock', array($this, 'ajax_get_products_for_restock'));
+        add_action('wp_ajax_srwm_generate_quick_restock_link', array($this, 'ajax_generate_quick_restock_link'));
+        add_action('wp_ajax_srwm_get_quick_restock_links', array($this, 'ajax_get_quick_restock_links'));
+        add_action('wp_ajax_srwm_delete_quick_restock_link', array($this, 'ajax_delete_quick_restock_link'));
     }
     
     /**
@@ -2488,6 +2494,184 @@ class SmartRestockWaitlistManager {
         }
         
         wp_send_json_success(__('Upload link deleted successfully!', 'smart-restock-waitlist'));
+    }
+    
+    /**
+     * Get products for quick restock
+     */
+    public function ajax_get_products_for_restock() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $products = wc_get_products(array(
+            'limit' => -1,
+            'status' => 'publish',
+            'type' => array('simple', 'variable')
+        ));
+        
+        $product_list = array();
+        foreach ($products as $product) {
+            $product_list[] = array(
+                'id' => $product->get_id(),
+                'name' => $product->get_name(),
+                'sku' => $product->get_sku()
+            );
+        }
+        
+        wp_send_json_success($product_list);
+    }
+    
+    /**
+     * Generate quick restock link
+     */
+    public function ajax_generate_quick_restock_link() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $supplier_email = sanitize_email($_POST['supplier_email']);
+        $expires_days = intval($_POST['expires']);
+        
+        if (!$product_id || !$supplier_email) {
+            wp_send_json_error(__('Product ID and supplier email are required.', 'smart-restock-waitlist'));
+        }
+        
+        // Get product details
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_send_json_error(__('Product not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Get supplier details
+        global $wpdb;
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}srwm_suppliers WHERE supplier_email = %s",
+            $supplier_email
+        ));
+        
+        if (!$supplier) {
+            wp_send_json_error(__('Supplier not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Generate secure token
+        $token = wp_generate_password(32, false);
+        $expires_at = date('Y-m-d H:i:s', strtotime("+{$expires_days} days"));
+        
+        // Save token to database
+        $restock_tokens_table = $wpdb->prefix . 'srwm_restock_tokens';
+        $result = $wpdb->insert(
+            $restock_tokens_table,
+            array(
+                'product_id' => $product_id,
+                'supplier_email' => $supplier_email,
+                'token' => $token,
+                'expires_at' => $expires_at,
+                'used' => 0,
+                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
+                'created_at' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%s', '%d', '%s', '%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to generate restock link. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Generate the restock URL
+        $restock_url = add_query_arg(array(
+            'srwm_restock' => '1',
+            'token' => $token
+        ), site_url());
+        
+        // Send email notification to supplier
+        $this->send_quick_restock_email($supplier, $product, $restock_url, $expires_at);
+        
+        wp_send_json_success(array(
+            'message' => __('Quick restock link generated successfully! Email sent to supplier.', 'smart-restock-waitlist'),
+            'restock_url' => $restock_url,
+            'expires_at' => $expires_at,
+            'product_name' => $product->get_name(),
+            'supplier_name' => $supplier->supplier_name
+        ));
+    }
+    
+    /**
+     * Send quick restock email to supplier
+     */
+    private function send_quick_restock_email($supplier, $product, $restock_url, $expires_at) {
+        $subject = sprintf(__('Quick Restock Link - %s', 'smart-restock-waitlist'), get_bloginfo('name'));
+        
+        $message = sprintf(
+            __("Hello %s,\n\nYou have been provided with a quick restock link for the following product:\n\nProduct: %s\nSKU: %s\n\nRestock Link: %s\n\nThis link will expire on: %s\n\nYou can update the stock quantity immediately without admin approval.\n\nBest regards,\n%s", 'smart-restock-waitlist'),
+            $supplier->supplier_name,
+            $product->get_name(),
+            $product->get_sku() ?: 'N/A',
+            $restock_url,
+            date('F j, Y g:i A', strtotime($expires_at)),
+            get_bloginfo('name')
+        );
+        
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        
+        wp_mail($supplier->supplier_email, $subject, nl2br($message), $headers);
+    }
+    
+    /**
+     * Get quick restock links
+     */
+    public function ajax_get_quick_restock_links() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $restock_tokens_table = $wpdb->prefix . 'srwm_restock_tokens';
+        
+        $links = $wpdb->get_results("
+            SELECT t.*, p.post_title as product_name, pm.meta_value as product_sku
+            FROM $restock_tokens_table t
+            LEFT JOIN {$wpdb->posts} p ON t.product_id = p.ID
+            LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
+            ORDER BY t.created_at DESC
+        ");
+        
+        wp_send_json_success($links);
+    }
+    
+    /**
+     * Delete quick restock link
+     */
+    public function ajax_delete_quick_restock_link() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $token = sanitize_text_field($_POST['token']);
+        
+        global $wpdb;
+        $restock_tokens_table = $wpdb->prefix . 'srwm_restock_tokens';
+        
+        $result = $wpdb->delete(
+            $restock_tokens_table,
+            array('token' => $token),
+            array('%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to delete restock link. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        wp_send_json_success(__('Restock link deleted successfully!', 'smart-restock-waitlist'));
     }
     
 

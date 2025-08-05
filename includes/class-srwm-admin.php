@@ -5337,6 +5337,76 @@ class SRWM_Admin {
                         </div>
                     </div>
                 </div>
+                
+                <!-- Quick Restock Section -->
+                <div class="srwm-quick-restock-section">
+                    <div class="srwm-section-header">
+                        <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
+                        <div class="srwm-section-actions">
+                            <button class="button button-primary" id="generate-quick-restock-btn">
+                                <i class="fas fa-plus"></i> <?php _e('Generate Quick Restock Link', 'smart-restock-waitlist'); ?>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Restock Info Cards -->
+                    <div class="srwm-info-cards">
+                        <div class="srwm-info-card">
+                            <div class="srwm-info-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="srwm-info-content">
+                                <h4><?php _e('Individual Product Restock', 'smart-restock-waitlist'); ?></h4>
+                                <p><?php _e('Generate quick restock links for individual products. Perfect for one-time restock operations.', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-info-card">
+                            <div class="srwm-info-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="srwm-info-content">
+                                <h4><?php _e('Instant Stock Updates', 'smart-restock-waitlist'); ?></h4>
+                                <p><?php _e('Suppliers can update stock immediately without admin approval. Ideal for trusted suppliers.', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Restock Links Table -->
+                    <div class="srwm-quick-restock-links-section">
+                        <div class="srwm-table-header">
+                            <h3><i class="fas fa-list"></i> <?php _e('Quick Restock Links', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-table-actions">
+                                <button class="button button-secondary" id="refresh-quick-links-btn">
+                                    <i class="fas fa-sync-alt"></i> <?php _e('Refresh', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-table-container">
+                            <table class="srwm-quick-restock-links-table">
+                                <thead>
+                                    <tr>
+                                        <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Restock Link', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Expires', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quick-restock-links-tbody">
+                                    <tr>
+                                        <td colspan="6" class="srwm-loading">
+                                            <span class="spinner is-active"></span>
+                                            <?php _e('Loading quick restock links...', 'smart-restock-waitlist'); ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -5488,6 +5558,86 @@ class SRWM_Admin {
                 <div class="srwm-modal-footer">
                     <button type="button" class="button" id="cancel-upload-link"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
                     <button type="button" class="button button-primary" id="generate-upload-link-btn"><?php _e('Generate Link', 'smart-restock-waitlist'); ?></button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Restock Generation Modal -->
+        <div id="quick-restock-modal" class="srwm-modal" style="display: none;">
+            <div class="srwm-modal-content">
+                <div class="srwm-modal-header">
+                    <h3><?php _e('Generate Quick Restock Link', 'smart-restock-waitlist'); ?></h3>
+                    <button class="srwm-modal-close">&times;</button>
+                </div>
+                <div class="srwm-modal-body">
+                    <div id="quick-restock-loading" style="display: none;">
+                        <div class="srwm-loading">
+                            <span class="spinner is-active"></span>
+                            <?php _e('Generating quick restock link...', 'smart-restock-waitlist'); ?>
+                        </div>
+                    </div>
+                    <div id="quick-restock-content">
+                        <form id="quick-restock-form">
+                            <div class="srwm-form-group">
+                                <label for="quick-restock-product"><?php _e('Select Product *', 'smart-restock-waitlist'); ?></label>
+                                <select id="quick-restock-product" name="product_id" required>
+                                    <option value=""><?php _e('Choose a product...', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                            
+                            <div class="srwm-form-group">
+                                <label for="quick-restock-supplier"><?php _e('Select Supplier *', 'smart-restock-waitlist'); ?></label>
+                                <select id="quick-restock-supplier" name="supplier_email" required>
+                                    <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                            
+                            <div class="srwm-form-group">
+                                <label for="quick-restock-expires"><?php _e('Link Expiration', 'smart-restock-waitlist'); ?></label>
+                                <select id="quick-restock-expires" name="expires">
+                                    <option value="1"><?php _e('1 day', 'smart-restock-waitlist'); ?></option>
+                                    <option value="3"><?php _e('3 days', 'smart-restock-waitlist'); ?></option>
+                                    <option value="7" selected><?php _e('7 days', 'smart-restock-waitlist'); ?></option>
+                                    <option value="14"><?php _e('14 days', 'smart-restock-waitlist'); ?></option>
+                                    <option value="30"><?php _e('30 days', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </form>
+                        
+                        <div class="srwm-info-card">
+                            <h4><i class="fas fa-info-circle"></i> <?php _e('Quick Restock Details', 'smart-restock-waitlist'); ?></h4>
+                            <ul>
+                                <li><strong><?php _e('Instant Updates:', 'smart-restock-waitlist'); ?></strong> <?php _e('Stock updates immediately without approval', 'smart-restock-waitlist'); ?></li>
+                                <li><strong><?php _e('Email Notification:', 'smart-restock-waitlist'); ?></strong> <?php _e('Automatically sent to supplier', 'smart-restock-waitlist'); ?></li>
+                                <li><strong><?php _e('Secure Access:', 'smart-restock-waitlist'); ?></strong> <?php _e('Unique token-based authentication', 'smart-restock-waitlist'); ?></li>
+                                <li><strong><?php _e('Audit Trail:', 'smart-restock-waitlist'); ?></strong> <?php _e('All restock actions are logged', 'smart-restock-waitlist'); ?></li>
+                            </ul>
+                        </div>
+                        
+                        <div id="quick-restock-result" style="display: none;">
+                            <div class="srwm-success-card">
+                                <h4><i class="fas fa-check-circle"></i> <?php _e('Quick Restock Link Generated!', 'smart-restock-waitlist'); ?></h4>
+                                <div class="srwm-link-details">
+                                    <p><strong><?php _e('Product:', 'smart-restock-waitlist'); ?></strong> <span id="quick-link-product-name"></span></p>
+                                    <p><strong><?php _e('Supplier:', 'smart-restock-waitlist'); ?></strong> <span id="quick-link-supplier-name"></span></p>
+                                    <p><strong><?php _e('Expires:', 'smart-restock-waitlist'); ?></strong> <span id="quick-link-expires"></span></p>
+                                </div>
+                                <div class="srwm-link-url">
+                                    <label><?php _e('Restock Link:', 'smart-restock-waitlist'); ?></label>
+                                    <div class="srwm-url-copy">
+                                        <input type="text" id="generated-quick-restock-url" readonly>
+                                        <button type="button" class="button button-primary" id="copy-quick-link-btn">
+                                            <i class="fas fa-copy"></i> <?php _e('Copy', 'smart-restock-waitlist'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button" id="cancel-quick-restock"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
+                    <button type="button" class="button button-primary" id="generate-quick-restock-link-btn"><?php _e('Generate Link', 'smart-restock-waitlist'); ?></button>
                 </div>
             </div>
         </div>
@@ -6586,6 +6736,9 @@ class SRWM_Admin {
             // Load upload links on page load
             loadUploadLinks();
             
+            // Load quick restock links on page load
+            loadQuickRestockLinks();
+            
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
             $('#category-filter, #status-filter').on('change', loadSuppliers);
@@ -6633,6 +6786,29 @@ class SRWM_Admin {
             // Refresh upload links
             $('#refresh-links-btn').on('click', function() {
                 loadUploadLinks();
+            });
+            
+            // Quick Restock functionality
+            $('#generate-quick-restock-btn').on('click', function() {
+                openQuickRestockModal();
+            });
+            
+            // Refresh quick restock links
+            $('#refresh-quick-links-btn').on('click', function() {
+                loadQuickRestockLinks();
+            });
+            
+            // Quick restock modal events
+            $('#cancel-quick-restock').on('click', function() {
+                closeAllModals();
+            });
+            
+            $('#generate-quick-restock-link-btn').on('click', function() {
+                generateQuickRestockLink();
+            });
+            
+            $('#copy-quick-link-btn').on('click', function() {
+                copyQuickRestockLink();
             });
             
             // Close modal on outside click
@@ -7130,6 +7306,297 @@ class SRWM_Admin {
                     });
                 }
             }
+            
+            // Quick Restock Functions
+            function openQuickRestockModal() {
+                $('#quick-restock-modal').show();
+                $('#quick-restock-content').show();
+                $('#quick-restock-result').hide();
+                $('#quick-restock-loading').hide();
+                loadQuickRestockProducts();
+                loadQuickRestockSuppliers();
+            }
+            
+            function loadQuickRestockProducts() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_products_for_restock',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            let options = '<option value=""><?php _e('Choose a product...', 'smart-restock-waitlist'); ?></option>';
+                            response.data.forEach(function(product) {
+                                options += `<option value="${product.id}">${product.name} (SKU: ${product.sku || 'N/A'})</option>`;
+                            });
+                            $('#quick-restock-product').html(options);
+                        }
+                    }
+                });
+            }
+            
+            function loadQuickRestockSuppliers() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_suppliers',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        search: '',
+                        category: '',
+                        status: 'active'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            let options = '<option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>';
+                            response.data.suppliers.forEach(function(supplier) {
+                                options += `<option value="${supplier.supplier_email}">${supplier.supplier_name} (${supplier.supplier_email})</option>`;
+                            });
+                            $('#quick-restock-supplier').html(options);
+                        }
+                    }
+                });
+            }
+            
+            function generateQuickRestockLink() {
+                const productId = $('#quick-restock-product').val();
+                const supplierEmail = $('#quick-restock-supplier').val();
+                const expires = $('#quick-restock-expires').val();
+                
+                if (!productId || !supplierEmail) {
+                    showNotification('Please select both product and supplier.', 'error');
+                    return;
+                }
+                
+                $('#quick-restock-loading').show();
+                $('#quick-restock-content').hide();
+                $('#generate-quick-restock-link-btn').prop('disabled', true);
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_generate_quick_restock_link',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        product_id: productId,
+                        supplier_email: supplierEmail,
+                        expires: expires
+                    },
+                    success: function(response) {
+                        $('#quick-restock-loading').hide();
+                        $('#generate-quick-restock-link-btn').prop('disabled', false);
+                        
+                        if (response.success) {
+                            displayQuickRestockResult(response.data);
+                            showNotification(response.data.message + ' Quick restock links table will refresh automatically.', 'success');
+                            
+                            // Refresh the quick restock links table
+                            setTimeout(function() {
+                                $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Refreshing quick restock links...</td></tr>');
+                                loadQuickRestockLinks();
+                            }, 500);
+                        } else {
+                            $('#quick-restock-content').show();
+                            showNotification(response.data || 'Error generating quick restock link', 'error');
+                        }
+                    },
+                    error: function() {
+                        $('#quick-restock-loading').hide();
+                        $('#quick-restock-content').show();
+                        $('#generate-quick-restock-link-btn').prop('disabled', false);
+                        showNotification('Error generating quick restock link. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function displayQuickRestockResult(data) {
+                $('#quick-link-product-name').text(data.product_name);
+                $('#quick-link-supplier-name').text(data.supplier_name);
+                $('#quick-link-expires').text(new Date(data.expires_at).toLocaleString());
+                $('#generated-quick-restock-url').val(data.restock_url);
+                
+                $('#quick-restock-content').show();
+                $('#quick-restock-result').show();
+                
+                // Update button text
+                $('#generate-quick-restock-link-btn').text('Generate Another Link');
+            }
+            
+            function copyQuickRestockLink() {
+                const urlInput = document.getElementById('generated-quick-restock-url');
+                urlInput.select();
+                urlInput.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    const copyBtn = $('#copy-quick-link-btn');
+                    copyBtn.addClass('copied');
+                    copyBtn.html('<i class="fas fa-check"></i> Copied!');
+                    
+                    setTimeout(function() {
+                        copyBtn.removeClass('copied');
+                        copyBtn.html('<i class="fas fa-copy"></i> Copy');
+                    }, 2000);
+                    
+                    showNotification('Quick restock link copied to clipboard!', 'success');
+                } catch (err) {
+                    showNotification('Failed to copy link. Please copy manually.', 'error');
+                }
+            }
+            
+            function loadQuickRestockLinks() {
+                $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Loading quick restock links...</td></tr>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_quick_restock_links',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            displayQuickRestockLinks(response.data);
+                        } else {
+                            $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading quick restock links: ' + response.data + '</td></tr>');
+                        }
+                    },
+                    error: function() {
+                        $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading quick restock links. Please try again.</td></tr>');
+                    }
+                });
+            }
+            
+            function displayQuickRestockLinks(links) {
+                if (links.length === 0) {
+                    $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-empty">No quick restock links found. Generate links using the button above.</td></tr>');
+                    return;
+                }
+                
+                let html = '';
+                links.forEach(function(link, index) {
+                    const expiresDate = new Date(link.expires_at);
+                    const now = new Date();
+                    const isExpired = expiresDate < now;
+                    const status = isExpired ? 'expired' : (parseInt(link.used) === 1 ? 'used' : 'active');
+                    
+                    // Check if this is a newly generated link
+                    const isNewLink = index === 0 && status === 'active' && parseInt(link.used) === 0;
+                    const newLinkClass = isNewLink ? 'srwm-new-link' : '';
+                    
+                    html += `
+                        <tr class="${newLinkClass}">
+                            <td>
+                                <div class="srwm-product-info">
+                                    <div class="srwm-product-name">${link.product_name || 'Unknown'}</div>
+                                    <div class="srwm-product-sku">SKU: ${link.product_sku || 'N/A'}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="srwm-link-token" title="${link.token}">${link.token}</div>
+                            </td>
+                            <td>
+                                <div class="srwm-supplier-info">
+                                    <div class="srwm-supplier-name">${link.supplier_name || 'Unknown'}</div>
+                                    <div class="srwm-supplier-email">${link.supplier_email}</div>
+                                </div>
+                            </td>
+                            <td>${expiresDate.toLocaleDateString()} ${expiresDate.toLocaleTimeString()}</td>
+                            <td>
+                                <span class="srwm-status-badge ${status}">
+                                    <i class="fas fa-${status === 'active' ? 'check-circle' : (status === 'used' ? 'clock' : 'times-circle')}"></i>
+                                    ${status}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="srwm-table-actions">
+                                    <button class="srwm-table-action-btn primary" onclick="copyQuickRestockLinkToClipboard('${link.token}')" title="Copy Link">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="srwm-table-action-btn secondary" onclick="viewQuickRestockLinkDetails('${link.token}')" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="srwm-table-action-btn danger" onclick="deleteQuickRestockLink('${link.token}')" title="Delete Link">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                $('#quick-restock-links-tbody').html(html);
+            }
+            
+            function copyQuickRestockLinkToClipboard(token) {
+                const restockUrl = '<?php echo site_url(); ?>/?srwm_restock=1&token=' + token;
+                
+                navigator.clipboard.writeText(restockUrl).then(function() {
+                    showNotification('Quick restock link copied to clipboard!', 'success');
+                }).catch(function() {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = restockUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showNotification('Quick restock link copied to clipboard!', 'success');
+                });
+            }
+            
+            function viewQuickRestockLinkDetails(token) {
+                showNotification('Quick restock link details feature coming soon!', 'info');
+            }
+            
+            function deleteQuickRestockLink(token) {
+                if (confirm('Are you sure you want to delete this quick restock link? This action cannot be undone.')) {
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'srwm_delete_quick_restock_link',
+                            nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                            token: token
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                loadQuickRestockLinks();
+                                showNotification('Quick restock link deleted successfully!', 'success');
+                            } else {
+                                showNotification('Error deleting link: ' + response.data, 'error');
+                            }
+                        },
+                        error: function() {
+                            showNotification('Error deleting link. Please try again.', 'error');
+                        }
+                    });
+                }
+            }
+            
+            // Update closeAllModals to include quick restock modal
+            function closeAllModals() {
+                $('.srwm-modal').hide();
+                currentSupplierId = null;
+                
+                // Reset upload link modal
+                $('#upload-link-content').show();
+                $('#upload-link-result').hide();
+                $('#upload-link-loading').hide();
+                $('#generate-upload-link-btn').prop('disabled', false).text('Generate Link');
+                
+                // Reset quick restock modal
+                $('#quick-restock-content').show();
+                $('#quick-restock-result').hide();
+                $('#quick-restock-loading').hide();
+                $('#generate-quick-restock-link-btn').prop('disabled', false).text('Generate Link');
+            }
+            
+            // Global functions for quick restock actions
+            window.copyQuickRestockLinkToClipboard = copyQuickRestockLinkToClipboard;
+            window.viewQuickRestockLinkDetails = viewQuickRestockLinkDetails;
+            window.deleteQuickRestockLink = deleteQuickRestockLink;
         });
         </script>
         <?php
