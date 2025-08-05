@@ -323,16 +323,17 @@ class SRWM_Admin {
             
             <!-- Products Tables -->
             <div class="srwm-dashboard-content">
-                <div class="srwm-section">
-                    <div class="srwm-section-header">
-                        <h2><?php _e('Products with Active Waitlist', 'smart-restock-waitlist'); ?></h2>
-                        <div class="srwm-section-actions">
-                            <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-analytics'); ?>'">
-                                <span class="dashicons dashicons-chart-line"></span>
-                                <?php _e('View Analytics', 'smart-restock-waitlist'); ?>
-                            </button>
-                        </div>
+                            <div class="srwm-pro-card">
+                <div class="srwm-pro-card-header">
+                    <h2><?php _e('Products with Active Waitlist', 'smart-restock-waitlist'); ?></h2>
+                    <div class="srwm-pro-actions">
+                        <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-analytics'); ?>'">
+                            <span class="dashicons dashicons-chart-line"></span>
+                            <?php _e('View Analytics', 'smart-restock-waitlist'); ?>
+                        </button>
                     </div>
+                </div>
+                <div class="srwm-pro-card-content">
                     
                     <?php if (!empty($waitlist_products)): ?>
                     <div class="srwm-table-container">
@@ -401,19 +402,20 @@ class SRWM_Admin {
                 </div>
                 
                 <?php if (!empty($supplier_products)): ?>
-                <div class="srwm-section">
-                    <div class="srwm-section-header">
+                <div class="srwm-pro-card">
+                    <div class="srwm-pro-card-header">
                         <h2><?php _e('Products with Suppliers', 'smart-restock-waitlist'); ?></h2>
-                        <div class="srwm-section-actions">
+                        <div class="srwm-pro-actions">
                             <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-thresholds'); ?>'">
                                 <span class="dashicons dashicons-admin-tools"></span>
                                 <?php _e('Manage Thresholds', 'smart-restock-waitlist'); ?>
                             </button>
                         </div>
                     </div>
+                    <div class="srwm-pro-card-content">
                     
                     <div class="srwm-table-container">
-                        <table class="wp-list-table widefat fixed striped srwm-modern-table">
+                        <table class="srwm-pro-table">
                             <thead>
                                 <tr>
                                     <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
@@ -464,14 +466,15 @@ class SRWM_Admin {
                                                     <span class="dashicons dashicons-update"></span>
                                                     <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                                 </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
+                                                                                    </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                     <?php endif; ?>
+                </div>
                 </div>
             </div>
         </div>
@@ -1415,6 +1418,48 @@ class SRWM_Admin {
             margin-top: 15px;
         }
         
+        /* Threshold Settings - Modern Design */
+        .srwm-threshold-settings {
+            margin-bottom: 30px;
+        }
+        
+        .srwm-global-threshold {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-global-threshold h3 {
+            margin: 0 0 10px 0;
+            color: #1d2327;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .srwm-global-threshold p {
+            margin: 0 0 15px 0;
+            color: #646970;
+            font-size: 14px;
+        }
+        
+        .srwm-threshold-input {
+            width: 80px !important;
+            padding: 6px 8px !important;
+            border: 1px solid #dcdcde !important;
+            border-radius: 4px !important;
+            background: #ffffff !important;
+            color: #1d2327 !important;
+            font-size: 14px !important;
+        }
+        
+        .srwm-threshold-input:focus {
+            border-color: #007cba !important;
+            box-shadow: 0 0 0 1px #007cba !important;
+            outline: none !important;
+        }
+        
         /* Override WordPress default dark styles for form elements */
         .srwm-pro-page input[type="text"],
         .srwm-pro-page input[type="email"],
@@ -1967,6 +2012,31 @@ class SRWM_Admin {
     }
     
     /**
+     * Get products with thresholds
+     */
+    private function get_products_with_thresholds() {
+        global $wpdb;
+        
+        $products = wc_get_products(array(
+            'limit' => -1,
+            'status' => 'publish'
+        ));
+        
+        $results = array();
+        foreach ($products as $product) {
+            $product_obj = new stdClass();
+            $product_obj->id = $product->get_id();
+            $product_obj->name = $product->get_name();
+            $product_obj->sku = $product->get_sku();
+            $product_obj->stock_quantity = $product->get_stock_quantity();
+            $product_obj->threshold = get_post_meta($product->get_id(), '_srwm_threshold', true) ?: get_option('srwm_global_threshold', 5);
+            $results[] = $product_obj;
+        }
+        
+        return $results;
+    }
+    
+    /**
      * Render Email Templates page
      */
     public function render_templates_page() {
@@ -2372,11 +2442,12 @@ class SRWM_Admin {
                 </div>
             </div>
             
-            <div class="srwm-section">
-                <div class="srwm-section-header">
+            <div class="srwm-pro-card">
+                <div class="srwm-pro-card-header">
                     <h2><?php _e('Threshold Management', 'smart-restock-waitlist'); ?></h2>
-                    <p><?php _e('Set global and per-product notification thresholds for supplier alerts.', 'smart-restock-waitlist'); ?></p>
                 </div>
+                <div class="srwm-pro-card-content">
+                    <p><?php _e('Set global and per-product notification thresholds for supplier alerts.', 'smart-restock-waitlist'); ?></p>
                 
                 <div class="srwm-threshold-settings">
                     <div class="srwm-global-threshold">
@@ -2391,7 +2462,7 @@ class SRWM_Admin {
                 </div>
                 
                 <div class="srwm-table-container">
-                    <table class="wp-list-table widefat fixed striped srwm-modern-table">
+                    <table class="srwm-pro-table">
                         <thead>
                             <tr>
                                 <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
@@ -2441,6 +2512,7 @@ class SRWM_Admin {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
         </div>
