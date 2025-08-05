@@ -5004,13 +5004,13 @@ class SRWM_Admin {
                 <div class="srwm-tab-content" id="quick-restock-tab">
                     <div class="srwm-quick-restock-section">
                         <div class="srwm-section-header">
-                        <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
-                        <div class="srwm-section-actions">
-                            <button class="button button-primary" id="generate-quick-restock-btn">
-                                <i class="fas fa-plus"></i> <?php _e('Generate Quick Restock Link', 'smart-restock-waitlist'); ?>
-                            </button>
+                            <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
+                            <div class="srwm-section-actions">
+                                <button class="button button-primary" id="generate-quick-restock-btn">
+                                    <i class="fas fa-plus"></i> <?php _e('Generate Quick Restock Link', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
                         </div>
-                    </div>
                     
                     <!-- Quick Restock Info Cards -->
                     <div class="srwm-info-cards">
@@ -5382,7 +5382,17 @@ class SRWM_Admin {
         }
         
         .srwm-tab-content.active {
-            display: block;
+            display: block !important;
+        }
+        
+        /* Ensure tab content is visible */
+        #quick-restock-tab {
+            min-height: 200px;
+        }
+        
+        #quick-restock-tab.active {
+            display: block !important;
+            visibility: visible !important;
         }
         
         .srwm-suppliers-container {
@@ -6539,6 +6549,15 @@ class SRWM_Admin {
             // Debug: Check if Quick Restock tab content exists
             console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
             console.log('Quick Restock tab content length:', $('#quick-restock-tab').html().length);
+            console.log('Quick Restock tab HTML:', $('#quick-restock-tab').html().substring(0, 200));
+            
+            // Force show Quick Restock tab for testing
+            setTimeout(function() {
+                console.log('Testing Quick Restock tab visibility...');
+                $('#quick-restock-tab').show().addClass('active');
+                console.log('Quick Restock tab display:', $('#quick-restock-tab').css('display'));
+                console.log('Quick Restock tab visibility:', $('#quick-restock-tab').css('visibility'));
+            }, 1000);
             
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
