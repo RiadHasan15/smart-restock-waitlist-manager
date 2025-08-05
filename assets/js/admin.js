@@ -63,7 +63,7 @@
                             location.reload();
                         }, 1500);
                     } else {
-                        showAdminMessage('error', response.data || srwm_admin.messages.restock_error);
+                        showAdminMessage('error', response.message || srwm_admin.messages.restock_error);
                     }
                 },
                 error: function() {
@@ -161,13 +161,13 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Threshold reset successfully!');
+                        showAdminMessage('success', response.message || 'Threshold reset successfully!');
                         // Reload the page to update the display
                         setTimeout(function() {
                             location.reload();
                         }, 1500);
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to reset threshold.');
+                        showAdminMessage('error', response.message || 'Failed to reset threshold.');
                     }
                 },
                 error: function() {
@@ -202,9 +202,9 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Notification settings saved successfully!');
+                        showAdminMessage('success', response.message || 'Notification settings saved successfully!');
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to save notification settings.');
+                        showAdminMessage('error', response.message || 'Failed to save notification settings.');
                     }
                 },
                 error: function() {
@@ -239,9 +239,9 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Email templates saved successfully!');
+                        showAdminMessage('success', response.message || 'Email templates saved successfully!');
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to save email templates.');
+                        showAdminMessage('error', response.message || 'Failed to save email templates.');
                     }
                 },
                 error: function() {
@@ -280,9 +280,9 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Global threshold saved successfully!');
+                        showAdminMessage('success', response.message || 'Global threshold saved successfully!');
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to save global threshold.');
+                        showAdminMessage('error', response.message || 'Failed to save global threshold.');
                     }
                 },
                 error: function() {
@@ -321,14 +321,14 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Restock link generated successfully!');
+                        showAdminMessage('success', response.message || 'Restock link generated successfully!');
                         if (response.data && response.data.link) {
                             // Show the generated link
                             var linkText = 'Restock Link: ' + response.data.link;
                             showAdminMessage('info', linkText);
                         }
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to generate restock link.');
+                        showAdminMessage('error', response.message || 'Failed to generate restock link.');
                     }
                 },
                 error: function() {
@@ -369,9 +369,9 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Purchase order generated successfully!');
+                        showAdminMessage('success', response.message || 'Purchase order generated successfully!');
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to generate purchase order.');
+                        showAdminMessage('error', response.message || 'Failed to generate purchase order.');
                     }
                 },
                 error: function() {
