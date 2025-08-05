@@ -985,6 +985,7 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_save_notification_settings', array($this, 'ajax_save_notification_settings'));
         add_action('wp_ajax_srwm_save_email_templates', array($this, 'ajax_save_email_templates'));
         add_action('wp_ajax_srwm_save_global_threshold', array($this, 'ajax_save_global_threshold'));
+        add_action('wp_ajax_srwm_download_csv_template', array($this, 'ajax_download_csv_template'));
     }
     
     /**
@@ -1384,6 +1385,36 @@ class SmartRestockWaitlistManager {
     }
     
     /**
+     * AJAX: Download CSV template (Pro)
+     */
+    public function ajax_download_csv_template() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
+        }
+        
+        // Create CSV content
+        $csv_content = "Product ID,SKU,Quantity,Notes\n";
+        $csv_content .= "123,PROD-001,50,Restock product\n";
+        $csv_content .= "456,PROD-002,25,Add more stock\n";
+        $csv_content .= "789,PROD-003,100,Full restock\n";
+        
+        // Set headers for download
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="csv_upload_template.csv"');
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+        
+        echo $csv_content;
+        exit;
+    }
+    
+    /**
      * Create database tables
      */
     public function create_tables() {
@@ -1460,10 +1491,15 @@ class SmartRestockWaitlistManager {
                 supplier_email varchar(255) NOT NULL,
                 token varchar(255) NOT NULL,
                 expires_at datetime NOT NULL,
+                used tinyint(1) NOT NULL DEFAULT 0,
+                used_at datetime DEFAULT NULL,
+                ip_address varchar(45) DEFAULT NULL,
                 created_at datetime DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
-                KEY token (token),
-                KEY expires_at (expires_at)
+                UNIQUE KEY token (token),
+                KEY supplier_email (supplier_email),
+                KEY expires_at (expires_at),
+                KEY used (used)
             ) $charset_collate;";
             
             // Purchase orders table

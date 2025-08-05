@@ -1577,6 +1577,32 @@ class SRWM_Admin {
             align-self: flex-start !important;
             margin-top: 8px !important;
         }
+        
+        /* CSV Upload Form Styling */
+        .srwm-csv-form {
+            margin-bottom: 30px !important;
+        }
+        
+        .srwm-csv-form .srwm-form-group {
+            margin-bottom: 20px !important;
+        }
+        
+        .srwm-csv-form .srwm-input-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        
+        .srwm-csv-form .srwm-input-group input[type="email"] {
+            flex: 1 !important;
+            min-width: 300px !important;
+        }
+        
+        /* Status Badge Styling */
+        .srwm-status-used {
+            background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+            color: white !important;
+        }
         </style>
         <?php
     }
@@ -2035,12 +2061,28 @@ class SRWM_Admin {
     private function get_csv_upload_links() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_csv_tokens';
-        $results = $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
         
-        // Add missing properties for display
+        // Get CSV tokens with proper data
+        $results = $wpdb->get_results("
+            SELECT 
+                t.*,
+                CASE 
+                    WHEN t.used = 1 THEN 'Used'
+                    WHEN t.expires_at < NOW() THEN 'Expired'
+                    ELSE 'Active'
+                END as status,
+                CASE 
+                    WHEN t.used = 1 THEN 1
+                    ELSE 0
+                END as upload_count
+            FROM $table t 
+            ORDER BY t.created_at DESC 
+            LIMIT 10
+        ") ?: array();
+        
+        // Add supplier name (for now, use email as name)
         foreach ($results as $link) {
-            $link->supplier_name = __('Supplier', 'smart-restock-waitlist');
-            $link->upload_count = 0;
+            $link->supplier_name = $link->supplier_email;
         }
         
         return $results;
@@ -2371,15 +2413,27 @@ class SRWM_Admin {
                 <div class="srwm-pro-card-content">
                     <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
                 
-                <div class="srwm-pro-actions">
-                    <button class="button button-primary" id="srwm-generate-csv-link">
-                        <span class="dashicons dashicons-admin-links"></span>
-                        <?php _e('Generate Upload Link', 'smart-restock-waitlist'); ?>
-                    </button>
-                    <button class="button button-secondary" id="srwm-download-template">
-                        <span class="dashicons dashicons-download"></span>
-                        <?php _e('Download CSV Template', 'smart-restock-waitlist'); ?>
-                    </button>
+                <div class="srwm-csv-form">
+                    <form id="srwm-generate-csv-form" method="post">
+                        <?php wp_nonce_field('srwm_admin_nonce', 'srwm_admin_nonce'); ?>
+                        <div class="srwm-form-group">
+                            <label for="srwm_supplier_email"><?php _e('Supplier Email:', 'smart-restock-waitlist'); ?></label>
+                            <div class="srwm-input-group">
+                                <input type="email" id="srwm_supplier_email" name="srwm_supplier_email" required class="regular-text" placeholder="<?php _e('Enter supplier email address', 'smart-restock-waitlist'); ?>">
+                                <button type="submit" class="button button-primary">
+                                    <span class="dashicons dashicons-admin-links"></span>
+                                    <?php _e('Generate Upload Link', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="srwm-pro-actions">
+                        <button class="button button-secondary" id="srwm-download-template">
+                            <span class="dashicons dashicons-download"></span>
+                            <?php _e('Download CSV Template', 'smart-restock-waitlist'); ?>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="srwm-csv-info">
@@ -2420,7 +2474,9 @@ class SRWM_Admin {
                                         <?php echo esc_html(date('M j, Y H:i', strtotime($link->expires_at))); ?>
                                     </td>
                                     <td>
-                                        <?php if (strtotime($link->expires_at) < time()): ?>
+                                        <?php if ($link->status === 'Used'): ?>
+                                            <span class="srwm-status srwm-status-used"><?php _e('Used', 'smart-restock-waitlist'); ?></span>
+                                        <?php elseif ($link->status === 'Expired'): ?>
                                             <span class="srwm-status srwm-status-expired"><?php _e('Expired', 'smart-restock-waitlist'); ?></span>
                                         <?php else: ?>
                                             <span class="srwm-status srwm-status-active"><?php _e('Active', 'smart-restock-waitlist'); ?></span>
