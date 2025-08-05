@@ -61,7 +61,7 @@ class SRWM_License_Manager {
             __('License', 'smart-restock-waitlist'),
             __('License', 'smart-restock-waitlist'),
             'manage_woocommerce',
-            $this->plugin_slug . '-license',
+            'smart-restock-waitlist-license',
             array($this, 'render_license_page')
         );
     }
