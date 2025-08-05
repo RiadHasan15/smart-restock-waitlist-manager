@@ -1164,51 +1164,42 @@ class SmartRestockWaitlistManager {
      * AJAX: Generate CSV upload link (Pro)
      */
     public function ajax_generate_csv_upload_link() {
-        error_log('SRWM CSV AJAX: Handler called');
-        
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
-            error_log('SRWM CSV AJAX: Insufficient permissions');
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
         if (!$this->license_manager->is_pro_active()) {
-            error_log('SRWM CSV AJAX: Pro license not active');
             wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
         }
         
         if (!isset($_POST['supplier_email'])) {
-            error_log('SRWM CSV AJAX: Supplier email not provided');
             wp_die(json_encode(array('success' => false, 'message' => __('Supplier email is required.', 'smart-restock-waitlist'))));
         }
         
         $supplier_email = sanitize_email($_POST['supplier_email']);
-        error_log('SRWM CSV AJAX: Supplier email: ' . $supplier_email);
         
         if (!$supplier_email) {
-            error_log('SRWM CSV AJAX: Invalid email format');
             wp_die(json_encode(array('success' => false, 'message' => __('Please enter a valid email address.', 'smart-restock-waitlist'))));
         }
         
         // Ensure Pro classes are loaded
         if (!$this->should_load_pro_classes()) {
-            error_log('SRWM CSV AJAX: Pro classes should not be loaded');
             wp_die(json_encode(array('success' => false, 'message' => __('Pro license not active.', 'smart-restock-waitlist'))));
         }
         
         // Load Pro classes if not already loaded
         if (!class_exists('SRWM_Pro_CSV_Upload')) {
-            error_log('SRWM CSV AJAX: Loading Pro classes');
             $this->load_pro_classes();
         }
         
         // Ensure Pro tables exist
-        error_log('SRWM CSV AJAX: Creating tables');
+        ob_start();
         $this->create_tables();
+        ob_end_clean();
         
         if (class_exists('SRWM_Pro_CSV_Upload')) {
-            error_log('SRWM CSV AJAX: Class exists, getting instance');
             $csv = SRWM_Pro_CSV_Upload::get_instance();
             $token = $csv->generate_csv_token($supplier_email);
             
@@ -1217,8 +1208,6 @@ class SmartRestockWaitlistManager {
                     'srwm_csv_upload' => '1',
                     'token' => $token
                 ), home_url());
-                
-                error_log('SRWM CSV AJAX: Success - Token: ' . $token . ', URL: ' . $upload_url);
                 
                 wp_die(json_encode(array(
                     'success' => true, 
@@ -1229,13 +1218,11 @@ class SmartRestockWaitlistManager {
                     )
                 )));
             } else {
-                error_log('SRWM CSV AJAX: Failed to generate token');
-                wp_die(json_encode(array('success' => false, 'message' => __('Failed to generate CSV upload link. Database error.', 'smart-restock-waitlist'))));
+                wp_die(json_encode(array('success' => false, 'message' => __('Failed to generate CSV upload link.', 'smart-restock-waitlist'))));
             }
         }
         
-        error_log('SRWM CSV AJAX: Class not found');
-        wp_die(json_encode(array('success' => false, 'message' => __('Pro feature not available. Class not found.', 'smart-restock-waitlist'))));
+        wp_die(json_encode(array('success' => false, 'message' => __('Pro feature not available.', 'smart-restock-waitlist'))));
     }
     
     /**
@@ -1528,7 +1515,7 @@ class SmartRestockWaitlistManager {
                 ip_address varchar(45) DEFAULT NULL,
                 created_at datetime DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
-                UNIQUE KEY token (token),
+                KEY token (token),
                 KEY supplier_email (supplier_email),
                 KEY expires_at (expires_at),
                 KEY used (used)

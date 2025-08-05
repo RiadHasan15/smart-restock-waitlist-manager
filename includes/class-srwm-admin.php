@@ -2078,7 +2078,11 @@ class SRWM_Admin {
             FROM $table t 
             ORDER BY t.created_at DESC 
             LIMIT 10
-        ") ?: array();
+        ");
+        
+        if ($results === null) {
+            $results = array();
+        }
         
         // Add supplier name (for now, use email as name)
         foreach ($results as $link) {

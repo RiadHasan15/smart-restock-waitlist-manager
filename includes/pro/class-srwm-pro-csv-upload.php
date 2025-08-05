@@ -470,7 +470,6 @@ GHI789,100</code>
         // Check if table exists
         $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
         if (!$table_exists) {
-            error_log('SRWM CSV: Table does not exist: ' . $table);
             return false;
         }
         
@@ -486,11 +485,9 @@ GHI789,100</code>
         );
         
         if ($result) {
-            error_log('SRWM CSV: Token generated successfully: ' . $token);
             return $token;
         }
         
-        error_log('SRWM CSV: Failed to insert token. Error: ' . $wpdb->last_error);
         return false;
     }
     
