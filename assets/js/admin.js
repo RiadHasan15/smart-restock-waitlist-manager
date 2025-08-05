@@ -100,7 +100,7 @@
             var $input = $('.srwm-threshold-input[data-product-id="' + productId + '"]');
             var threshold = $input.val();
             
-            console.log('Threshold save attempt:', { productId: productId, threshold: threshold });
+            console.log('Threshold save attempt:', { productId: productId, threshold: threshold, nonce: srwm_admin.nonce });
             
             if (!threshold || threshold < 0) {
                 showAdminMessage('error', 'Please enter a valid threshold value.');
@@ -110,15 +110,19 @@
             // Disable button and show loading
             $btn.prop('disabled', true).text('Saving...');
             
+            var ajaxData = {
+                action: 'srwm_save_threshold',
+                nonce: srwm_admin.nonce,
+                product_id: productId,
+                threshold: threshold
+            };
+            
+            console.log('Save threshold AJAX data:', ajaxData);
+            
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
-                data: {
-                    action: 'srwm_save_threshold',
-                    nonce: srwm_admin.nonce,
-                    product_id: productId,
-                    threshold: threshold
-                },
+                data: ajaxData,
                 success: function(response) {
                     console.log('Threshold save response:', response);
                     if (response.success) {
@@ -144,6 +148,8 @@
             var $btn = $(this);
             var productId = $btn.data('product-id');
             
+            console.log('Reset threshold clicked:', { productId: productId, nonce: srwm_admin.nonce });
+            
             if (!confirm('Are you sure you want to reset this threshold to the global default?')) {
                 return;
             }
@@ -151,15 +157,20 @@
             // Disable button and show loading
             $btn.prop('disabled', true).text('Resetting...');
             
+            var ajaxData = {
+                action: 'srwm_reset_threshold',
+                nonce: srwm_admin.nonce,
+                product_id: productId
+            };
+            
+            console.log('Reset threshold AJAX data:', ajaxData);
+            
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
-                data: {
-                    action: 'srwm_reset_threshold',
-                    nonce: srwm_admin.nonce,
-                    product_id: productId
-                },
+                data: ajaxData,
                 success: function(response) {
+                    console.log('Reset threshold response:', response);
                     if (response.success) {
                         showAdminMessage('success', response.message || 'Threshold reset successfully!');
                         // Reload the page to update the display
@@ -170,7 +181,8 @@
                         showAdminMessage('error', response.message || 'Failed to reset threshold.');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.log('Reset threshold error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to reset threshold.');
                 },
                 complete: function() {
