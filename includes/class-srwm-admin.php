@@ -1793,9 +1793,43 @@ class SRWM_Admin {
         
         <?php
         $this->enqueue_modern_styles();
-        $this->enqueue_notification_styles();
         ?>
         <?php
+    }
+    
+    /**
+     * Enqueue notification styles (placeholder - styles are in enqueue_modern_styles)
+     */
+    private function enqueue_notification_styles() {
+        // Styles are already included in enqueue_modern_styles()
+    }
+    
+    /**
+     * Enqueue template styles (placeholder - styles are in enqueue_modern_styles)
+     */
+    private function enqueue_template_styles() {
+        // Styles are already included in enqueue_modern_styles()
+    }
+    
+    /**
+     * Enqueue purchase order styles (placeholder - styles are in enqueue_modern_styles)
+     */
+    private function enqueue_po_styles() {
+        // Styles are already included in enqueue_modern_styles()
+    }
+    
+    /**
+     * Enqueue CSV upload styles (placeholder - styles are in enqueue_modern_styles)
+     */
+    private function enqueue_csv_styles() {
+        // Styles are already included in enqueue_modern_styles()
+    }
+    
+    /**
+     * Enqueue threshold styles (placeholder - styles are in enqueue_modern_styles)
+     */
+    private function enqueue_threshold_styles() {
+        // Styles are already included in enqueue_modern_styles()
     }
     
     /**
@@ -2074,7 +2108,6 @@ class SRWM_Admin {
         
         <?php
         $this->enqueue_modern_styles();
-        $this->enqueue_template_styles();
         ?>
         <?php
     }
@@ -2201,7 +2234,6 @@ class SRWM_Admin {
         
         <?php
         $this->enqueue_modern_styles();
-        $this->enqueue_po_styles();
         ?>
         <?php
     }
@@ -2315,7 +2347,6 @@ class SRWM_Admin {
         
         <?php
         $this->enqueue_modern_styles();
-        $this->enqueue_csv_styles();
         ?>
         <?php
     }
@@ -2416,7 +2447,6 @@ class SRWM_Admin {
         
         <?php
         $this->enqueue_modern_styles();
-        $this->enqueue_threshold_styles();
         ?>
         <?php
     }
