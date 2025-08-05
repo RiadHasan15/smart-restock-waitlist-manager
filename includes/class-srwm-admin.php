@@ -7504,23 +7504,107 @@ class SRWM_Admin {
                         if (response.success) {
                             let options = '<option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>';
                             response.data.suppliers.forEach(function(supplier) {
-                                options += `<option value="${supplier.supplier_email}">${supplier.supplier_name} (${supplier.supplier_email})</option>`;
+                                const displayName = supplier.company_name ? 
+                                    `${supplier.supplier_name} - ${supplier.company_name}` : 
+                                    supplier.supplier_name;
+                                options += `<option value="${supplier.supplier_email}">${displayName} (${supplier.supplier_email})</option>`;
                             });
+                            
+                            // Populate both the old and new supplier dropdowns
                             $('#quick-restock-supplier').html(options);
+                            $('#bulk-quick-restock-supplier').html(options);
+                        } else {
+                            console.error('Error loading suppliers:', response.data);
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error loading suppliers:', error);
                     }
                 });
             }
             
             function generateQuickRestockLink() {
-                const productId = $('#quick-restock-product').val();
-                const supplierEmail = $('#quick-restock-supplier').val();
-                const expires = $('#quick-restock-expires').val();
+                // Check if this is bulk generation or single generation
+                const isBulkGeneration = selectedProducts.size > 0;
                 
-                if (!productId || !supplierEmail) {
-                    showNotification('Please select both product and supplier.', 'error');
-                    return;
+                if (isBulkGeneration) {
+                    // Bulk generation for selected products
+                    const supplierEmail = $('#bulk-quick-restock-supplier').val();
+                    const expires = $('#bulk-quick-restock-expires').val();
+                    
+                    if (!supplierEmail) {
+                        showNotification('Please select a supplier.', 'error');
+                        return;
+                    }
+                    
+                    generateBulkQuickRestockLinks(supplierEmail, expires);
+                } else {
+                    // Single product generation (legacy)
+                    const productId = $('#quick-restock-product').val();
+                    const supplierEmail = $('#quick-restock-supplier').val();
+                    const expires = $('#quick-restock-expires').val();
+                    
+                    if (!productId || !supplierEmail) {
+                        showNotification('Please select both product and supplier.', 'error');
+                        return;
+                    }
+                    
+                    generateSingleQuickRestockLink(productId, supplierEmail, expires);
                 }
+            }
+            
+            function generateBulkQuickRestockLinks(supplierEmail, expires) {
+                $('#quick-restock-loading').show();
+                $('#quick-restock-content').hide();
+                $('#generate-quick-restock-link-btn').prop('disabled', true);
+                
+                // Get selected product IDs
+                const productIds = Array.from(selectedProducts);
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_generate_bulk_quick_restock_links',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        product_ids: productIds,
+                        supplier_email: supplierEmail,
+                        expires: expires
+                    },
+                    success: function(response) {
+                        $('#quick-restock-loading').hide();
+                        $('#generate-quick-restock-link-btn').prop('disabled', false);
+                        
+                        if (response.success) {
+                            showNotification(`Successfully generated ${response.data.generated_count} quick restock links!`, 'success');
+                            
+                            // Clear selection and refresh
+                            selectedProducts.clear();
+                            updateSelectedCount();
+                            
+                            // Refresh the quick restock links table
+                            setTimeout(function() {
+                                $('#quick-restock-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Refreshing quick restock links...</td></tr>');
+                                loadQuickRestockLinks();
+                            }, 500);
+                            
+                            // Close modal
+                            closeAllModals();
+                        } else {
+                            $('#quick-restock-content').show();
+                            showNotification(response.data || 'Error generating quick restock links', 'error');
+                        }
+                    },
+                    error: function() {
+                        $('#quick-restock-loading').hide();
+                        $('#quick-restock-content').show();
+                        $('#generate-quick-restock-link-btn').prop('disabled', false);
+                        showNotification('Error generating quick restock links. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function generateSingleQuickRestockLink(productId, supplierEmail, expires) {
                 
                 $('#quick-restock-loading').show();
                 $('#quick-restock-content').hide();
