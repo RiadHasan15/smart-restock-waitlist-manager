@@ -1631,6 +1631,32 @@ class SmartRestockWaitlistManager {
         
         $charset_collate = $wpdb->get_charset_collate();
         
+        // Force create CSV approvals table if it doesn't exist
+        $table_approvals = $wpdb->prefix . 'srwm_csv_approvals';
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_approvals'") != $table_approvals) {
+            $sql_approvals = "CREATE TABLE $table_approvals (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                token varchar(255) NOT NULL,
+                supplier_email varchar(255) NOT NULL,
+                file_name varchar(255) NOT NULL,
+                file_size int(11) NOT NULL,
+                upload_data longtext NOT NULL,
+                status enum('pending', 'approved', 'rejected') DEFAULT 'pending',
+                admin_notes text,
+                created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                processed_at datetime DEFAULT NULL,
+                processed_by bigint(20) DEFAULT NULL,
+                ip_address varchar(45) DEFAULT NULL,
+                PRIMARY KEY (id),
+                KEY token (token),
+                KEY status (status),
+                KEY created_at (created_at)
+            ) $charset_collate;";
+            
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            dbDelta($sql_approvals);
+        }
+        
         // Waitlist table
         $table_waitlist = $wpdb->prefix . 'srwm_waitlist';
         $sql_waitlist = "CREATE TABLE $table_waitlist (
@@ -1756,6 +1782,30 @@ class SmartRestockWaitlistManager {
             dbDelta($sql_approvals);
         }
         
+        // Create CSV approvals table regardless of license status (needed for AJAX calls)
+        $table_approvals = $wpdb->prefix . 'srwm_csv_approvals';
+        $sql_approvals = "CREATE TABLE $table_approvals (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            token varchar(255) NOT NULL,
+            supplier_email varchar(255) NOT NULL,
+            file_name varchar(255) NOT NULL,
+            file_size int(11) NOT NULL,
+            upload_data longtext NOT NULL,
+            status enum('pending', 'approved', 'rejected') DEFAULT 'pending',
+            admin_notes text,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            processed_at datetime DEFAULT NULL,
+            processed_by bigint(20) DEFAULT NULL,
+            ip_address varchar(45) DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY token (token),
+            KEY status (status),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+        
+        dbDelta($sql_approvals);
+        }
+        
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql_waitlist);
         dbDelta($sql_supplier);
@@ -1789,3 +1839,6 @@ class SmartRestockWaitlistManager {
 // Initialize the plugin
 global $srwm_plugin;
 $srwm_plugin = new SmartRestockWaitlistManager();
+
+// Ensure tables are created on plugin activation
+register_activation_hook(__FILE__, array($srwm_plugin, 'create_tables'));
