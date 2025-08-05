@@ -546,7 +546,9 @@
             var $btn = $(this);
             var token = $btn.data('token');
             
-            showAdminMessage('info', 'Upload history feature coming soon!');
+            // Redirect to CSV approvals page with token filter
+            var approvalsUrl = srwm_admin.admin_url + 'admin.php?page=smart-restock-waitlist-csv-approvals&token=' + encodeURIComponent(token);
+            window.location.href = approvalsUrl;
         });
         
         // Initialize tooltips
