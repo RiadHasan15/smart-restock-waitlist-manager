@@ -7537,14 +7537,32 @@ class SRWM_Admin {
                 });
                 
                 // Add pagination row if needed
-                if (pagination && pagination.total_pages > 1) {
+                console.log('Pagination data:', pagination);
+                if (pagination && pagination.total_count > 0) {
                     html += generateUploadLinksPaginationControls(pagination);
+                } else {
+                    console.log('No pagination data or no links found');
+                }
+                
+                // Force pagination to show for testing (remove this later)
+                if (links.length > 0 && (!pagination || pagination.total_count === 0)) {
+                    console.log('Forcing pagination display for testing');
+                    const testPagination = {
+                        current_page: 1,
+                        per_page: 10,
+                        total_count: links.length,
+                        total_pages: 1,
+                        has_next: false,
+                        has_prev: false
+                    };
+                    html += generateUploadLinksPaginationControls(testPagination);
                 }
                 
                 $('#upload-links-tbody').html(html);
             }
             
             function generateUploadLinksPaginationControls(pagination) {
+                console.log('Generating pagination controls for:', pagination);
                 let html = '<tr><td colspan="6" class="srwm-pagination-cell">';
                 html += '<div class="srwm-pagination">';
                 
@@ -7584,6 +7602,7 @@ class SRWM_Admin {
                         </div>`;
                 
                 html += '</div></td></tr>';
+                console.log('Generated pagination HTML:', html);
                 return html;
             }
             

@@ -2612,7 +2612,7 @@ class SmartRestockWaitlistManager {
         // Calculate pagination info
         $total_pages = ceil($total_count / $per_page);
         
-        wp_send_json_success(array(
+        $response_data = array(
             'links' => $links,
             'pagination' => array(
                 'current_page' => $page,
@@ -2622,7 +2622,12 @@ class SmartRestockWaitlistManager {
                 'has_next' => $page < $total_pages,
                 'has_prev' => $page > 1
             )
-        ));
+        );
+        
+        // Debug logging
+        error_log('CSV Upload Links Response: ' . print_r($response_data, true));
+        
+        wp_send_json_success($response_data);
     }
     
     /**
