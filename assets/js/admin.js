@@ -197,14 +197,13 @@
             });
         });
         
-        // Handle global threshold form submission
-        $(document).on('submit', '#srwm-global-threshold-form', function(e) {
+        // Handle global threshold save button click
+        $(document).on('click', '#srwm-save-global-threshold', function(e) {
             e.preventDefault();
             
-            var $form = $(this);
-            var $submitBtn = $form.find('button[type="submit"]');
-            var originalText = $submitBtn.text();
-            var threshold = $form.find('input[name="srwm_global_threshold"]').val();
+            var $btn = $(this);
+            var originalText = $btn.html();
+            var threshold = $('#srwm_global_threshold').val();
             
             console.log('Global threshold save attempt:', { threshold: threshold, nonce: srwm_admin.nonce });
             
@@ -213,8 +212,8 @@
                 return;
             }
             
-            // Disable submit button and show loading
-            $submitBtn.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Saving...');
+            // Disable button and show loading
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Saving...');
             
             var ajaxData = {
                 action: 'srwm_save_global_threshold',
@@ -244,7 +243,7 @@
                     showAdminMessage('error', 'Failed to save global threshold.');
                 },
                 complete: function() {
-                    $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + originalText);
+                    $btn.prop('disabled', false).html(originalText);
                 }
             });
         });

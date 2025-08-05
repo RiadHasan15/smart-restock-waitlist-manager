@@ -1546,6 +1546,37 @@ class SRWM_Admin {
                 flex-direction: column;
             }
         }
+        
+        /* Global Threshold Form Styling */
+        .srwm-input-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .srwm-input-suffix {
+            color: #6b7280 !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+        }
+        
+        .srwm-global-threshold-form .srwm-form-group {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+        }
+        
+        .srwm-global-threshold-form .srwm-form-group label {
+            font-weight: 600 !important;
+            color: #374151 !important;
+            margin-bottom: 4px !important;
+        }
+        
+        #srwm-save-global-threshold {
+            align-self: flex-start !important;
+            margin-top: 8px !important;
+        }
         </style>
         <?php
     }
@@ -2466,18 +2497,19 @@ class SRWM_Admin {
                     <div class="srwm-global-threshold">
                         <h3><?php _e('Global Default Threshold', 'smart-restock-waitlist'); ?></h3>
                         <p><?php _e('This threshold will be used for all products unless a specific threshold is set.', 'smart-restock-waitlist'); ?></p>
-                        <form id="srwm-global-threshold-form" method="post">
-                            <?php wp_nonce_field('srwm_admin_nonce', 'srwm_admin_nonce'); ?>
+                        <div class="srwm-global-threshold-form">
                             <div class="srwm-form-group">
                                 <label><?php _e('Default Threshold:', 'smart-restock-waitlist'); ?></label>
-                                <input type="number" name="srwm_global_threshold" value="<?php echo esc_attr(get_option('srwm_global_threshold', 5)); ?>" min="0" class="small-text">
-                                <span><?php _e('units', 'smart-restock-waitlist'); ?></span>
-                                <button type="submit" class="button button-primary">
+                                <div class="srwm-input-group">
+                                    <input type="number" id="srwm_global_threshold" name="srwm_global_threshold" value="<?php echo esc_attr(get_option('srwm_global_threshold', 5)); ?>" min="0" class="small-text">
+                                    <span class="srwm-input-suffix"><?php _e('units', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                                <button type="button" id="srwm-save-global-threshold" class="button button-primary">
                                     <span class="dashicons dashicons-saved"></span>
                                     <?php _e('Save Global Threshold', 'smart-restock-waitlist'); ?>
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
                 
