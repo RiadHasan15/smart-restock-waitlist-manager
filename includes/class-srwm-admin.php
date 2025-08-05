@@ -194,6 +194,7 @@ class SRWM_Admin {
         
         wp_localize_script('srwm-admin', 'srwm_admin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
+            'admin_url' => admin_url(),
             'site_url' => site_url(),
             'nonce' => wp_create_nonce('srwm_admin_nonce'),
             'is_pro' => $this->license_manager->is_pro_active(),
@@ -336,6 +337,12 @@ class SRWM_Admin {
                     <div class="srwm-action-card" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>'">
                         <div class="srwm-action-icon">
                             <span class="dashicons dashicons-yes-alt"></span>
+                            <?php 
+                            $pending_count = $this->get_pending_csv_approvals_count();
+                            if ($pending_count > 0): 
+                            ?>
+                            <span class="srwm-badge"><?php echo $pending_count; ?></span>
+                            <?php endif; ?>
                         </div>
                         <h3><?php _e('CSV Approvals', 'smart-restock-waitlist'); ?></h3>
                         <p><?php _e('Review and approve CSV uploads from suppliers', 'smart-restock-waitlist'); ?></p>
@@ -2170,6 +2177,29 @@ class SRWM_Admin {
     }
     
     /**
+     * Get pending CSV approvals count
+     */
+    private function get_pending_csv_approvals_count() {
+        global $wpdb;
+        
+        $table = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
+        $count = $wpdb->get_var("
+            SELECT COUNT(*) 
+            FROM $table 
+            WHERE status = 'pending'
+        ");
+        
+        return intval($count);
+    }
+    
+    /**
      * Get products with thresholds
      */
     private function get_products_with_thresholds() {
@@ -2647,8 +2677,19 @@ class SRWM_Admin {
             
             <div class="srwm-pro-card">
                 <div class="srwm-pro-card-header">
-                    <h2><?php _e('Pending Approvals', 'smart-restock-waitlist'); ?></h2>
+                    <h2><?php _e('CSV Upload Approvals', 'smart-restock-waitlist'); ?></h2>
                     <p><?php _e('Review and approve or reject CSV uploads from suppliers.', 'smart-restock-waitlist'); ?></p>
+                    
+                    <?php if (isset($_GET['token'])): ?>
+                        <div class="srwm-filter-notice">
+                            <span class="dashicons dashicons-filter"></span>
+                            <?php _e('Filtered by token:', 'smart-restock-waitlist'); ?> 
+                            <code><?php echo esc_html($_GET['token']); ?></code>
+                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>" class="button button-small">
+                                <?php _e('Clear Filter', 'smart-restock-waitlist'); ?>
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="srwm-pro-card-content">
                     <div id="srwm-approvals-container">
@@ -2845,6 +2886,49 @@ class SRWM_Admin {
                 padding: 40px;
                 color: #6b7280;
             }
+            
+            .srwm-filter-notice {
+                background: #f0f9ff;
+                border: 1px solid #0ea5e9;
+                border-radius: 8px;
+                padding: 15px;
+                margin-top: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .srwm-filter-notice .dashicons {
+                color: #0ea5e9;
+            }
+            
+            .srwm-filter-notice code {
+                background: #e0f2fe;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
+            
+            .srwm-badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #ef4444;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+                line-height: 1;
+            }
+            
+            .srwm-action-icon {
+                position: relative;
+            }
         </style>
         
         <script>
@@ -2853,14 +2937,24 @@ class SRWM_Admin {
             
             // Load approvals
             function loadApprovals() {
+                // Get token filter from URL if present
+                var urlParams = new URLSearchParams(window.location.search);
+                var tokenFilter = urlParams.get('token');
+                
+                var ajaxData = {
+                    action: 'srwm_get_csv_approvals',
+                    nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                };
+                
+                if (tokenFilter) {
+                    ajaxData.token = tokenFilter;
+                }
+                
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     dataType: 'json',
-                    data: {
-                        action: 'srwm_get_csv_approvals',
-                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
-                    },
+                    data: ajaxData,
                     success: function(response) {
                         console.log('CSV Approvals Response:', response);
                         if (response.success) {
