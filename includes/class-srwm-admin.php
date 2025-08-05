@@ -3447,9 +3447,12 @@ class SRWM_Admin {
                 }
                 
                 // Update analytics dashboard (only if function exists)
+                // Temporarily disabled to fix main display issue
+                /*
                 if (typeof updateAnalyticsDashboard === 'function') {
                     updateAnalyticsDashboard(approvals);
                 }
+                */
                 
                 let html = '';
                 approvals.forEach(function(approval, index) {
@@ -3654,8 +3657,18 @@ class SRWM_Admin {
             
             // Update upload trends chart
             function updateUploadTrendsChart(approvals) {
-                const ctx = document.getElementById('uploadTrendsChart');
-                if (!ctx) return;
+                try {
+                    const ctx = document.getElementById('uploadTrendsChart');
+                    if (!ctx) {
+                        console.log('Chart canvas not found, skipping chart update');
+                        return;
+                    }
+                    
+                    // Check if Chart.js is loaded
+                    if (typeof Chart === 'undefined') {
+                        console.log('Chart.js not loaded, skipping chart update');
+                        return;
+                    }
                 
                 // Get last 7 days
                 const dates = [];
@@ -3685,7 +3698,7 @@ class SRWM_Admin {
                 }
                 
                 // Create or update chart
-                if (window.uploadTrendsChart) {
+                if (window.uploadTrendsChart && typeof window.uploadTrendsChart.destroy === 'function') {
                     window.uploadTrendsChart.destroy();
                 }
                 
@@ -3735,6 +3748,11 @@ class SRWM_Admin {
                         }
                     }
                 });
+                
+                console.log('Chart created successfully');
+            } catch (error) {
+                console.error('Error creating chart:', error);
+            }
             }
             
             // Review upload
