@@ -100,6 +100,8 @@
             var $input = $('.srwm-threshold-input[data-product-id="' + productId + '"]');
             var threshold = $input.val();
             
+            console.log('Threshold save attempt:', { productId: productId, threshold: threshold });
+            
             if (!threshold || threshold < 0) {
                 showAdminMessage('error', 'Please enter a valid threshold value.');
                 return;
@@ -118,13 +120,15 @@
                     threshold: threshold
                 },
                 success: function(response) {
+                    console.log('Threshold save response:', response);
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'Threshold saved successfully!');
+                        showAdminMessage('success', response.message || 'Threshold saved successfully!');
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to save threshold.');
+                        showAdminMessage('error', response.message || 'Failed to save threshold.');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.log('Threshold save error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to save threshold.');
                 },
                 complete: function() {
@@ -386,6 +390,8 @@
             var $btn = $(this);
             var supplierEmail = prompt('Enter supplier email address:');
             
+            console.log('CSV upload link generation attempt:', { supplierEmail: supplierEmail });
+            
             if (!supplierEmail || !isValidEmail(supplierEmail)) {
                 showAdminMessage('error', 'Please enter a valid email address.');
                 return;
@@ -403,18 +409,20 @@
                     supplier_email: supplierEmail
                 },
                 success: function(response) {
+                    console.log('CSV upload link response:', response);
                     if (response.success) {
-                        showAdminMessage('success', response.data || 'CSV upload link generated successfully!');
+                        showAdminMessage('success', response.message || 'CSV upload link generated successfully!');
                         if (response.data && response.data.link) {
                             // Show the generated link
                             var linkText = 'CSV Upload Link: ' + response.data.link;
                             showAdminMessage('info', linkText);
                         }
                     } else {
-                        showAdminMessage('error', response.data || 'Failed to generate CSV upload link.');
+                        showAdminMessage('error', response.message || 'Failed to generate CSV upload link.');
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.log('CSV upload link error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to generate CSV upload link.');
                 },
                 complete: function() {
@@ -423,17 +431,17 @@
             });
         });
         
-        // Email validation helper function
-        function isValidEmail(email) {
-            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-        
         // Initialize tooltips
         initTooltips();
         
         // Initialize data tables
         initDataTables();
+    }
+    
+    // Email validation helper function (moved outside initAdmin for global access)
+    function isValidEmail(email) {
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
     
     function showRestockModal(productId) {

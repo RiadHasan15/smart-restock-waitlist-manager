@@ -21,7 +21,7 @@ class SRWM_Pro_Purchase_Order {
     }
     
     private function __construct() {
-        add_action('wp_ajax_srwm_generate_po', array($this, 'ajax_generate_po'));
+        // AJAX handler moved to main plugin file to avoid conflicts
         add_action('srwm_supplier_notified', array($this, 'maybe_generate_po'), 10, 2);
     }
     

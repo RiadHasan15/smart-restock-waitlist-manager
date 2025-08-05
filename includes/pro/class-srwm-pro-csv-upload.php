@@ -22,7 +22,7 @@ class SRWM_Pro_CSV_Upload {
     
     private function __construct() {
         add_action('init', array($this, 'handle_csv_upload'));
-        add_action('wp_ajax_srwm_generate_csv_upload_link', array($this, 'ajax_generate_csv_upload_link'));
+        // Removed duplicate AJAX handler - handled in main plugin file
     }
     
     /**
@@ -544,37 +544,9 @@ GHI789,100</code>
     }
     
     /**
-     * AJAX handler for generating CSV upload link
+     * AJAX handler for generating CSV upload link (removed - handled in main plugin)
+     * This method was causing conflicts with the main plugin's AJAX handler
      */
-    public function ajax_generate_csv_upload_link() {
-        check_ajax_referer('srwm_admin_nonce', 'nonce');
-        
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('Insufficient permissions.', 'smart-restock-waitlist'));
-        }
-        
-        $supplier_email = sanitize_email($_POST['supplier_email']);
-        
-        if (!$supplier_email) {
-            wp_send_json_error(__('Invalid supplier email provided.', 'smart-restock-waitlist'));
-        }
-        
-        $token = $this->generate_csv_token($supplier_email);
-        
-        if ($token) {
-            $upload_url = add_query_arg(array(
-                'srwm_csv_upload' => '1',
-                'token' => $token
-            ), home_url());
-            
-            wp_send_json_success(array(
-                'upload_url' => $upload_url,
-                'message' => __('CSV upload link generated successfully!', 'smart-restock-waitlist')
-            ));
-        } else {
-            wp_send_json_error(__('Failed to generate CSV upload link.', 'smart-restock-waitlist'));
-        }
-    }
     
     /**
      * Check if Pro version is active

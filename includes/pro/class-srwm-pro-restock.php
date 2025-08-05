@@ -22,7 +22,7 @@ class SRWM_Pro_Restock {
     
     private function __construct() {
         add_action('init', array($this, 'handle_restock_request'));
-        add_action('wp_ajax_srwm_generate_restock_link', array($this, 'ajax_generate_restock_link'));
+        // AJAX handler moved to main plugin file to avoid conflicts
     }
     
     /**
