@@ -6939,23 +6939,28 @@ class SRWM_Admin {
                 return categories[categorySlug] || categorySlug;
             }
             
-            // Tab switching functionality
-            $('.srwm-tab-button').on('click', function() {
-                const tabId = $(this).data('tab');
-                console.log('Tab clicked:', tabId);
-                
-                // Remove active class from all tabs and buttons
-                $('.srwm-tab-button').removeClass('active');
-                $('.srwm-tab-content').removeClass('active');
-                
-                // Add active class to clicked button and corresponding content
-                $(this).addClass('active');
-                const targetTab = $('#' + tabId + '-tab');
-                targetTab.addClass('active');
-                
-                console.log('Target tab found:', targetTab.length > 0);
-                console.log('Target tab content:', targetTab.html().substring(0, 100) + '...');
-            });
+                            // Tab switching functionality
+                $('.srwm-tab-button').on('click', function() {
+                    const tabId = $(this).data('tab');
+                    console.log('Tab clicked:', tabId);
+                    
+                    // Remove active class from all tabs and buttons
+                    $('.srwm-tab-button').removeClass('active');
+                    $('.srwm-tab-content').removeClass('active');
+                    
+                    // Add active class to clicked button and corresponding content
+                    $(this).addClass('active');
+                    const targetTab = $('#' + tabId + '-tab');
+                    targetTab.addClass('active');
+                    
+                    console.log('Target tab found:', targetTab.length > 0);
+                    console.log('Target tab content:', targetTab.html().substring(0, 100) + '...');
+                    
+                    // Load content based on tab
+                    if (tabId === 'quick-restock') {
+                        loadQuickRestockProducts();
+                    }
+                });
             
             // Load suppliers on page load
             loadSuppliers();
@@ -6966,8 +6971,10 @@ class SRWM_Admin {
             // Load quick restock links on page load
             loadQuickRestockLinks();
             
-            // Load products for quick restock selection
-            loadQuickRestockProducts();
+            // Load products if Quick Restock tab is active
+            if ($('#quick-restock-tab').hasClass('active')) {
+                loadQuickRestockProducts();
+            }
             
             // Debug: Check if Quick Restock tab content exists
             console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
@@ -7950,6 +7957,8 @@ class SRWM_Admin {
                 const categoryFilter = $('#quick-restock-category-filter').val();
                 const stockFilter = $('#quick-restock-stock-filter').val();
                 
+
+                
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
@@ -7970,7 +7979,7 @@ class SRWM_Admin {
                             $('#quick-restock-products-grid').html('<div class="srwm-error">Error loading products: ' + response.data + '</div>');
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
                         $('#quick-restock-products-grid').html('<div class="srwm-error">Error loading products. Please try again.</div>');
                     }
                 });
