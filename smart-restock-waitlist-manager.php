@@ -1006,6 +1006,7 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_update_supplier', array($this, 'ajax_update_supplier'));
         add_action('wp_ajax_srwm_delete_supplier', array($this, 'ajax_delete_supplier'));
         add_action('wp_ajax_srwm_get_supplier', array($this, 'ajax_get_supplier'));
+        add_action('wp_ajax_srwm_generate_supplier_upload_link', array($this, 'ajax_generate_supplier_upload_link'));
         add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
     }
     
@@ -2309,6 +2310,92 @@ class SmartRestockWaitlistManager {
         $frequency_bonus = min(0.5, $total_uploads * 0.1);
         
         return min(5.00, $base_score + $frequency_bonus);
+    }
+    
+    /**
+     * Generate upload link for supplier
+     */
+    public function ajax_generate_supplier_upload_link() {
+        check_ajax_referer('srwm_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
+        }
+        
+        $supplier_id = intval($_POST['supplier_id']);
+        
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Get supplier details
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table_name WHERE id = %d",
+            $supplier_id
+        ));
+        
+        if (!$supplier) {
+            wp_send_json_error(__('Supplier not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Generate secure token
+        $token = wp_generate_password(32, false);
+        $expires_at = date('Y-m-d H:i:s', strtotime('+7 days'));
+        
+        // Save token to database
+        $csv_tokens_table = $wpdb->prefix . 'srwm_csv_tokens';
+        $result = $wpdb->insert(
+            $csv_tokens_table,
+            array(
+                'supplier_email' => $supplier->supplier_email,
+                'token' => $token,
+                'expires_at' => $expires_at,
+                'used' => 0,
+                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
+                'created_at' => current_time('mysql')
+            ),
+            array('%s', '%s', '%s', '%d', '%s', '%s')
+        );
+        
+        if ($result === false) {
+            wp_send_json_error(__('Failed to generate upload link. Please try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Generate the upload URL
+        $upload_url = add_query_arg(array(
+            'srwm_upload' => 'csv',
+            'token' => $token,
+            'supplier' => $supplier_id
+        ), home_url());
+        
+        // Send email notification to supplier
+        $this->send_upload_link_email($supplier, $upload_url, $expires_at);
+        
+        wp_send_json_success(array(
+            'message' => __('Upload link generated successfully! Email sent to supplier.', 'smart-restock-waitlist'),
+            'upload_url' => $upload_url,
+            'expires_at' => $expires_at,
+            'supplier_name' => $supplier->supplier_name,
+            'supplier_email' => $supplier->supplier_email
+        ));
+    }
+    
+    /**
+     * Send upload link email to supplier
+     */
+    private function send_upload_link_email($supplier, $upload_url, $expires_at) {
+        $subject = sprintf(__('CSV Upload Link - %s', 'smart-restock-waitlist'), get_bloginfo('name'));
+        
+        $message = sprintf(
+            __("Hello %s,\n\nYou have been provided with a secure link to upload your stock CSV file.\n\nUpload Link: %s\n\nThis link will expire on: %s\n\nPlease ensure your CSV file contains the following columns:\n- Product SKU or ID\n- Quantity\n\nBest regards,\n%s", 'smart-restock-waitlist'),
+            $supplier->supplier_name,
+            $upload_url,
+            date('F j, Y g:i A', strtotime($expires_at)),
+            get_bloginfo('name')
+        );
+        
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        
+        wp_mail($supplier->supplier_email, $subject, nl2br($message), $headers);
     }
     
     /**
