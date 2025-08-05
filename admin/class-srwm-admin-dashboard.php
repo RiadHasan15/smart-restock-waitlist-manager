@@ -11,18 +11,10 @@ if (!defined('ABSPATH')) {
 
 class SRWM_Admin_Dashboard {
     
-    private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-    
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    public function __construct($license_manager) {
+        $this->license_manager = $license_manager;
         
         add_action('admin_enqueue_scripts', array($this, 'enqueue_dashboard_scripts'));
         add_action('wp_ajax_srwm_get_dashboard_data', array($this, 'ajax_get_dashboard_data'));
