@@ -39,6 +39,12 @@ class SRWM_Pro_CSV_Upload {
             wp_die(__('Invalid or expired upload link.', 'smart-restock-waitlist'));
         }
         
+        // Check if Pro features are active
+        if (!$this->is_pro_active()) {
+            $this->display_pro_required_message();
+            return;
+        }
+        
         // Handle the upload form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_csv_submit'])) {
             $this->process_csv_upload($token);
@@ -558,6 +564,82 @@ GHI789,100</code>
      * Check if Pro version is active
      */
     private function is_pro_active() {
-        return function_exists('srwm_pro_init') || defined('SRWM_PRO_VERSION');
+        return get_option('smart-restock-waitlist-manager_license_status', 'inactive') === 'valid';
+    }
+    
+    /**
+     * Display Pro required message
+     */
+    private function display_pro_required_message() {
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?php _e('Pro Feature Required', 'smart-restock-waitlist'); ?></title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                .header {
+                    background-color: #dc3545;
+                    color: white;
+                    padding: 30px;
+                    text-align: center;
+                }
+                .content {
+                    padding: 30px;
+                    text-align: center;
+                }
+                .content h2 {
+                    color: #dc3545;
+                    margin-bottom: 20px;
+                }
+                .content p {
+                    color: #666;
+                    line-height: 1.6;
+                    margin-bottom: 20px;
+                }
+                .btn {
+                    display: inline-block;
+                    background-color: #007cba;
+                    color: white;
+                    padding: 12px 24px;
+                    text-decoration: none;
+                    border-radius: 4px;
+                    font-weight: bold;
+                }
+                .btn:hover {
+                    background-color: #005a87;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1><?php _e('Pro Feature Required', 'smart-restock-waitlist'); ?></h1>
+                </div>
+                <div class="content">
+                    <h2><?php _e('CSV Upload Feature', 'smart-restock-waitlist'); ?></h2>
+                    <p><?php _e('This feature requires a valid Pro license to function. Please activate your Pro license to use the CSV upload functionality.', 'smart-restock-waitlist'); ?></p>
+                    <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="btn"><?php _e('Manage License', 'smart-restock-waitlist'); ?></a>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
     }
 }

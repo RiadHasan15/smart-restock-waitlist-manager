@@ -950,6 +950,12 @@ class SmartRestockWaitlistManager {
         $waitlist = SRWM_Waitlist::get_instance($this->license_manager);
         $supplier = SRWM_Supplier::get_instance($this->license_manager);
         
+        // Always load CSV upload class for frontend URL handling
+        if (!class_exists('SRWM_Pro_CSV_Upload')) {
+            require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-csv-upload.php';
+        }
+        SRWM_Pro_CSV_Upload::get_instance();
+        
         // Add waitlist form to product pages
         add_action('woocommerce_single_product_summary', array($waitlist, 'display_waitlist_form'), 25);
         
