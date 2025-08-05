@@ -147,30 +147,17 @@ class SRWM_License_Manager {
             return;
         }
         
-        $domain = parse_url(home_url(), PHP_URL_HOST);
+        // For development/testing, always deactivate locally first
+        $this->deactivate_license_locally();
         
-        $response = wp_remote_post($this->license_server_url . '/wp-json/licensing/v1/deactivate', array(
-            'body' => array(
-                'license_key' => $this->license_key,
-                'domain' => $domain,
-                'product_slug' => $this->plugin_slug
-            ),
-            'timeout' => 30,
-            'sslverify' => true
-        ));
-        
-        if (!is_wp_error($response)) {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            if (isset($body['success']) && $body['success']) {
-                $this->add_notice('success', __('License deactivated successfully.', 'smart-restock-waitlist'));
-            } else {
-                $error_message = isset($body['error']) ? $body['error'] : 'Unknown error';
-                $this->add_notice('warning', __('License deactivated locally. Server response: ' . $error_message, 'smart-restock-waitlist'));
-            }
-        } else {
-            $this->add_notice('warning', __('License deactivated locally (server unreachable). Error: ' . $response->get_error_message(), 'smart-restock-waitlist'));
-        }
-        
+        // Try to deactivate on server (optional)
+        $this->deactivate_license_on_server();
+    }
+    
+    /**
+     * Deactivate license locally
+     */
+    private function deactivate_license_locally() {
         // Clear license data from database
         delete_option($this->plugin_slug . '_license_key');
         update_option($this->plugin_slug . '_license_status', 'inactive');
@@ -180,6 +167,60 @@ class SRWM_License_Manager {
         
         // Debug logging
         $this->debug_license_data();
+        
+        $this->add_notice('success', __('License deactivated successfully!', 'smart-restock-waitlist'));
+    }
+    
+    /**
+     * Deactivate license on server (optional)
+     */
+    private function deactivate_license_on_server() {
+        
+        $domain = parse_url(home_url(), PHP_URL_HOST);
+        
+        $request_data = array(
+            'license_key' => $this->license_key,
+            'domain' => $domain,
+            'product_slug' => $this->plugin_slug
+        );
+        
+        // Debug logging
+        error_log('SRWM Deactivation Request URL: ' . $this->license_server_url . '/wp-json/licensing/v1/deactivate');
+        error_log('SRWM Deactivation Request Data: ' . print_r($request_data, true));
+        
+        $response = wp_remote_post($this->license_server_url . '/wp-json/licensing/v1/deactivate', array(
+            'body' => $request_data,
+            'timeout' => 30,
+            'sslverify' => true
+        ));
+        
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            $response_body = wp_remote_retrieve_body($response);
+            $body = json_decode($response_body, true);
+            
+            // Debug logging
+            error_log('SRWM Deactivation Response Code: ' . $response_code);
+            error_log('SRWM Deactivation Response Body: ' . $response_body);
+            
+            if ($response_code === 200 && isset($body['success']) && $body['success']) {
+                error_log('SRWM: License deactivated successfully on server');
+            } else {
+                $error_message = 'Unknown error';
+                if (isset($body['error'])) {
+                    $error_message = $body['error'];
+                } elseif ($response_code !== 200) {
+                    $error_message = 'HTTP Error: ' . $response_code;
+                } elseif (empty($response_body)) {
+                    $error_message = 'Empty response from server';
+                }
+                
+                error_log('SRWM: Server deactivation failed: ' . $error_message);
+            }
+        } else {
+            error_log('SRWM: Server unreachable: ' . $response->get_error_message());
+        }
+    }
     }
     
     /**
@@ -313,6 +354,17 @@ class SRWM_License_Manager {
         }
         
         delete_option('srwm_license_notices');
+        
+        // Temporary debug notice - remove this after testing
+        if (current_user_can('manage_options')) {
+            $current_status = get_option($this->plugin_slug . '_license_status', 'inactive');
+            $current_key = get_option($this->plugin_slug . '_license_key', '');
+            $is_pro = $this->is_pro_active();
+            
+            echo '<div class="notice notice-info"><p><strong>Debug Info:</strong> Status: ' . esc_html($current_status) . 
+                 ' | Key: ' . (empty($current_key) ? 'Empty' : 'Set') . 
+                 ' | Pro Active: ' . ($is_pro ? 'Yes' : 'No') . '</p></div>';
+        }
     }
     
     /**
