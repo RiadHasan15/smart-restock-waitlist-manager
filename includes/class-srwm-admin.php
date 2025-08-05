@@ -75,6 +75,16 @@ class SRWM_Admin {
                 array($this, 'render_pro_features_page')
             );
         }
+        
+        // License menu (always show)
+        add_submenu_page(
+            'smart-restock-waitlist',
+            __('License', 'smart-restock-waitlist'),
+            __('License', 'smart-restock-waitlist'),
+            'manage_woocommerce',
+            'smart-restock-waitlist-license',
+            array($this->license_manager, 'render_license_page')
+        );
     }
     
     /**
