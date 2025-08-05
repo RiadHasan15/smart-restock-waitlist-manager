@@ -1232,14 +1232,12 @@ class SmartRestockWaitlistManager {
         
         // Check if product exists
         $product = wc_get_product($product_id);
-        error_log('SRWM: Product check - product_id: ' . $product_id . ', product exists: ' . ($product ? 'yes' : 'no'));
         if (!$product) {
             wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
         }
         
         // Check if product is a valid WooCommerce product
         if (!$product->is_type('simple') && !$product->is_type('variable')) {
-            error_log('SRWM: Product type not supported: ' . $product->get_type());
             wp_die(json_encode(array('success' => false, 'message' => __('Product type not supported.', 'smart-restock-waitlist'))));
         }
         
@@ -1248,14 +1246,11 @@ class SmartRestockWaitlistManager {
         }
         
         // Save threshold as product meta
-        error_log('SRWM: About to save threshold - product_id: ' . $product_id . ', threshold: ' . $threshold);
         
         // Get existing value first
         $existing_value = get_post_meta($product_id, '_srwm_threshold', true);
-        error_log('SRWM: Existing threshold value: ' . $existing_value);
         
         $result = update_post_meta($product_id, '_srwm_threshold', $threshold);
-        error_log('SRWM: update_post_meta result: ' . ($result !== false ? 'success' : 'failed'));
         
         // Consider it successful if:
         // 1. update_post_meta() returned true (value changed)
