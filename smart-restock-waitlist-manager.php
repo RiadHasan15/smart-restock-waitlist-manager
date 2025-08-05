@@ -43,7 +43,6 @@ class SRWM_License_Manager {
         $this->license_key = get_option($this->plugin_slug . '_license_key', '');
         $this->license_status = get_option($this->plugin_slug . '_license_status', 'inactive');
         
-        add_action('admin_menu', array($this, 'add_license_menu'));
         add_action('admin_init', array($this, 'handle_license_actions'));
         add_action('admin_notices', array($this, 'show_license_notices'));
         
@@ -504,6 +503,8 @@ class SmartRestockWaitlistManager {
         
         new SRWM_Admin($this->license_manager);
         new SRWM_Admin_Dashboard($this->license_manager);
+        
+
     }
     
     /**
