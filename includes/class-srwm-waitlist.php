@@ -246,7 +246,7 @@ class SRWM_Waitlist {
         $customers = self::get_waitlist_customers($product_id);
         
         if (!empty($customers)) {
-            $email = new SRWM_Email();
+            $email = SRWM_Email::get_instance();
             
             foreach ($customers as $customer) {
                 $email->send_restock_notification($customer, $product);
@@ -278,7 +278,7 @@ class SRWM_Waitlist {
         if ($waitlist_count > 0) {
             // Notify waitlist customers
             $customers = self::get_waitlist_customers($product_id);
-            $email = new SRWM_Email();
+            $email = SRWM_Email::get_instance();
             
             foreach ($customers as $customer) {
                 $email->send_restock_notification($customer, $product);
@@ -303,7 +303,7 @@ class SRWM_Waitlist {
         $threshold = get_option('srwm_low_stock_threshold', 5);
         
         if ($current_stock <= $threshold) {
-            $supplier = new SRWM_Supplier();
+            $supplier = SRWM_Supplier::get_instance();
             $supplier_data = $supplier->get_supplier_data($product_id);
             
             if (!empty($supplier_data['email'])) {
