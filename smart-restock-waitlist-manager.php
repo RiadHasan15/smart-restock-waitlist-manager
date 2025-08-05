@@ -2567,6 +2567,10 @@ class SmartRestockWaitlistManager {
         
         $total_count = $wpdb->get_var($count_query);
         
+        if ($total_count === null) {
+            wp_send_json_error(__('Failed to get total count.', 'smart-restock-waitlist'));
+        }
+        
         // Calculate offset
         $offset = ($page - 1) * $per_page;
         
@@ -2584,6 +2588,10 @@ class SmartRestockWaitlistManager {
         $query_params[] = $offset;
         
         $links = $wpdb->get_results($wpdb->prepare($query, $query_params));
+        
+        if ($links === null) {
+            wp_send_json_error(__('Failed to retrieve upload links.', 'smart-restock-waitlist'));
+        }
         
         // Add upload count for each link
         foreach ($links as $link) {

@@ -6988,14 +6988,15 @@ class SRWM_Admin {
                     // Load content based on tab
                     if (tabId === 'quick-restock') {
                         loadQuickRestockProducts();
+                    } else if (tabId === 'csv-upload') {
+                        loadUploadLinks();
                     }
                 });
             
             // Load suppliers on page load
             loadSuppliers();
             
-            // Load upload links on page load
-            loadUploadLinks();
+
             
             // Load quick restock links on page load
             loadQuickRestockLinks();
@@ -7003,6 +7004,11 @@ class SRWM_Admin {
             // Load products if Quick Restock tab is active
             if ($('#quick-restock-tab').hasClass('active')) {
                 loadQuickRestockProducts();
+            }
+            
+            // Load upload links if CSV Upload tab is active
+            if ($('#csv-upload-tab').hasClass('active')) {
+                loadUploadLinks();
             }
             
             // Debug: Check if Quick Restock tab content exists
@@ -7448,6 +7454,8 @@ class SRWM_Admin {
                 const searchTerm = $('#upload-links-search').val();
                 const statusFilter = $('#upload-links-status-filter').val();
                 
+                console.log('Loading upload links with params:', { page, searchTerm, statusFilter });
+                
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
@@ -7460,6 +7468,7 @@ class SRWM_Admin {
                         status: statusFilter
                     },
                     success: function(response) {
+                        console.log('Upload links AJAX response:', response);
                         if (response.success) {
                             const data = response.data;
                             displayUploadLinks(data.links, data.pagination);
@@ -7467,7 +7476,8 @@ class SRWM_Admin {
                             $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading upload links: ' + response.data + '</td></tr>');
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error('Upload links AJAX error:', { xhr, status, error });
                         $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading upload links. Please try again.</td></tr>');
                     }
                 });
