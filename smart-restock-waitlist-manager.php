@@ -999,21 +999,46 @@ class SmartRestockWaitlistManager {
     public function ajax_save_threshold() {
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
-        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        // Debug logging
+        error_log('SRWM Save Threshold - User can manage WooCommerce: ' . (current_user_can('manage_woocommerce') ? 'Yes' : 'No'));
+        error_log('SRWM Save Threshold - Pro license active: ' . ($this->license_manager->is_pro_active() ? 'Yes' : 'No'));
+        error_log('SRWM Save Threshold - POST data: ' . print_r($_POST, true));
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!$this->license_manager->is_pro_active()) {
+            // For development, allow threshold saving even without license
+            $current_key = get_option($this->plugin_slug . '_license_key', '');
+            if (empty($current_key)) {
+                wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first. Use DEV-LICENSE-12345 for testing.', 'smart-restock-waitlist'))));
+            }
+        }
+        
+        if (!isset($_POST['product_id']) || !isset($_POST['threshold'])) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Missing required data.', 'smart-restock-waitlist'))));
         }
         
         $product_id = intval($_POST['product_id']);
         $threshold = intval($_POST['threshold']);
+        
+        if ($product_id <= 0) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
+        }
         
         if ($threshold < 0) {
             wp_die(json_encode(array('success' => false, 'message' => __('Threshold must be a positive number.', 'smart-restock-waitlist'))));
         }
         
         // Save threshold as product meta
-        update_post_meta($product_id, '_srwm_threshold', $threshold);
+        $result = update_post_meta($product_id, '_srwm_threshold', $threshold);
         
-        wp_die(json_encode(array('success' => true, 'message' => __('Threshold saved successfully!', 'smart-restock-waitlist'))));
+        if ($result !== false) {
+            wp_die(json_encode(array('success' => true, 'message' => __('Threshold saved successfully!', 'smart-restock-waitlist'))));
+        } else {
+            wp_die(json_encode(array('success' => false, 'message' => __('Failed to save threshold. Please try again.', 'smart-restock-waitlist'))));
+        }
     }
     
     /**
