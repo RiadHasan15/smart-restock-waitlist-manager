@@ -45,8 +45,17 @@ class SRWM_Pro_CSV_Upload {
             return;
         }
         
+        // Debug: Log request information
+        error_log('CSV Upload Debug: REQUEST_METHOD = ' . $_SERVER['REQUEST_METHOD']);
+        error_log('CSV Upload Debug: $_POST = ' . print_r($_POST, true));
+        
         // Handle the upload form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_csv_submit'])) {
+            // Debug: Check if this is a test submission
+            if (isset($_POST['debug_form'])) {
+                error_log('CSV Upload Debug: Form submitted with debug_form = ' . $_POST['debug_form']);
+            }
+            
             $this->process_csv_upload($token);
         } else {
             $this->display_csv_upload_form($token);
@@ -458,8 +467,9 @@ class SRWM_Pro_CSV_Upload {
                                 <i class="fas fa-upload"></i> <?php _e('Upload Your CSV File', 'smart-restock-waitlist'); ?>
                             </h3>
                             
-                            <form method="post" enctype="multipart/form-data" id="csvUploadForm">
+                            <form method="post" enctype="multipart/form-data" id="csvUploadForm" action="">
                                 <input type="hidden" name="srwm_csv_token" value="<?php echo esc_attr($token); ?>">
+                                <input type="hidden" name="debug_form" value="1">
                                 
                                 <div class="form-group">
                                     <label for="csv_file">
@@ -475,7 +485,7 @@ class SRWM_Pro_CSV_Upload {
                                         <div class="file-upload-hint">
                                             <?php _e('Maximum file size: 5MB | Supported format: .csv', 'smart-restock-waitlist'); ?>
                                         </div>
-                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required style="opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer;">
                                     </div>
                                 </div>
                                 
@@ -615,11 +625,52 @@ class SRWM_Pro_CSV_Upload {
      * Process CSV upload
      */
     private function process_csv_upload($token) {
-        if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
-            wp_die(__('File upload failed. Please try again.', 'smart-restock-waitlist'));
+        // Debug: Log upload information
+        error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
+        
+        if (!isset($_FILES['csv_file'])) {
+            wp_die(__('No file was uploaded. Please select a CSV file.', 'smart-restock-waitlist'));
         }
         
         $file = $_FILES['csv_file'];
+        
+        // Check for specific upload errors
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $error_message = '';
+            switch ($file['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                    $error_message = __('The uploaded file exceeds the upload_max_filesize directive in php.ini.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_FORM_SIZE:
+                    $error_message = __('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $error_message = __('The uploaded file was only partially uploaded.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    $error_message = __('No file was uploaded.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    $error_message = __('Missing a temporary folder.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_CANT_WRITE:
+                    $error_message = __('Failed to write file to disk.', 'smart-restock-waitlist');
+                    break;
+                case UPLOAD_ERR_EXTENSION:
+                    $error_message = __('A PHP extension stopped the file upload.', 'smart-restock-waitlist');
+                    break;
+                default:
+                    $error_message = __('Unknown upload error occurred.', 'smart-restock-waitlist');
+                    break;
+            }
+            wp_die($error_message);
+        }
+        
+        // Check file size (5MB limit)
+        $max_size = 5 * 1024 * 1024; // 5MB in bytes
+        if ($file['size'] > $max_size) {
+            wp_die(sprintf(__('File size exceeds the maximum limit of 5MB. Your file size is: %s', 'smart-restock-waitlist'), size_format($file['size'])));
+        }
         
         // Validate file type
         $file_type = wp_check_filetype($file['name']);
@@ -664,29 +715,55 @@ class SRWM_Pro_CSV_Upload {
             
             if (!$header || count($header) < 2) {
                 fclose($handle);
+                error_log('CSV Upload Debug: Invalid header - ' . print_r($header, true));
                 return false;
             }
             
-            // Find column indexes
-            $sku_index = array_search('sku', array_map('strtolower', $header));
-            $quantity_index = array_search('quantity', array_map('strtolower', $header));
+            // Debug: Log header
+            error_log('CSV Upload Debug: Header = ' . print_r($header, true));
+            
+            // Find column indexes - try multiple possible column names
+            $sku_index = false;
+            $quantity_index = false;
+            
+            $header_lower = array_map('strtolower', $header);
+            
+            // Try different possible SKU column names
+            $sku_names = array('sku', 'product_sku', 'product sku', 'product-sku', 'product_id', 'product id', 'product-id');
+            foreach ($sku_names as $sku_name) {
+                $sku_index = array_search($sku_name, $header_lower);
+                if ($sku_index !== false) break;
+            }
+            
+            // Try different possible quantity column names
+            $quantity_names = array('quantity', 'qty', 'stock', 'stock_quantity', 'stock quantity', 'stock-quantity');
+            foreach ($quantity_names as $quantity_name) {
+                $quantity_index = array_search($quantity_name, $header_lower);
+                if ($quantity_index !== false) break;
+            }
             
             if ($sku_index === false || $quantity_index === false) {
                 fclose($handle);
+                error_log('CSV Upload Debug: SKU index = ' . ($sku_index !== false ? $sku_index : 'false') . ', Quantity index = ' . ($quantity_index !== false ? $quantity_index : 'false'));
                 return false;
             }
             
             // Read data rows
+            $row_count = 0;
             while (($row = fgetcsv($handle)) !== false) {
                 if (count($row) >= 2) {
                     $data[] = array(
                         'sku' => trim($row[$sku_index]),
                         'quantity' => intval($row[$quantity_index])
                     );
+                    $row_count++;
                 }
             }
             
             fclose($handle);
+            error_log('CSV Upload Debug: Processed ' . $row_count . ' rows');
+        } else {
+            error_log('CSV Upload Debug: Failed to open file: ' . $file_path);
         }
         
         return $data;
