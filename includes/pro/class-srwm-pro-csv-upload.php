@@ -1059,10 +1059,18 @@ class SRWM_Pro_CSV_Upload {
                         proceedWithUpload();
                     });
                     
+                    // Ensure modal is centered and visible
+                    modal.style.display = 'flex';
+                    modal.style.alignItems = 'center';
+                    modal.style.justifyContent = 'center';
+                    
                     // Add animation
                     setTimeout(() => {
-                        modal.querySelector('.srwm-preview-content').style.transform = 'scale(1)';
-                        modal.querySelector('.srwm-preview-content').style.opacity = '1';
+                        const content = modal.querySelector('.srwm-preview-content');
+                        if (content) {
+                            content.style.transform = 'scale(1)';
+                            content.style.opacity = '1';
+                        }
                     }, 10);
                     
                     console.log('Preview modal created and displayed');
@@ -1209,6 +1217,8 @@ class SRWM_Pro_CSV_Upload {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    padding: 20px;
+                    box-sizing: border-box;
                 }
                 
                 .srwm-preview-overlay {
@@ -1232,6 +1242,8 @@ class SRWM_Pro_CSV_Upload {
                     opacity: 0;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     overflow: hidden;
+                    position: relative;
+                    z-index: 10001;
                 }
                 
                 .srwm-preview-header {
@@ -1402,6 +1414,59 @@ class SRWM_Pro_CSV_Upload {
                 .srwm-btn-primary:hover {
                     background: linear-gradient(135deg, #059669 0%, #047857 100%);
                     transform: translateY(-1px);
+                }
+                
+                /* Responsive Modal */
+                @media (max-width: 768px) {
+                    .srwm-preview-modal {
+                        padding: 10px;
+                    }
+                    
+                    .srwm-preview-content {
+                        width: 95%;
+                        max-width: 95%;
+                        max-height: 95%;
+                    }
+                    
+                    .srwm-preview-body {
+                        padding: 15px;
+                        max-height: 400px;
+                    }
+                    
+                    .srwm-validation-summary {
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+                    
+                    .srwm-preview-table-inner {
+                        font-size: 0.8rem;
+                    }
+                    
+                    .srwm-preview-table-inner th,
+                    .srwm-preview-table-inner td {
+                        padding: 6px 8px;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .srwm-preview-content {
+                        width: 98%;
+                        max-width: 98%;
+                    }
+                    
+                    .srwm-preview-header h3 {
+                        font-size: 1rem;
+                    }
+                    
+                    .srwm-preview-footer {
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+                    
+                    .srwm-preview-footer button {
+                        width: 100%;
+                        justify-content: center;
+                    }
                 }
             </style>
         </body>
