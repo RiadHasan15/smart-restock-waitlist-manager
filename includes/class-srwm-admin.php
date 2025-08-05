@@ -3416,9 +3416,15 @@ class SRWM_Admin {
                     data: ajaxData,
                     success: function(response) {
                         console.log('CSV Approvals Response:', response);
+                        console.log('Response type:', typeof response);
+                        console.log('Response.success:', response.success);
+                        console.log('Response.data:', response.data);
+                        
                         if (response.success) {
+                            console.log('Calling displayApprovals with:', response.data);
                             displayApprovals(response.data);
                         } else {
+                            console.log('Response not successful, showing error');
                             $('#srwm-approvals-container').html('<div class="srwm-no-approvals">' + (response.message || 'Unknown error') + '</div>');
                         }
                     },
@@ -3432,18 +3438,32 @@ class SRWM_Admin {
             // Display approvals
             function displayApprovals(approvals) {
                 console.log('Displaying approvals:', approvals);
-                
-                // Update analytics dashboard
-                updateAnalyticsDashboard(approvals);
+                console.log('Approvals type:', typeof approvals);
+                console.log('Approvals length:', approvals ? approvals.length : 'null');
                 
                 if (!approvals || approvals.length === 0) {
                     $('#srwm-approvals-container').html('<div class="srwm-no-approvals">No pending approvals</div>');
                     return;
                 }
                 
+                // Update analytics dashboard (only if function exists)
+                if (typeof updateAnalyticsDashboard === 'function') {
+                    updateAnalyticsDashboard(approvals);
+                }
+                
                 let html = '';
                 approvals.forEach(function(approval, index) {
-                    const uploadData = JSON.parse(approval.upload_data);
+                    console.log('Processing approval:', approval);
+                    
+                    let uploadData = [];
+                    try {
+                        uploadData = JSON.parse(approval.upload_data);
+                        console.log('Parsed upload data:', uploadData);
+                    } catch (error) {
+                        console.error('Error parsing upload data:', error);
+                        uploadData = [];
+                    }
+                    
                     const statusClass = 'srwm-status-' + approval.status;
                     const statusIcon = getStatusIcon(approval.status);
                     const statusColor = getStatusColor(approval.status);
@@ -3522,36 +3542,60 @@ class SRWM_Admin {
                     html += '</div>';
                 });
                 
+                console.log('Generated HTML length:', html.length);
+                console.log('HTML preview:', html.substring(0, 500));
+                
                 $('#srwm-approvals-container').html(html);
+                console.log('HTML set to container');
             }
             
             // Helper functions
             function getStatusIcon(status) {
-                switch(status) {
-                    case 'pending': return 'fas fa-clock';
-                    case 'approved': return 'fas fa-check-circle';
-                    case 'rejected': return 'fas fa-times-circle';
-                    default: return 'fas fa-question-circle';
+                try {
+                    switch(status) {
+                        case 'pending': return 'fas fa-clock';
+                        case 'approved': return 'fas fa-check-circle';
+                        case 'rejected': return 'fas fa-times-circle';
+                        default: return 'fas fa-question-circle';
+                    }
+                } catch (error) {
+                    console.error('Error in getStatusIcon:', error);
+                    return 'fas fa-question-circle';
                 }
             }
             
             function getStatusColor(status) {
-                switch(status) {
-                    case 'pending': return '#f59e0b';
-                    case 'approved': return '#10b981';
-                    case 'rejected': return '#ef4444';
-                    default: return '#6b7280';
+                try {
+                    switch(status) {
+                        case 'pending': return '#f59e0b';
+                        case 'approved': return '#10b981';
+                        case 'rejected': return '#ef4444';
+                        default: return '#6b7280';
+                    }
+                } catch (error) {
+                    console.error('Error in getStatusColor:', error);
+                    return '#6b7280';
                 }
             }
             
             function formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                } catch (error) {
+                    console.error('Error in formatDate:', error);
+                    return dateString;
+                }
             }
             
             function checkProductExists(sku) {
-                // This would be replaced with actual product validation
-                return sku.length > 0;
+                try {
+                    // This would be replaced with actual product validation
+                    return sku && sku.length > 0;
+                } catch (error) {
+                    console.error('Error in checkProductExists:', error);
+                    return false;
+                }
             }
             
             // Update analytics dashboard
@@ -3861,6 +3905,10 @@ class SRWM_Admin {
             });
             
             // Load approvals on page load
+            console.log('Page loaded, checking container...');
+            console.log('Container exists:', $('#srwm-approvals-container').length > 0);
+            console.log('Container HTML:', $('#srwm-approvals-container').html());
+            
             loadApprovals();
             
             // Touch gestures for mobile
