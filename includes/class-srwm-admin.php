@@ -11,18 +11,10 @@ if (!defined('ABSPATH')) {
 
 class SRWM_Admin {
     
-    private static $instance = null;
     private $license_manager;
     
-    public static function get_instance() {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-    
-    private function __construct() {
-        $this->license_manager = SRWM_License_Manager::get_instance();
+    public function __construct($license_manager) {
+        $this->license_manager = $license_manager;
         
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'init_settings'));
