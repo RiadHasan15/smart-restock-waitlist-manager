@@ -76,15 +76,6 @@ class SRWM_Admin {
         if ($this->license_manager->is_pro_active()) {
             add_submenu_page(
                 'smart-restock-waitlist',
-                __('One-Click Restock', 'smart-restock-waitlist'),
-                __('One-Click Restock', 'smart-restock-waitlist'),
-                'manage_woocommerce',
-                'smart-restock-waitlist-oneclick',
-                array($this, 'render_oneclick_restock_page')
-            );
-            
-            add_submenu_page(
-                'smart-restock-waitlist',
                 __('Multi-Channel Notifications', 'smart-restock-waitlist'),
                 __('Multi-Channel Notifications', 'smart-restock-waitlist'),
                 'manage_woocommerce',
@@ -108,15 +99,6 @@ class SRWM_Admin {
                 'manage_woocommerce',
                 'smart-restock-waitlist-purchase-orders',
                 array($this, 'render_purchase_orders_page')
-            );
-            
-            add_submenu_page(
-                'smart-restock-waitlist',
-                __('CSV Upload', 'smart-restock-waitlist'),
-                __('CSV Upload', 'smart-restock-waitlist'),
-                'manage_woocommerce',
-                'smart-restock-waitlist-csv-upload',
-                array($this, 'render_csv_upload_page')
             );
             
             add_submenu_page(
@@ -327,12 +309,12 @@ class SRWM_Admin {
                     </div>
                     
                     <?php if ($this->license_manager->is_pro_active()): ?>
-                    <div class="srwm-action-card" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-oneclick'); ?>'">
+                    <div class="srwm-action-card" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-suppliers'); ?>'">
                         <div class="srwm-action-icon">
-                            <span class="dashicons dashicons-update"></span>
+                            <span class="dashicons dashicons-groups"></span>
                         </div>
-                        <h3><?php _e('One-Click Restock', 'smart-restock-waitlist'); ?></h3>
-                        <p><?php _e('Generate secure restock links for suppliers', 'smart-restock-waitlist'); ?></p>
+                        <h3><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                        <p><?php _e('Manage suppliers, generate upload links, and quick restock', 'smart-restock-waitlist'); ?></p>
                     </div>
                     
                     <div class="srwm-action-card" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-notifications'); ?>'">
@@ -1709,154 +1691,6 @@ class SRWM_Admin {
     }
     
     /**
-     * Render One-Click Restock page
-     */
-    public function render_oneclick_restock_page() {
-        if (!$this->license_manager->is_pro_active()) {
-            $this->render_pro_feature_locked();
-            return;
-        }
-        
-        $products = $this->get_waitlist_products();
-        ?>
-        <div class="wrap srwm-pro-page">
-            <div class="srwm-pro-header">
-                <h1><?php _e('One-Click Restock', 'smart-restock-waitlist'); ?></h1>
-                <div class="srwm-pro-actions">
-                    <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
-                        <span class="dashicons dashicons-arrow-left-alt"></span>
-                        <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="srwm-pro-card">
-                <div class="srwm-pro-card-header">
-                    <h2><?php _e('Generate Secure Restock Links', 'smart-restock-waitlist'); ?></h2>
-                </div>
-                <div class="srwm-pro-card-content">
-                                        <p><?php _e('Create secure, time-limited restock links that suppliers can use to update product stock without logging in.', 'smart-restock-waitlist'); ?></p>
-                    
-                    <?php if (!empty($products)): ?>
-                    <div class="srwm-table-container">
-                        <table class="srwm-pro-table">
-                        <thead>
-                            <tr>
-                                <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Current Stock', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Waitlist Count', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($products as $product_data): ?>
-                                <tr>
-                                    <td>
-                                        <div class="srwm-product-info">
-                                            <strong><?php echo esc_html($product_data['name']); ?></strong>
-                                            <small><?php echo esc_html($product_data['sku']); ?></small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-stock-badge <?php echo $product_data['stock'] <= 5 ? 'srwm-stock-low' : 'srwm-stock-ok'; ?>">
-                                            <?php echo esc_html($product_data['stock']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-waitlist-count"><?php echo esc_html($product_data['waitlist_count']); ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-supplier-info">
-                                            <strong><?php echo esc_html($product_data['supplier_name'] ?? __('No supplier', 'smart-restock-waitlist')); ?></strong>
-                                            <small><?php echo esc_html($product_data['supplier_email'] ?? ''); ?></small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-action-buttons">
-                                            <button class="button button-primary button-small generate-restock-link" data-product-id="<?php echo $product_data['product_id']; ?>">
-                                                <span class="dashicons dashicons-admin-links"></span>
-                                                <?php _e('Generate Link', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                            <button class="button button-secondary button-small view-restock-links" data-product-id="<?php echo $product_data['product_id']; ?>">
-                                                <span class="dashicons dashicons-list-view"></span>
-                                                <?php _e('View Links', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <?php else: ?>
-                <div class="srwm-empty-state">
-                    <div class="srwm-empty-icon">
-                        <span class="dashicons dashicons-admin-links"></span>
-                    </div>
-                    <h3><?php _e('No Products Available', 'smart-restock-waitlist'); ?></h3>
-                    <p><?php _e('Products will appear here when they have active waitlists.', 'smart-restock-waitlist'); ?></p>
-                </div>
-                <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Restock Link Generation Modal -->
-            <div id="srwm-restock-link-modal" class="srwm-modal" style="display: none;">
-                <div class="srwm-modal-content">
-                    <div class="srwm-modal-header">
-                        <h2><?php _e('Generate Restock Link', 'smart-restock-waitlist'); ?></h2>
-                        <span class="srwm-modal-close">&times;</span>
-                    </div>
-                    <form id="srwm-restock-link-form">
-                        <div class="srwm-form-group">
-                            <label for="srwm-supplier-email"><?php _e('Supplier Email:', 'smart-restock-waitlist'); ?></label>
-                            <input type="email" id="srwm-supplier-email" name="supplier_email" class="regular-text" required>
-                            <p class="description"><?php _e('The email address where the restock link will be sent.', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                        <div class="srwm-form-group">
-                            <label for="srwm-link-expiry"><?php _e('Link Expiry (hours):', 'smart-restock-waitlist'); ?></label>
-                            <select id="srwm-link-expiry" name="expiry_hours">
-                                <option value="24">24 hours</option>
-                                <option value="48">48 hours</option>
-                                <option value="72">72 hours</option>
-                                <option value="168">1 week</option>
-                            </select>
-                        </div>
-                        <div class="srwm-form-group">
-                            <label for="srwm-restock-quantity"><?php _e('Default Restock Quantity:', 'smart-restock-waitlist'); ?></label>
-                            <input type="number" id="srwm-restock-quantity" name="default_quantity" min="1" value="10" class="regular-text">
-                            <p class="description"><?php _e('The default quantity that will be suggested to the supplier.', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                        <div class="srwm-form-actions">
-                            <button type="submit" class="button button-primary">
-                                <span class="dashicons dashicons-admin-links"></span>
-                                <?php _e('Generate & Send Link', 'smart-restock-waitlist'); ?>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Restock Links List Modal -->
-            <div id="srwm-links-list-modal" class="srwm-modal" style="display: none;">
-                <div class="srwm-modal-content">
-                    <div class="srwm-modal-header">
-                        <h2><?php _e('Restock Links History', 'smart-restock-waitlist'); ?></h2>
-                        <span class="srwm-modal-close">&times;</span>
-                    </div>
-                    <div id="srwm-links-list-content"></div>
-                </div>
-            </div>
-        </div>
-        
-        <?php
-        $this->enqueue_modern_styles();
-        ?>
-        <?php
-    }
-    
-    /**
      * Render Multi-Channel Notifications page
      */
     public function render_notifications_page() {
@@ -2154,43 +1988,6 @@ class SRWM_Admin {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
         return $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
-    }
-    
-    /**
-     * Get CSV upload links
-     */
-    private function get_csv_upload_links() {
-        global $wpdb;
-        $table = $wpdb->prefix . 'srwm_csv_tokens';
-        
-        // Get CSV tokens with proper data
-        $results = $wpdb->get_results("
-            SELECT 
-                t.*,
-                CASE 
-                    WHEN t.used = 1 THEN 'Used'
-                    WHEN t.expires_at < NOW() THEN 'Expired'
-                    ELSE 'Active'
-                END as status,
-                CASE 
-                    WHEN t.used = 1 THEN 1
-                    ELSE 0
-                END as upload_count
-            FROM $table t 
-            ORDER BY t.created_at DESC 
-            LIMIT 10
-        ");
-        
-        if ($results === null) {
-            $results = array();
-        }
-        
-        // Add supplier name (for now, use email as name)
-        foreach ($results as $link) {
-            $link->supplier_name = $link->supplier_email;
-        }
-        
-        return $results;
     }
     
     /**
@@ -2503,164 +2300,6 @@ class SRWM_Admin {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-        
-        <?php
-        $this->enqueue_modern_styles();
-        ?>
-        <?php
-    }
-    
-    /**
-     * Render CSV Upload page
-     */
-    public function render_csv_upload_page() {
-        if (!$this->license_manager->is_pro_active()) {
-            $this->render_pro_feature_locked();
-            return;
-        }
-        
-        ?>
-        <div class="wrap srwm-pro-page">
-            <div class="srwm-pro-header">
-                <h1><?php _e('CSV Upload', 'smart-restock-waitlist'); ?></h1>
-                <div class="srwm-pro-actions">
-                    <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
-                        <span class="dashicons dashicons-arrow-left-alt"></span>
-                        <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="srwm-pro-card">
-                <div class="srwm-pro-card-header">
-                    <h2><?php _e('Bulk Stock Update', 'smart-restock-waitlist'); ?></h2>
-                </div>
-                <div class="srwm-pro-card-content">
-                    <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
-                    
-                    <?php 
-                    $require_approval = get_option('srwm_csv_require_approval', 'yes');
-                    if ($require_approval === 'yes'): 
-                    ?>
-                    <div class="srwm-approval-notice">
-                        <div class="srwm-notice-icon">
-                            <span class="dashicons dashicons-clock"></span>
-                        </div>
-                        <div class="srwm-notice-content">
-                            <h4><?php _e('Approval Required', 'smart-restock-waitlist'); ?></h4>
-                            <p><?php _e('CSV uploads require admin approval before stock is updated. Review uploads in the CSV Approvals tab.', 'smart-restock-waitlist'); ?></p>
-                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>" class="button button-small">
-                                <?php _e('View Pending Approvals', 'smart-restock-waitlist'); ?>
-                            </a>
-                        </div>
-                    </div>
-                    <?php else: ?>
-                    <div class="srwm-approval-notice srwm-auto-approval">
-                        <div class="srwm-notice-icon">
-                            <span class="dashicons dashicons-yes-alt"></span>
-                        </div>
-                        <div class="srwm-notice-content">
-                            <h4><?php _e('Auto-Approval Enabled', 'smart-restock-waitlist'); ?></h4>
-                            <p><?php _e('CSV uploads are processed immediately without admin approval.', 'smart-restock-waitlist'); ?></p>
-                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>" class="button button-small">
-                                <?php _e('Change Setting', 'smart-restock-waitlist'); ?>
-                            </a>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                
-                <div class="srwm-csv-form">
-                    <form id="srwm-generate-csv-form" method="post">
-                        <?php wp_nonce_field('srwm_admin_nonce', 'srwm_admin_nonce'); ?>
-                        <div class="srwm-form-group">
-                            <label for="srwm_supplier_email"><?php _e('Supplier Email:', 'smart-restock-waitlist'); ?></label>
-                            <div class="srwm-input-group">
-                                <input type="email" id="srwm_supplier_email" name="srwm_supplier_email" required class="regular-text" placeholder="<?php _e('Enter supplier email address', 'smart-restock-waitlist'); ?>">
-                                <button type="submit" class="button button-primary">
-                                    <span class="dashicons dashicons-admin-links"></span>
-                                    <?php _e('Generate Upload Link', 'smart-restock-waitlist'); ?>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                    
-                    <div class="srwm-pro-actions">
-                        <button class="button button-secondary" id="srwm-download-template">
-                            <span class="dashicons dashicons-download"></span>
-                            <?php _e('Download CSV Template', 'smart-restock-waitlist'); ?>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="srwm-csv-info">
-                    <h3><?php _e('CSV Format Requirements:', 'smart-restock-waitlist'); ?></h3>
-                    <ul>
-                        <li><?php _e('File must be in CSV format', 'smart-restock-waitlist'); ?></li>
-                        <li><?php _e('Required columns: Product ID, Quantity', 'smart-restock-waitlist'); ?></li>
-                        <li><?php _e('Optional columns: SKU, Notes', 'smart-restock-waitlist'); ?></li>
-                        <li><?php _e('Maximum file size: 5MB', 'smart-restock-waitlist'); ?></li>
-                    </ul>
-                </div>
-                
-                <div class="srwm-table-container">
-                    <table class="srwm-pro-table">
-                        <thead>
-                            <tr>
-                                <th><?php _e('Upload Link', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Expires', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Uploads', 'smart-restock-waitlist'); ?></th>
-                                <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($this->get_csv_upload_links() as $link): ?>
-                                <tr>
-                                    <td>
-                                        <code><?php echo esc_html($link->token); ?></code>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-supplier-info">
-                                            <strong><?php echo esc_html($link->supplier_name); ?></strong>
-                                            <small><?php echo esc_html($link->supplier_email); ?></small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?php echo esc_html(date('M j, Y H:i', strtotime($link->expires_at))); ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($link->status === 'Used'): ?>
-                                            <span class="srwm-status srwm-status-used"><?php _e('Used', 'smart-restock-waitlist'); ?></span>
-                                        <?php elseif ($link->status === 'Expired'): ?>
-                                            <span class="srwm-status srwm-status-expired"><?php _e('Expired', 'smart-restock-waitlist'); ?></span>
-                                        <?php else: ?>
-                                            <span class="srwm-status srwm-status-active"><?php _e('Active', 'smart-restock-waitlist'); ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-upload-count"><?php echo esc_html($link->upload_count); ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-action-buttons">
-                                            <button class="button button-small copy-link" data-token="<?php echo esc_attr($link->token); ?>">
-                                                <span class="dashicons dashicons-admin-links"></span>
-                                                <?php _e('Copy Link', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                            <button class="button button-small view-uploads" data-token="<?php echo esc_attr($link->token); ?>">
-                                                <span class="dashicons dashicons-list-view"></span>
-                                                <?php _e('View Uploads', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
                 </div>
             </div>
         </div>

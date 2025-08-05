@@ -241,17 +241,17 @@ class SRWM_License_Manager {
                     </div>
                     
                     <div class="srwm-features-grid">
-                        <!-- One-Click Restock -->
+                        <!-- Supplier Management -->
                         <div class="srwm-feature-card">
-                            <div class="srwm-feature-icon">🚀</div>
+                            <div class="srwm-feature-icon">👥</div>
                             <div class="srwm-feature-content">
-                                <h3><?php _e('One-Click Restock', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Generate secure restock links for suppliers. No login required - suppliers click and update stock instantly.', 'smart-restock-waitlist'); ?></p>
+                                <h3><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Comprehensive supplier management with CSV upload links and quick restock functionality.', 'smart-restock-waitlist'); ?></p>
                                 <ul class="srwm-feature-list">
-                                    <li><?php _e('Secure token-based links', 'smart-restock-waitlist'); ?></li>
-                                    <li><?php _e('No supplier login required', 'smart-restock-waitlist'); ?></li>
-                                    <li><?php _e('Instant stock updates', 'smart-restock-waitlist'); ?></li>
-                                    <li><?php _e('Activity logging & tracking', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Supplier database management', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('CSV upload link generation', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Quick restock links', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('Supplier analytics & trust scores', 'smart-restock-waitlist'); ?></li>
                                 </ul>
                             </div>
                         </div>
