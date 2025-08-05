@@ -1,0 +1,799 @@
+# Copyright (C) 2024 Smart Restock & Waitlist Manager
+# This file is distributed under the same license as the Smart Restock & Waitlist Manager package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Smart Restock & Waitlist Manager 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/smart-restock-waitlist-manager\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: smart-restock-waitlist-manager.php:123
+msgid "License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:124
+msgid "License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:131
+msgid "Smart Restock & Waitlist Manager - License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:135
+msgid "License Status"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:138
+msgid "Status:"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:143
+msgid "Pro Features Enabled:"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:145
+msgid "One-Click Supplier Restock"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:146
+msgid "Multi-Channel Notifications (WhatsApp/SMS)"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:147
+msgid "Automatic Purchase Order Generation"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:148
+msgid "Supplier CSV Upload"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:149
+msgid "Advanced Analytics"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:150
+msgid "Customizable Templates"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:153
+msgid "Upgrade to Pro"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:154
+msgid "Unlock advanced features for better supplier management and automation."
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:155
+msgid "Get Pro License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:160
+msgid "License Key"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:165
+msgid "License Key:"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:168
+msgid "Enter your license key to activate Pro features."
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:175
+msgid "Deactivate License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:177
+msgid "Activate License"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:185
+msgid "Please enter a license key."
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:200
+msgid "License activated successfully!"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:202
+msgid "Invalid license key. Please check and try again."
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:210
+msgid "License deactivated successfully!"
+msgstr ""
+
+#: smart-restock-waitlist-manager.php:220
+msgid "Smart Restock & Waitlist Manager requires WooCommerce to be installed and activated."
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:45
+msgid "Join the Waitlist"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:49
+msgid "You are already on the waitlist for this product!"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:55
+msgid "Name:"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:60
+msgid "Email:"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:65
+msgid "Join Waitlist"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:71
+msgid "%d person is waiting for this product"
+msgid_plural "%d people are waiting for this product"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-srwm-waitlist.php:95
+msgid "Successfully added to waitlist!"
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:96
+msgid "Failed to add to waitlist. Please try again."
+msgstr ""
+
+#: includes/class-srwm-waitlist.php:97
+msgid "You are already on the waitlist for this product."
+msgstr ""
+
+#: includes/class-srwm-supplier.php:25
+msgid "Supplier Information"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:35
+msgid "Supplier Email:"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:40
+msgid "Supplier Name:"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:45
+msgid "Low Stock Threshold:"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:47
+msgid "Leave empty to use global threshold"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:51
+msgid "Notification Channels:"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:54
+msgid "Email"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:58
+msgid "WhatsApp"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:62
+msgid "SMS"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:66
+msgid "Upgrade to Pro for WhatsApp and SMS notifications"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:72
+msgid "Auto-generate PO:"
+msgstr ""
+
+#: includes/class-srwm-supplier.php:74
+msgid "Automatically generate purchase order when stock is low"
+msgstr ""
+
+#: includes/class-srwm-admin.php:25
+msgid "Smart Restock & Waitlist"
+msgstr ""
+
+#: includes/class-srwm-admin.php:26
+msgid "Restock Manager"
+msgstr ""
+
+#: includes/class-srwm-admin.php:35
+msgid "Dashboard"
+msgstr ""
+
+#: includes/class-srwm-admin.php:36
+msgid "Dashboard"
+msgstr ""
+
+#: includes/class-srwm-admin.php:43
+msgid "Settings"
+msgstr ""
+
+#: includes/class-srwm-admin.php:44
+msgid "Settings"
+msgstr ""
+
+#: includes/class-srwm-admin.php:51
+msgid "Analytics"
+msgstr ""
+
+#: includes/class-srwm-admin.php:52
+msgid "Analytics"
+msgstr ""
+
+#: includes/class-srwm-admin.php:59
+msgid "Pro Features"
+msgstr ""
+
+#: includes/class-srwm-admin.php:60
+msgid "Pro Features"
+msgstr ""
+
+#: includes/class-srwm-admin.php:85
+msgid "restock_success"
+msgstr ""
+
+#: includes/class-srwm-admin.php:86
+msgid "Product restocked successfully!"
+msgstr ""
+
+#: includes/class-srwm-admin.php:87
+msgid "restock_error"
+msgstr ""
+
+#: includes/class-srwm-admin.php:88
+msgid "Failed to restock product."
+msgstr ""
+
+#: includes/class-srwm-admin.php:89
+msgid "export_success"
+msgstr ""
+
+#: includes/class-srwm-admin.php:90
+msgid "Export completed successfully!"
+msgstr ""
+
+#: includes/class-srwm-admin.php:91
+msgid "export_error"
+msgstr ""
+
+#: includes/class-srwm-admin.php:92
+msgid "Failed to export data."
+msgstr ""
+
+#: includes/class-srwm-admin.php:100
+msgid "Smart Restock & Waitlist Manager"
+msgstr ""
+
+#: includes/class-srwm-admin.php:104
+msgid "Upgrade to Pro:"
+msgstr ""
+
+#: includes/class-srwm-admin.php:105
+msgid "Unlock advanced features like one-click supplier restock, multi-channel notifications, and automatic purchase orders."
+msgstr ""
+
+#: includes/class-srwm-admin.php:106
+msgid "Get Pro License"
+msgstr ""
+
+#: includes/class-srwm-admin.php:111
+msgid "Active Waitlists"
+msgstr ""
+
+#: includes/class-srwm-admin.php:116
+msgid "Total Waitlist Customers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:121
+msgid "Products with Suppliers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:127
+msgid "Pro Features Active"
+msgstr ""
+
+#: includes/class-srwm-admin.php:135
+msgid "Products with Active Waitlists"
+msgstr ""
+
+#: includes/class-srwm-admin.php:138
+msgid "No products currently have active waitlists."
+msgstr ""
+
+#: includes/class-srwm-admin.php:143
+msgid "Product"
+msgstr ""
+
+#: includes/class-srwm-admin.php:144
+msgid "SKU"
+msgstr ""
+
+#: includes/class-srwm-admin.php:145
+msgid "Current Stock"
+msgstr ""
+
+#: includes/class-srwm-admin.php:146
+msgid "Waitlist Count"
+msgstr ""
+
+#: includes/class-srwm-admin.php:147
+msgid "Actions"
+msgstr ""
+
+#: includes/class-srwm-admin.php:155
+msgid "Edit"
+msgstr ""
+
+#: includes/class-srwm-admin.php:162
+msgid "View"
+msgstr ""
+
+#: includes/class-srwm-admin.php:167
+msgid "Restock"
+msgstr ""
+
+#: includes/class-srwm-admin.php:171
+msgid "Generate Restock Link"
+msgstr ""
+
+#: includes/class-srwm-admin.php:180
+msgid "Products with Supplier Alerts"
+msgstr ""
+
+#: includes/class-srwm-admin.php:183
+msgid "No products have supplier alerts configured."
+msgstr ""
+
+#: includes/class-srwm-admin.php:188
+msgid "Supplier"
+msgstr ""
+
+#: includes/class-srwm-admin.php:190
+msgid "Threshold"
+msgstr ""
+
+#: includes/class-srwm-admin.php:191
+msgid "Status"
+msgstr ""
+
+#: includes/class-srwm-admin.php:200
+msgid "Low Stock"
+msgstr ""
+
+#: includes/class-srwm-admin.php:202
+msgid "OK"
+msgstr ""
+
+#: includes/class-srwm-admin.php:208
+msgid "Generate PO"
+msgstr ""
+
+#: includes/class-srwm-admin.php:220
+msgid "Restock Product"
+msgstr ""
+
+#: includes/class-srwm-admin.php:225
+msgid "Quantity to add:"
+msgstr ""
+
+#: includes/class-srwm-admin.php:230
+msgid "Restock & Notify Customers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:238
+msgid "Waitlist Customers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:280
+msgid "Smart Restock & Waitlist Settings"
+msgstr ""
+
+#: includes/class-srwm-admin.php:285
+msgid "General Settings"
+msgstr ""
+
+#: includes/class-srwm-admin.php:288
+msgid "Enable Waitlist"
+msgstr ""
+
+#: includes/class-srwm-admin.php:289
+msgid "Enable customer waitlist functionality"
+msgstr ""
+
+#: includes/class-srwm-admin.php:294
+msgid "Supplier Notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:295
+msgid "Enable supplier notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:300
+msgid "Low Stock Threshold"
+msgstr ""
+
+#: includes/class-srwm-admin.php:302
+msgid "Stock level at which to notify suppliers (global default)"
+msgstr ""
+
+#: includes/class-srwm-admin.php:307
+msgid "Auto-disable at Zero Stock"
+msgstr ""
+
+#: includes/class-srwm-admin.php:308
+msgid "Automatically hide products when stock reaches zero"
+msgstr ""
+
+#: includes/class-srwm-admin.php:314
+msgid "Pro Settings"
+msgstr ""
+
+#: includes/class-srwm-admin.php:317
+msgid "WhatsApp Notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:318
+msgid "Enable WhatsApp notifications for suppliers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:323
+msgid "SMS Notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:324
+msgid "Enable SMS notifications for suppliers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:329
+msgid "Auto-generate Purchase Orders"
+msgstr ""
+
+#: includes/class-srwm-admin.php:330
+msgid "Automatically generate purchase orders when stock is low"
+msgstr ""
+
+#: includes/class-srwm-admin.php:335
+msgid "Company Information (for Purchase Orders)"
+msgstr ""
+
+#: includes/class-srwm-admin.php:338
+msgid "Company Name"
+msgstr ""
+
+#: includes/class-srwm-admin.php:345
+msgid "Company Address"
+msgstr ""
+
+#: includes/class-srwm-admin.php:352
+msgid "Company Phone"
+msgstr ""
+
+#: includes/class-srwm-admin.php:359
+msgid "Company Email"
+msgstr ""
+
+#: includes/class-srwm-admin.php:367
+msgid "Unlock advanced settings including multi-channel notifications, automatic purchase orders, and company information management."
+msgstr ""
+
+#: includes/class-srwm-admin.php:374
+msgid "Email Templates"
+msgstr ""
+
+#: includes/class-srwm-admin.php:379
+msgid "Customer Waitlist Email"
+msgstr ""
+
+#: includes/class-srwm-admin.php:382
+msgid "Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}"
+msgstr ""
+
+#: includes/class-srwm-admin.php:388
+msgid "Supplier Notification Email"
+msgstr ""
+
+#: includes/class-srwm-admin.php:391
+msgid "Available placeholders: {supplier_name}, {product_name}, {sku}, {current_stock}, {waitlist_count}, {site_name}"
+msgstr ""
+
+#: includes/class-srwm-admin.php:393
+msgid "Pro placeholders: {restock_link}, {po_number}"
+msgstr ""
+
+#: includes/class-srwm-admin.php:405
+msgid "Smart Restock & Waitlist Analytics"
+msgstr ""
+
+#: includes/class-srwm-admin.php:410
+msgid "Total Restocks"
+msgstr ""
+
+#: includes/class-srwm-admin.php:415
+msgid "Avg. Waitlist Size"
+msgstr ""
+
+#: includes/class-srwm-admin.php:420
+msgid "Avg. Restock Time"
+msgstr ""
+
+#: includes/class-srwm-admin.php:426
+msgid "Conversion Rate"
+msgstr ""
+
+#: includes/class-srwm-admin.php:435
+msgid "Top Products by Demand"
+msgstr ""
+
+#: includes/class-srwm-admin.php:438
+msgid "Product"
+msgstr ""
+
+#: includes/class-srwm-admin.php:439
+msgid "Total Waitlist Customers"
+msgstr ""
+
+#: includes/class-srwm-admin.php:440
+msgid "Restock Count"
+msgstr ""
+
+#: includes/class-srwm-admin.php:441
+msgid "Avg. Restock Time"
+msgstr ""
+
+#: includes/class-srwm-admin.php:450
+msgid "Export Analytics Data"
+msgstr ""
+
+#: includes/class-srwm-admin.php:460
+msgid "Pro features are not available. Please activate your license."
+msgstr ""
+
+#: includes/class-srwm-admin.php:465
+msgid "Pro Features"
+msgstr ""
+
+#: includes/class-srwm-admin.php:470
+msgid "One-Click Supplier Restock"
+msgstr ""
+
+#: includes/class-srwm-admin.php:471
+msgid "Generate secure restock links for suppliers to update stock without logging in."
+msgstr ""
+
+#: includes/class-srwm-admin.php:472
+msgid "Generate Restock Link"
+msgstr ""
+
+#: includes/class-srwm-admin.php:476
+msgid "Multi-Channel Notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:477
+msgid "Send supplier alerts via Email, WhatsApp, and SMS."
+msgstr ""
+
+#: includes/class-srwm-admin.php:478
+msgid "Test Notifications"
+msgstr ""
+
+#: includes/class-srwm-admin.php:482
+msgid "Purchase Order Generation"
+msgstr ""
+
+#: includes/class-srwm-admin.php:483
+msgid "Automatically generate and send branded purchase orders to suppliers."
+msgstr ""
+
+#: includes/class-srwm-admin.php:484
+msgid "Generate PO"
+msgstr ""
+
+#: includes/class-srwm-admin.php:488
+msgid "CSV Upload"
+msgstr ""
+
+#: includes/class-srwm-admin.php:489
+msgid "Allow suppliers to upload CSV files for bulk restock operations."
+msgstr ""
+
+#: includes/class-srwm-admin.php:490
+msgid "Generate CSV Upload Link"
+msgstr ""
+
+#: includes/class-srwm-admin.php:520
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/class-srwm-admin.php:525
+msgid "Invalid data provided."
+msgstr ""
+
+#: includes/class-srwm-admin.php:530
+msgid "Successfully added to waitlist!"
+msgstr ""
+
+#: includes/class-srwm-admin.php:532
+msgid "Failed to add to waitlist."
+msgstr ""
+
+#: includes/class-srwm-admin.php:540
+msgid "Invalid data provided."
+msgstr ""
+
+#: includes/class-srwm-admin.php:545
+msgid "Product restocked and customers notified!"
+msgstr ""
+
+#: includes/class-srwm-admin.php:547
+msgid "Failed to restock product."
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:25
+msgid "Customer"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:28
+msgid "Product Back in Stock"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:95
+msgid "Great News!"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:96
+msgid "Your waitlisted product is back in stock"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:101
+msgid "Hi {customer_name},"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:103
+msgid "We're excited to let you know that {product_name} is back in stock and ready for purchase!"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:113
+msgid "Buy Now"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:118
+msgid "Don't miss out!"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:119
+msgid "This product was in high demand, so we recommend purchasing soon to avoid missing out again."
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:123
+msgid "If you have any questions or need assistance, please don't hesitate to contact us."
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:125
+msgid "Best regards,"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:130
+msgid "This email was sent from %s"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:131
+msgid "Visit our website"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:135
+msgid "Facebook"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:136
+msgid "Twitter"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:137
+msgid "Instagram"
+msgstr ""
+
+#: templates/emails/customer-waitlist-notification.php:141
+msgid "You received this email because you joined the waitlist for this product. If you no longer wish to receive these notifications, please contact us."
+msgstr ""
+
+#: templates/emails/supplier-notification.php:25
+msgid "Supplier"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:28
+msgid "Low Stock Alert"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:95
+msgid "Low Stock Alert"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:96
+msgid "Action required - Product needs restocking"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:101
+msgid "Hi {supplier_name},"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:107
+msgid "Low Stock Alert"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:108
+msgid "The following product is running low on stock and requires immediate attention:"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:125
+msgid "Current Stock"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:129
+msgid "Customers Waiting"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:135
+msgid "Urgent Action Required"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:136
+msgid "This product has customers waiting and needs to be restocked as soon as possible."
+msgstr ""
+
+#: templates/emails/supplier-notification.php:145
+msgid "Pro Features Available"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:147
+msgid "One-click restock via secure link"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:148
+msgid "Automatic purchase order generation"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:149
+msgid "Bulk restock via CSV upload"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:150
+msgid "Multi-channel notifications (WhatsApp/SMS)"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:151
+msgid "Upgrade to Pro for advanced features"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:155
+msgid "Please restock this product as soon as possible to meet customer demand."
+msgstr ""
+
+#: templates/emails/supplier-notification.php:157
+msgid "Best regards,"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:162
+msgid "This email was sent from %s"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:163
+msgid "Visit our website"
+msgstr ""
+
+#: templates/emails/supplier-notification.php:167
+msgid "You received this email because you are listed as a supplier for this product. If you no longer wish to receive these notifications, please contact us."
+msgstr ""
+
+#: templates/emails/supplier-notification.php:185
+msgid "One-Click Restock"
+msgstr ""
