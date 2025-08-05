@@ -1562,6 +1562,140 @@ class SRWM_Admin {
     }
     
     /**
+     * Get default email template
+     */
+    private function get_default_email_template() {
+        return "Hi {supplier_name},\n\n" .
+               "We need to restock the following product:\n\n" .
+               "Product: {product_name}\n" .
+               "SKU: {sku}\n" .
+               "Current Stock: {current_stock}\n" .
+               "Waitlist Count: {waitlist_count}\n\n" .
+               "Please use the following link to restock:\n{restock_link}\n\n" .
+               "Thank you,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default WhatsApp template
+     */
+    private function get_default_whatsapp_template() {
+        return "Hi {supplier_name},\n\n" .
+               "We need to restock the following product:\n\n" .
+               "Product: {product_name}\n" .
+               "SKU: {sku}\n" .
+               "Current Stock: {current_stock}\n" .
+               "Waitlist Count: {waitlist_count}\n\n" .
+               "Please use the following link to restock:\n{restock_link}\n\n" .
+               "Thank you,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default SMS template
+     */
+    private function get_default_sms_template() {
+        return "Hi {supplier_name}, we need to restock {product_name} (SKU: {sku}). Current stock: {current_stock}, Waitlist: {waitlist_count}. Please check your email for the restock link.";
+    }
+    
+    /**
+     * Get default waitlist email template
+     */
+    private function get_default_waitlist_email_template() {
+        return "Hi {customer_name},\n\n" .
+               "Thank you for joining the waitlist for {product_name}.\n\n" .
+               "We'll notify you as soon as this product is back in stock.\n\n" .
+               "Best regards,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default restock email template
+     */
+    private function get_default_restock_email_template() {
+        return "Hi {customer_name},\n\n" .
+               "Great news! {product_name} is now back in stock.\n\n" .
+               "You can purchase it here: {product_link}\n\n" .
+               "Best regards,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default supplier email template
+     */
+    private function get_default_supplier_email_template() {
+        return "Hi {supplier_name},\n\n" .
+               "We need to restock the following product:\n\n" .
+               "Product: {product_name}\n" .
+               "SKU: {sku}\n" .
+               "Current Stock: {current_stock}\n" .
+               "Waitlist Count: {waitlist_count}\n\n" .
+               "Please use the following link to restock:\n{restock_link}\n\n" .
+               "Thank you,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default purchase order email template
+     */
+    private function get_default_po_email_template() {
+        return "Hi {supplier_name},\n\n" .
+               "Please find attached Purchase Order #{po_number} for the following items:\n\n" .
+               "Product: {product_name}\n" .
+               "Quantity: {quantity}\n\n" .
+               "Please confirm receipt of this purchase order.\n\n" .
+               "Best regards,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get total purchase orders count
+     */
+    private function get_total_purchase_orders() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table") ?: 0;
+    }
+    
+    /**
+     * Get pending purchase orders count
+     */
+    private function get_pending_purchase_orders() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 'pending'") ?: 0;
+    }
+    
+    /**
+     * Get completed purchase orders count
+     */
+    private function get_completed_purchase_orders() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        return $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 'completed'") ?: 0;
+    }
+    
+    /**
+     * Get all purchase orders
+     */
+    private function get_purchase_orders() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        return $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
+    }
+    
+    /**
+     * Get CSV upload links
+     */
+    private function get_csv_upload_links() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_csv_tokens';
+        $results = $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
+        
+        // Add missing properties for display
+        foreach ($results as $link) {
+            $link->supplier_name = __('Supplier', 'smart-restock-waitlist');
+            $link->upload_count = 0;
+        }
+        
+        return $results;
+    }
+    
+    /**
      * Render Email Templates page
      */
     public function render_templates_page() {
@@ -1845,10 +1979,10 @@ class SRWM_Admin {
         }
         
         ?>
-        <div class="wrap srwm-dashboard">
-            <div class="srwm-dashboard-header">
+        <div class="wrap srwm-pro-page">
+            <div class="srwm-pro-header">
                 <h1><?php _e('CSV Upload', 'smart-restock-waitlist'); ?></h1>
-                <div class="srwm-dashboard-actions">
+                <div class="srwm-pro-actions">
                     <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
                         <span class="dashicons dashicons-arrow-left-alt"></span>
                         <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
@@ -1856,13 +1990,14 @@ class SRWM_Admin {
                 </div>
             </div>
             
-            <div class="srwm-section">
-                <div class="srwm-section-header">
+            <div class="srwm-pro-card">
+                <div class="srwm-pro-card-header">
                     <h2><?php _e('Bulk Stock Update', 'smart-restock-waitlist'); ?></h2>
-                    <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
                 </div>
+                <div class="srwm-pro-card-content">
+                    <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
                 
-                <div class="srwm-csv-actions">
+                <div class="srwm-pro-actions">
                     <button class="button button-primary" id="srwm-generate-csv-link">
                         <span class="dashicons dashicons-admin-links"></span>
                         <?php _e('Generate Upload Link', 'smart-restock-waitlist'); ?>
@@ -1884,7 +2019,7 @@ class SRWM_Admin {
                 </div>
                 
                 <div class="srwm-table-container">
-                    <table class="wp-list-table widefat fixed striped srwm-modern-table">
+                    <table class="srwm-pro-table">
                         <thead>
                             <tr>
                                 <th><?php _e('Upload Link', 'smart-restock-waitlist'); ?></th>
@@ -1936,6 +2071,7 @@ class SRWM_Admin {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
         </div>
