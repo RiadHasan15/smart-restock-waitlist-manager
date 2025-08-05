@@ -525,6 +525,19 @@ class SRWM_Pro_CSV_Upload {
                                     <i class="fas fa-rocket"></i> <?php _e('Process Restock Data', 'smart-restock-waitlist'); ?>
                                 </button>
                             </form>
+                            
+                            <!-- Preview Section -->
+                            <div id="srwm-preview-section" style="display: none; margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <h4 style="margin: 0 0 15px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-table"></i> Data Preview
+                                </h4>
+                                <div id="srwm-preview-content"></div>
+                                <div id="srwm-preview-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                                    <button id="srwm-preview-btn" class="srwm-preview-btn" style="display: none;">
+                                        <i class="fas fa-eye"></i> View Full Preview
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="info-section">
@@ -612,9 +625,19 @@ class SRWM_Pro_CSV_Upload {
                 fileInput.addEventListener('change', function() {
                     if (this.files.length > 0) {
                         const file = this.files[0];
+                        // Hide any existing preview section
+                        hidePreviewSection();
                         validateAndPreviewFile(file);
                     }
                 });
+                
+                // Hide preview section
+                function hidePreviewSection() {
+                    const previewSection = document.getElementById('srwm-preview-section');
+                    if (previewSection) {
+                        previewSection.style.display = 'none';
+                    }
+                }
                 
                 // Real-time file validation with preview
                 function validateAndPreviewFile(file) {
@@ -827,8 +850,8 @@ class SRWM_Pro_CSV_Upload {
                     // Add success animation
                     fileUploadArea.style.animation = 'pulse 0.6s ease';
                     
-                    // Show preview button
-                    showPreviewButton(csvData, validation);
+                    // Show preview section
+                    showPreviewSection(csvData, validation);
                 }
                 
                 // Show file warning
@@ -853,8 +876,8 @@ class SRWM_Pro_CSV_Upload {
                         hintElement.style.color = '#f59e0b';
                     }
                     
-                    // Show preview button with warnings
-                    showPreviewButton(csvData, validation, true);
+                    // Show preview section with warnings
+                    showPreviewSection(csvData, validation, true);
                 }
                 
                 // Show file error
@@ -883,38 +906,76 @@ class SRWM_Pro_CSV_Upload {
                     fileInput.value = '';
                 }
                 
-                // Show preview button
-                function showPreviewButton(csvData, validation, hasWarnings = false) {
-                    console.log('Creating preview button...');
+                // Show preview section
+                function showPreviewSection(csvData, validation, hasWarnings = false) {
+                    console.log('Showing preview section...');
                     
-                    // Remove existing preview button
-                    const existingButton = document.querySelector('.srwm-preview-btn');
-                    if (existingButton) {
-                        existingButton.remove();
+                    const previewSection = document.getElementById('srwm-preview-section');
+                    const previewContent = document.getElementById('srwm-preview-content');
+                    const previewBtn = document.getElementById('srwm-preview-btn');
+                    
+                    if (!previewSection || !previewContent || !previewBtn) {
+                        console.error('Preview elements not found');
+                        return;
                     }
                     
-                    const button = document.createElement('button');
-                    button.className = 'srwm-preview-btn';
-                    button.innerHTML = '<i class="fas fa-eye"></i> Preview Data';
-                    button.style.cssText = `
+                    // Show the preview section
+                    previewSection.style.display = 'block';
+                    
+                    // Create summary content
+                    const summaryHTML = `
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(16, 185, 129, 0.1); color: #059669; border-radius: 8px; font-size: 0.9rem; font-weight: 600;">
+                                <i class="fas fa-check-circle"></i>
+                                <span>${validation.validRows} valid rows</span>
+                            </div>
+                            ${validation.warnings.length > 0 ? `
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(245, 158, 11, 0.1); color: #d97706; border-radius: 8px; font-size: 0.9rem; font-weight: 600;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>${validation.warnings.length} warnings</span>
+                                </div>
+                            ` : ''}
+                            ${validation.errors.length > 0 ? `
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(239, 68, 68, 0.1); color: #dc2626; border-radius: 8px; font-size: 0.9rem; font-weight: 600;">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>${validation.errors.length} errors</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; border: 1px solid #e2e8f0;">
+                            <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> 
+                                File validated successfully. Click "View Full Preview" to see detailed data.
+                            </p>
+                        </div>
+                    `;
+                    
+                    previewContent.innerHTML = summaryHTML;
+                    
+                    // Update preview button
+                    previewBtn.style.display = 'inline-flex';
+                    previewBtn.style.cssText = `
                         background: ${hasWarnings ? '#f59e0b' : '#10b981'};
                         color: white;
                         border: none;
                         padding: 10px 20px;
                         border-radius: 8px;
-                        margin-top: 15px;
                         cursor: pointer;
                         font-weight: 600;
                         transition: all 0.3s ease;
+                        font-size: 0.9rem;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        align-items: center;
+                        gap: 8px;
                     `;
                     
-                    button.addEventListener('click', function() {
+                    // Add click event
+                    previewBtn.onclick = function() {
                         console.log('Preview button clicked!');
                         showPreviewModal(csvData, validation);
-                    });
+                    };
                     
-                    fileUploadArea.appendChild(button);
-                    console.log('Preview button added to DOM');
+                    console.log('Preview section displayed');
                 }
                 
                 // Show preview modal
