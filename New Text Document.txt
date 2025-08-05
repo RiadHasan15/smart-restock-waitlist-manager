@@ -1,0 +1,117 @@
+Smart Restock & Waitlist Manager
+
+Versions:
+
+    🔓 Free (WordPress.org)
+
+    🔐 Pro (Paid, one-time or yearly license)
+
+🔓 FREE VERSION (WooCommerce)
+
+🎯 For small shop owners with basic needs
+1. Customer Waitlist
+
+    Show waitlist form on out-of-stock products
+
+    Store customer email per product
+
+    Show “Thank you” confirmation
+
+2. Waitlist Notification on Restock
+
+    When admin manually restocks a product → notify all waitlisted users automatically
+
+    Simple WooCommerce email layout
+
+3. Basic Supplier Email Alerts
+
+    Assign one email per product
+
+    Notify supplier when product hits 0 or low-stock threshold
+
+    Plain text notification (no restock action link)
+
+4. Basic Admin Dashboard
+
+    Show products with active waitlists
+
+    Show how many customers are waiting per product
+
+🔐 PRO VERSION
+
+🎯 For dropshipping, wholesale, and multi-supplier stores
+✅ 1. Supplier One-Click Restock (No Login)
+
+    Email/WhatsApp/SMS sent to supplier with secure one-time link
+
+    Supplier can:
+
+        Click to auto-restock (preset amount like +10)
+
+        Or enter custom amount (optional)
+
+    Stock updates instantly
+
+    Log time, IP, and action in dashboard
+
+✅ 2. Multi-Channel Supplier Notifications
+
+    Notify suppliers via:
+
+        ✅ Email
+
+        ✅ WhatsApp (API or link-based)
+
+        ✅ SMS (Twilio/Nexmo)
+
+    Per-supplier channel preference in settings
+
+    Message includes product info, SKU, stock count, waitlist demand
+
+✅ 3. Customizable Templates
+
+    Customize:
+
+        Customer waitlist email
+
+        Supplier notification (all channels)
+
+    Use placeholders like {product_name}, {sku}, {restock_link}, {waitlist_count}
+
+✅ 4. Automatic Purchase Order (PO) Generation
+
+    When stock hits threshold:
+
+        Auto-generate branded PDF purchase order
+
+        Email to supplier (with company info, product list, quantities)
+
+    PO includes delivery instructions, pricing (optional)
+
+✅ 5. Supplier CSV Upload
+
+    Supplier receives secure link to upload CSV (no login)
+
+    CSV fields: Product ID/SKU, Quantity
+
+    System validates, updates stock, and logs result
+
+    Error handling for mismatches
+
+✅ 6. Waitlist + Restock Analytics
+
+    Dashboard for:
+
+        Products with highest demand
+
+        Avg. waitlist size
+
+        Restock turnaround time per supplier
+
+    Export to CSV
+
+✅ 7. Stock Threshold Management
+
+    Set global or per-product threshold (e.g., notify when ≤ 3)
+
+    Optional: auto-disable product visibility at 0 stock
