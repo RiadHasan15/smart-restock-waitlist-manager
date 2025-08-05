@@ -100,8 +100,6 @@
             var $input = $('.srwm-threshold-input[data-product-id="' + productId + '"]');
             var threshold = $input.val();
             
-            console.log('Threshold save attempt:', { productId: productId, threshold: threshold, nonce: srwm_admin.nonce });
-            
             if (!threshold || threshold < 0) {
                 showAdminMessage('error', 'Please enter a valid threshold value.');
                 return;
@@ -117,17 +115,12 @@
                 threshold: threshold
             };
             
-            console.log('Save threshold AJAX data:', ajaxData);
-            
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
                 dataType: 'json',
                 data: ajaxData,
                 success: function(response) {
-                    console.log('Threshold save response:', response);
-                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
-                    
                     if (response.success === true || response.success === 'true') {
                         showAdminMessage('success', response.message || 'Threshold saved successfully!');
                     } else {
@@ -135,7 +128,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Threshold save error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to save threshold.');
                 },
                 complete: function() {
@@ -151,8 +143,6 @@
             var $btn = $(this);
             var productId = $btn.data('product-id');
             
-            console.log('Reset threshold clicked:', { productId: productId, nonce: srwm_admin.nonce });
-            
             if (!confirm('Are you sure you want to reset this threshold to the global default?')) {
                 return;
             }
@@ -166,17 +156,12 @@
                 product_id: productId
             };
             
-            console.log('Reset threshold AJAX data:', ajaxData);
-            
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
                 dataType: 'json',
                 data: ajaxData,
                 success: function(response) {
-                    console.log('Reset threshold response:', response);
-                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
-                    
                     if (response.success === true || response.success === 'true') {
                         showAdminMessage('success', response.message || 'Threshold reset successfully!');
                         // Reload the page to update the display
@@ -188,7 +173,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Reset threshold error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to reset threshold.');
                 },
                 complete: function() {
@@ -205,8 +189,6 @@
             var originalText = $btn.html();
             var threshold = $('#srwm_global_threshold').val();
             
-            console.log('Global threshold save attempt:', { threshold: threshold, nonce: srwm_admin.nonce });
-            
             if (!threshold || threshold < 0) {
                 showAdminMessage('error', 'Please enter a valid threshold value.');
                 return;
@@ -221,17 +203,12 @@
                 global_threshold: threshold
             };
             
-            console.log('Global threshold AJAX data:', ajaxData);
-            
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
                 dataType: 'json',
                 data: ajaxData,
                 success: function(response) {
-                    console.log('Global threshold response:', response);
-                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
-                    
                     if (response.success === true || response.success === 'true') {
                         showAdminMessage('success', response.message || 'Global threshold saved successfully!');
                     } else {
@@ -239,7 +216,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log('Global threshold error:', { xhr: xhr, status: status, error: error });
                     showAdminMessage('error', 'Failed to save global threshold.');
                 },
                 complete: function() {
