@@ -4999,6 +4999,7 @@ class SRWM_Admin {
                         </div>
                     </div>
                 </div>
+                </div>
                 
                 <!-- Quick Restock Tab -->
                 <div class="srwm-tab-content" id="quick-restock-tab">
@@ -5388,11 +5389,6 @@ class SRWM_Admin {
         /* Ensure tab content is visible */
         #quick-restock-tab {
             min-height: 200px;
-        }
-        
-        #quick-restock-tab.active {
-            display: block !important;
-            visibility: visible !important;
         }
         
         .srwm-suppliers-container {
@@ -6549,15 +6545,6 @@ class SRWM_Admin {
             // Debug: Check if Quick Restock tab content exists
             console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
             console.log('Quick Restock tab content length:', $('#quick-restock-tab').html().length);
-            console.log('Quick Restock tab HTML:', $('#quick-restock-tab').html().substring(0, 200));
-            
-            // Force show Quick Restock tab for testing
-            setTimeout(function() {
-                console.log('Testing Quick Restock tab visibility...');
-                $('#quick-restock-tab').show().addClass('active');
-                console.log('Quick Restock tab display:', $('#quick-restock-tab').css('display'));
-                console.log('Quick Restock tab visibility:', $('#quick-restock-tab').css('visibility'));
-            }, 1000);
             
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
