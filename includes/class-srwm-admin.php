@@ -6967,6 +6967,8 @@ class SRWM_Admin {
             }
             
             function displayUploadLinks(links) {
+                console.log('Displaying upload links:', links);
+                
                 if (links.length === 0) {
                     $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-empty">No upload links found. Generate links from supplier cards above.</td></tr>');
                     return;
@@ -6974,13 +6976,15 @@ class SRWM_Admin {
                 
                 let html = '';
                 links.forEach(function(link, index) {
+                    console.log('Processing link:', link, 'used field:', link.used, 'type:', typeof link.used, 'parsed:', parseInt(link.used));
                     const expiresDate = new Date(link.expires_at);
                     const now = new Date();
                     const isExpired = expiresDate < now;
-                    const status = isExpired ? 'expired' : (link.used ? 'used' : 'active');
+                    const status = isExpired ? 'expired' : (parseInt(link.used) === 1 ? 'used' : 'active');
+                    console.log('Status determination:', { isExpired, used: parseInt(link.used), status });
                     
                     // Check if this is a newly generated link (first in the list and active)
-                    const isNewLink = index === 0 && status === 'active' && link.upload_count == 0;
+                    const isNewLink = index === 0 && status === 'active' && parseInt(link.upload_count) === 0;
                     const newLinkClass = isNewLink ? 'srwm-new-link' : '';
                     
                     html += `
