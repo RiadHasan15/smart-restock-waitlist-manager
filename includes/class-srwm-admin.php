@@ -474,6 +474,7 @@ class SRWM_Admin {
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
+                <?php endif; ?>
             </div>
         </div>
         
