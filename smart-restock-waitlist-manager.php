@@ -35,28 +35,13 @@ define('SRWM_PLUGIN_BASENAME', plugin_basename(__FILE__));
 class SRWM_License_Manager {
     
     private $plugin_slug = 'smart-restock-waitlist-manager';
-    private $license_server_url = 'https://stackcastle.com/wp-json/licensing/v1';
-    private $license_key;
-    private $license_status;
     
     public function __construct() {
-        $this->refresh_license_data();
-        
         add_action('admin_init', array($this, 'handle_license_actions'));
         add_action('admin_notices', array($this, 'show_license_notices'));
-        
-        // Auto-update functionality
-        add_filter('pre_set_site_transient_update_plugins', array($this, 'check_for_updates'));
-        add_filter('plugins_api', array($this, 'plugin_info'), 10, 3);
     }
     
-    /**
-     * Refresh license data from database
-     */
-    public function refresh_license_data() {
-        $this->license_key = get_option($this->plugin_slug . '_license_key', '');
-        $this->license_status = get_option($this->plugin_slug . '_license_status', 'inactive');
-    }
+
     
     /**
      * Add license menu to admin
@@ -105,254 +90,45 @@ class SRWM_License_Manager {
         }
         
         $license_key = sanitize_text_field($_POST['license_key']);
-        $domain = parse_url(home_url(), PHP_URL_HOST);
         
-        // Debug logging
-        error_log('SRWM Activation Request URL: ' . $this->license_server_url . '/wp-json/licensing/v1/activate');
-        error_log('SRWM Activation Request Data: ' . print_r(array(
-            'license_key' => $license_key,
-            'domain' => $domain,
-            'product_slug' => $this->plugin_slug
-        ), true));
-        
-        $response = wp_remote_post($this->license_server_url . '/wp-json/licensing/v1/activate', array(
-            'body' => array(
-                'license_key' => $license_key,
-                'domain' => $domain,
-                'product_slug' => $this->plugin_slug
-            ),
-            'timeout' => 30,
-            'sslverify' => true
-        ));
-        
-        if (is_wp_error($response)) {
-            error_log('SRWM Activation Error: ' . $response->get_error_message());
-            
-            // For development/testing, allow local activation with specific keys
-            if ($this->is_development_license($license_key)) {
-                $this->activate_license_locally($license_key);
-                return;
-            }
-            
-            $this->add_notice('error', __('Connection error: ' . $response->get_error_message(), 'smart-restock-waitlist'));
-            return;
-        }
-        
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = wp_remote_retrieve_body($response);
-        $body = json_decode($response_body, true);
-        
-        error_log('SRWM Activation Response Code: ' . $response_code);
-        error_log('SRWM Activation Response Body: ' . $response_body);
-        
-        if ($response_code === 200 && isset($body['success']) && $body['success']) {
-            $this->activate_license_locally($license_key);
-        } else {
-            $error_message = 'Unknown error';
-            if (isset($body['error'])) {
-                $error_message = $body['error'];
-            } elseif ($response_code !== 200) {
-                $error_message = 'HTTP Error: ' . $response_code;
-            } elseif (empty($response_body)) {
-                $error_message = 'Empty response from server';
-            }
-            
-            // For development/testing, allow local activation with specific keys
-            if ($this->is_development_license($license_key)) {
-                $this->activate_license_locally($license_key);
-                return;
-            }
-            
-            update_option($this->plugin_slug . '_license_status', 'invalid');
-            $this->refresh_license_data();
-            $this->add_notice('error', __('License activation failed: ' . $error_message, 'smart-restock-waitlist'));
-        }
-    }
-    
-    /**
-     * Check if this is a development license key
-     */
-    private function is_development_license($license_key) {
-        $dev_keys = array(
-            'DEV-LICENSE-12345',
-            'TEST-LICENSE-67890',
-            'DEMO-LICENSE-11111',
-            'PRO-LICENSE-22222',
-            'TRIAL-LICENSE-33333'
-        );
-        
-        return in_array(strtoupper($license_key), $dev_keys);
-    }
-    
-    /**
-     * Activate license locally (for development/testing)
-     */
-    private function activate_license_locally($license_key) {
+        // Always activate successfully for local testing
         update_option($this->plugin_slug . '_license_key', $license_key);
         update_option($this->plugin_slug . '_license_status', 'valid');
         update_option($this->plugin_slug . '_license_last_check', time());
-        $this->refresh_license_data();
-        
-        // Force reload Pro classes in main plugin
-        global $srwm_plugin;
-        if (isset($srwm_plugin) && method_exists($srwm_plugin, 'reload_pro_classes')) {
-            $srwm_plugin->reload_pro_classes();
-        }
         
         $this->add_notice('success', __('License activated successfully! Pro features are now enabled.', 'smart-restock-waitlist'));
     }
+    
+
     
     /**
      * Deactivate license
      */
     private function deactivate_license() {
-        if (empty($this->license_key)) {
-            $this->add_notice('error', __('No license key to deactivate.', 'smart-restock-waitlist'));
-            return;
-        }
-        
-        // For development/testing, always deactivate locally first
-        $this->deactivate_license_locally();
-        
-        // Try to deactivate on server (optional)
-        $this->deactivate_license_on_server();
-    }
-    
-    /**
-     * Deactivate license locally
-     */
-    private function deactivate_license_locally() {
-        // Clear license data from database
         delete_option($this->plugin_slug . '_license_key');
         update_option($this->plugin_slug . '_license_status', 'inactive');
+        update_option($this->plugin_slug . '_license_last_check', time());
         
-        // Refresh instance variables
-        $this->refresh_license_data();
-        
-        // Debug logging
-        $this->debug_license_data();
-        
-        // Force reload Pro classes in main plugin
-        global $srwm_plugin;
-        if (isset($srwm_plugin) && method_exists($srwm_plugin, 'reload_pro_classes')) {
-            $srwm_plugin->reload_pro_classes();
-        }
-        
-        $this->add_notice('success', __('License deactivated successfully! Pro features have been disabled. Please refresh the page to see the changes.', 'smart-restock-waitlist'));
-        
-        // Force admin menu to be rebuilt on next page load
-        delete_transient('srwm_admin_menu_built');
-        
-        // Add JavaScript to force page reload
-        add_action('admin_footer', function() {
-            echo '<script>
-                setTimeout(function() {
-                    window.location.reload();
-                }, 2000);
-            </script>';
-        });
+        $this->add_notice('success', __('License deactivated successfully! Pro features are now disabled.', 'smart-restock-waitlist'));
     }
     
-    /**
-     * Deactivate license on server (optional)
-     */
-    private function deactivate_license_on_server() {
-        
-        $domain = parse_url(home_url(), PHP_URL_HOST);
-        
-        $request_data = array(
-            'license_key' => $this->license_key,
-            'domain' => $domain,
-            'product_slug' => $this->plugin_slug
-        );
-        
-        // Debug logging
-        error_log('SRWM Deactivation Request URL: ' . $this->license_server_url . '/wp-json/licensing/v1/deactivate');
-        error_log('SRWM Deactivation Request Data: ' . print_r($request_data, true));
-        
-        $response = wp_remote_post($this->license_server_url . '/wp-json/licensing/v1/deactivate', array(
-            'body' => $request_data,
-            'timeout' => 30,
-            'sslverify' => true
-        ));
-        
-        if (!is_wp_error($response)) {
-            $response_code = wp_remote_retrieve_response_code($response);
-            $response_body = wp_remote_retrieve_body($response);
-            $body = json_decode($response_body, true);
-            
-            // Debug logging
-            error_log('SRWM Deactivation Response Code: ' . $response_code);
-            error_log('SRWM Deactivation Response Body: ' . $response_body);
-            
-            if ($response_code === 200 && isset($body['success']) && $body['success']) {
-                error_log('SRWM: License deactivated successfully on server');
-            } else {
-                $error_message = 'Unknown error';
-                if (isset($body['error'])) {
-                    $error_message = $body['error'];
-                } elseif ($response_code !== 200) {
-                    $error_message = 'HTTP Error: ' . $response_code;
-                } elseif (empty($response_body)) {
-                    $error_message = 'Empty response from server';
-                }
-                
-                error_log('SRWM: Server deactivation failed: ' . $error_message);
-            }
-        } else {
-            error_log('SRWM: Server unreachable: ' . $response->get_error_message());
-        }
-    }
+
     
     /**
      * Check license status
      */
     private function check_license_status() {
-        if (empty($this->license_key)) {
-            $this->add_notice('error', __('No license key to check.', 'smart-restock-waitlist'));
+        $license_key = get_option($this->plugin_slug . '_license_key');
+        
+        if (empty($license_key)) {
+            $this->add_notice('error', __('No license key found.', 'smart-restock-waitlist'));
             return;
         }
         
-        // For development licenses, always show as valid
-        if ($this->is_development_license($this->license_key)) {
-            update_option($this->plugin_slug . '_license_status', 'valid');
-            update_option($this->plugin_slug . '_license_last_check', time());
-            $this->refresh_license_data();
-            $this->add_notice('success', __('Development license is valid and active!', 'smart-restock-waitlist'));
-            return;
-        }
+        update_option($this->plugin_slug . '_license_status', 'valid');
+        update_option($this->plugin_slug . '_license_last_check', time());
         
-        $response = wp_remote_post($this->license_server_url . '/wp-json/licensing/v1/validate', array(
-            'body' => array(
-                'license_key' => $this->license_key,
-                'product_slug' => $this->plugin_slug
-            ),
-            'timeout' => 30,
-            'sslverify' => true
-        ));
-        
-        if (!is_wp_error($response)) {
-            $response_code = wp_remote_retrieve_response_code($response);
-            $response_body = wp_remote_retrieve_body($response);
-            $body = json_decode($response_body, true);
-            
-            error_log('SRWM Validation Response Code: ' . $response_code);
-            error_log('SRWM Validation Response Body: ' . $response_body);
-            
-            if ($response_code === 200 && isset($body['success']) && $body['success']) {
-                update_option($this->plugin_slug . '_license_status', 'valid');
-                update_option($this->plugin_slug . '_license_last_check', time());
-                $this->refresh_license_data();
-                $this->add_notice('success', __('License is valid and active!', 'smart-restock-waitlist'));
-            } else {
-                update_option($this->plugin_slug . '_license_status', 'invalid');
-                $this->refresh_license_data();
-                $error = isset($body['error']) ? $body['error'] : __('License validation failed.', 'smart-restock-waitlist');
-                $this->add_notice('error', $error);
-            }
-        } else {
-            $this->add_notice('error', __('Connection error: ' . $response->get_error_message(), 'smart-restock-waitlist'));
-        }
+        $this->add_notice('success', __('License is valid and active!', 'smart-restock-waitlist'));
     }
     
     /**
@@ -367,7 +143,12 @@ class SRWM_License_Manager {
             <h1><?php _e('Smart Restock & Waitlist Manager - License', 'smart-restock-waitlist'); ?></h1>
             
             <div class="card" style="max-width: 600px;">
-                <h2><?php _e('License Management', 'smart-restock-waitlist'); ?></h2>
+                <h2><?php _e('License Management (Local Testing)', 'smart-restock-waitlist'); ?></h2>
+                
+                <div class="notice notice-info">
+                    <p><strong><?php _e('Local Testing Mode:', 'smart-restock-waitlist'); ?></strong> 
+                    <?php _e('This is a dummy license system for local testing. Any license key will work.', 'smart-restock-waitlist'); ?></p>
+                </div>
                 
                 <form method="post" action="">
                     <?php wp_nonce_field('srwm_license_nonce', 'srwm_license_nonce'); ?>
@@ -377,10 +158,8 @@ class SRWM_License_Manager {
                             <th scope="row"><?php _e('License Key', 'smart-restock-waitlist'); ?></th>
                             <td>
                                 <input type="text" name="license_key" value="<?php echo esc_attr($license_key); ?>" 
-                                       class="regular-text" placeholder="<?php _e('Enter your license key', 'smart-restock-waitlist'); ?>" />
-                                <p class="description"><?php _e('Enter the license key you received after purchase.', 'smart-restock-waitlist'); ?></p>
-                                <p class="description"><strong><?php _e('Development License Keys (for testing):', 'smart-restock-waitlist'); ?></strong></p>
-                                <p class="description">DEV-LICENSE-12345, TEST-LICENSE-67890, DEMO-LICENSE-11111, PRO-LICENSE-22222, TRIAL-LICENSE-33333</p>
+                                       class="regular-text" placeholder="<?php _e('Enter any license key', 'smart-restock-waitlist'); ?>" />
+                                <p class="description"><?php _e('For local testing, any license key will work.', 'smart-restock-waitlist'); ?></p>
                             </td>
                         </tr>
                         <tr>
@@ -451,17 +230,6 @@ class SRWM_License_Manager {
         }
         
         delete_option('srwm_license_notices');
-        
-        // Temporary debug notice - remove this after testing
-        if (current_user_can('manage_options')) {
-            $current_status = get_option($this->plugin_slug . '_license_status', 'inactive');
-            $current_key = get_option($this->plugin_slug . '_license_key', '');
-            $is_pro = $this->is_pro_active();
-            
-            echo '<div class="notice notice-info"><p><strong>Debug Info:</strong> Status: ' . esc_html($current_status) . 
-                 ' | Key: ' . (empty($current_key) ? 'Empty' : 'Set') . 
-                 ' | Pro Active: ' . ($is_pro ? 'Yes' : 'No') . '</p></div>';
-        }
     }
     
     /**
@@ -477,16 +245,8 @@ class SRWM_License_Manager {
      * Check if Pro license is active
      */
     public function is_pro_active() {
-        // Always check the database for the most current status
-        $current_status = get_option($this->plugin_slug . '_license_status', 'inactive');
-        $current_key = get_option($this->plugin_slug . '_license_key', '');
-        
-        // Check if it's a development license
-        if (!empty($current_key) && $this->is_development_license($current_key)) {
-            return true;
-        }
-        
-        return $current_status === 'valid';
+        // For local testing, always return true
+        return true;
     }
     
     /**
@@ -506,123 +266,15 @@ class SRWM_License_Manager {
     /**
      * Debug method to check license data
      */
-    public function debug_license_data() {
-        $debug_info = array(
-            'instance_key' => $this->license_key,
-            'instance_status' => $this->license_status,
-            'db_key' => get_option($this->plugin_slug . '_license_key', ''),
-            'db_status' => get_option($this->plugin_slug . '_license_status', 'inactive'),
-            'is_pro_active' => $this->is_pro_active()
-        );
-        
-        error_log('SRWM License Debug: ' . print_r($debug_info, true));
-        return $debug_info;
-    }
+
     
-    /**
-     * Check for updates
-     */
-    public function check_for_updates($transient) {
-        if (empty($transient->checked)) {
-            return $transient;
-        }
-        
-        $plugin_basename = plugin_basename(SRWM_PLUGIN_FILE);
-        
-        if (!isset($transient->checked[$plugin_basename])) {
-            return $transient;
-        }
-        
-        // Only check for updates if license is valid
-        if ($this->license_status !== 'valid') {
-            return $transient;
-        }
-        
-        $remote_version = $this->get_remote_version();
-        
-        if ($remote_version && version_compare(SRWM_VERSION, $remote_version, '<')) {
-            $transient->response[$plugin_basename] = (object) array(
-                'slug' => dirname($plugin_basename),
-                'new_version' => $remote_version,
-                'url' => '',
-                'package' => $this->get_download_url()
-            );
-        }
-        
-        return $transient;
-    }
+
     
-    /**
-     * Plugin info for update screen
-     */
-    public function plugin_info($res, $action, $args) {
-        if ($action != 'plugin_information') {
-            return $res;
-        }
-        
-        if ($args->slug != dirname(plugin_basename(SRWM_PLUGIN_FILE))) {
-            return $res;
-        }
-        
-        $remote_version = $this->get_remote_version();
-        
-        return (object) array(
-            'name' => 'Smart Restock & Waitlist Manager',
-            'slug' => dirname(plugin_basename(SRWM_PLUGIN_FILE)),
-            'version' => $remote_version ?: SRWM_VERSION,
-            'author' => 'Your Company',
-            'homepage' => '',
-            'requires' => '5.0',
-            'tested' => '6.4',
-            'downloaded' => 0,
-            'last_updated' => date('Y-m-d'),
-            'sections' => array(
-                'description' => 'Premium plugin with licensing and automatic updates.',
-                'changelog' => 'No changelog available.'
-            ),
-            'download_link' => $this->get_download_url()
-        );
-    }
+
     
-    /**
-     * Get remote version
-     */
-    private function get_remote_version() {
-        if (empty($this->license_key)) {
-            return false;
-        }
-        
-        $response = wp_remote_post($this->license_server_url . '/update-check', array(
-            'body' => array(
-                'license_key' => $this->license_key,
-                'product_slug' => $this->plugin_slug,
-                'current_version' => SRWM_VERSION
-            ),
-            'timeout' => 30
-        ));
-        
-        if (!is_wp_error($response)) {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            
-            if (isset($body['success']) && $body['success'] && isset($body['latest_version'])) {
-                return $body['latest_version'];
-            }
-        }
-        
-        return false;
-    }
+
     
-    /**
-     * Get download URL
-     */
-    private function get_download_url() {
-        if (empty($this->license_key)) {
-            return '';
-        }
-        
-        return $this->license_server_url . '/update-download?license_key=' . 
-               urlencode($this->license_key) . '&product_slug=' . urlencode($this->plugin_slug);
-    }
+
 }
 
 /**
@@ -677,9 +329,6 @@ class SmartRestockWaitlistManager {
      * Check and load Pro classes if license is active
      */
     private function maybe_load_pro_classes() {
-        // Refresh license manager data
-        $this->license_manager->refresh_license_data();
-        
         if ($this->license_manager->is_pro_active()) {
             $this->load_pro_classes();
         }
