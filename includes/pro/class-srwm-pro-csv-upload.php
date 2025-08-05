@@ -216,29 +216,60 @@ class SRWM_Pro_CSV_Upload {
                 
                 .file-upload-area {
                     border: 3px dashed #d1d5db;
-                    border-radius: 12px;
-                    padding: 40px 20px;
+                    border-radius: 16px;
+                    padding: 50px 30px;
                     text-align: center;
-                    background: white;
-                    transition: all 0.3s ease;
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                     cursor: pointer;
                     position: relative;
+                    overflow: hidden;
+                }
+                
+                .file-upload-area::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+                    transition: left 0.6s;
+                }
+                
+                .file-upload-area:hover::before {
+                    left: 100%;
                 }
                 
                 .file-upload-area:hover {
                     border-color: #667eea;
-                    background: #f8fafc;
+                    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
                 }
                 
                 .file-upload-area.dragover {
                     border-color: #10b981;
-                    background: #f0fdf4;
+                    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                    transform: scale(1.02);
+                    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2);
                 }
                 
                 .file-upload-icon {
-                    font-size: 3rem;
+                    font-size: 4rem;
                     color: #9ca3af;
-                    margin-bottom: 15px;
+                    margin-bottom: 20px;
+                    transition: all 0.3s ease;
+                }
+                
+                .file-upload-area:hover .file-upload-icon {
+                    color: #667eea;
+                    transform: scale(1.1);
+                }
+                
+                .file-upload-area.dragover .file-upload-icon {
+                    color: #10b981;
+                    transform: scale(1.2);
                 }
                 
                 .file-upload-text {
@@ -579,28 +610,52 @@ class SRWM_Pro_CSV_Upload {
                 
                 fileInput.addEventListener('change', function() {
                     if (this.files.length > 0) {
-                        const fileName = this.files[0].name;
-                        const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
+                        const file = this.files[0];
+                        const fileName = file.name;
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
                         
-                        // Update the display without removing the file input
+                        // Add loading animation
                         const iconElement = fileUploadArea.querySelector('.file-upload-icon');
                         const textElement = fileUploadArea.querySelector('.file-upload-text');
                         const hintElement = fileUploadArea.querySelector('.file-upload-hint');
                         
                         if (iconElement) {
-                            iconElement.innerHTML = '<i class="fas fa-check-circle"></i>';
-                            iconElement.style.color = '#10b981';
+                            iconElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            iconElement.style.color = '#f59e0b';
                         }
                         
                         if (textElement) {
-                            textElement.textContent = fileName;
-                            textElement.style.color = '#059669';
+                            textElement.textContent = 'Processing file...';
+                            textElement.style.color = '#f59e0b';
                             textElement.style.fontWeight = '600';
                         }
                         
                         if (hintElement) {
-                            hintElement.textContent = `Size: ${fileSize} MB`;
+                            hintElement.textContent = `Validating ${fileName}`;
                         }
+                        
+                        // Simulate file validation (you can add real validation here)
+                        setTimeout(() => {
+                            if (iconElement) {
+                                iconElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                                iconElement.style.color = '#10b981';
+                                iconElement.style.animation = 'bounceIn 0.6s ease';
+                            }
+                            
+                            if (textElement) {
+                                textElement.textContent = fileName;
+                                textElement.style.color = '#059669';
+                                textElement.style.fontWeight = '600';
+                            }
+                            
+                            if (hintElement) {
+                                hintElement.textContent = `Size: ${fileSize} MB • Ready to upload`;
+                                hintElement.style.color = '#059669';
+                            }
+                            
+                            // Add success animation
+                            fileUploadArea.style.animation = 'pulse 0.6s ease';
+                        }, 1500);
                     }
                 });
                 
@@ -624,6 +679,58 @@ class SRWM_Pro_CSV_Upload {
                     }
                 });
             </script>
+            
+            <style>
+                /* Animations */
+                @keyframes bounceIn {
+                    0% {
+                        transform: scale(0.3);
+                        opacity: 0;
+                    }
+                    50% {
+                        transform: scale(1.05);
+                    }
+                    70% {
+                        transform: scale(0.9);
+                    }
+                    100% {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.05);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+                
+                @keyframes slideInUp {
+                    from {
+                        transform: translateY(30px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+            </style>
         </body>
         </html>
         <?php
