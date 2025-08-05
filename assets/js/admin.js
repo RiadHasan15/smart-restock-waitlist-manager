@@ -91,6 +91,344 @@
             $('#restock-quantity').val(quantity);
         });
         
+        // Handle threshold save buttons
+        $(document).on('click', '.save-threshold', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            var $input = $('.srwm-threshold-input[data-product-id="' + productId + '"]');
+            var threshold = $input.val();
+            
+            if (!threshold || threshold < 0) {
+                showAdminMessage('error', 'Please enter a valid threshold value.');
+                return;
+            }
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).text('Saving...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_save_threshold',
+                    nonce: srwm_admin.nonce,
+                    product_id: productId,
+                    threshold: threshold
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Threshold saved successfully!');
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to save threshold.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to save threshold.');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Save');
+                }
+            });
+        });
+        
+        // Handle threshold reset buttons
+        $(document).on('click', '.reset-threshold', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            if (!confirm('Are you sure you want to reset this threshold to the global default?')) {
+                return;
+            }
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).text('Resetting...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_reset_threshold',
+                    nonce: srwm_admin.nonce,
+                    product_id: productId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Threshold reset successfully!');
+                        // Reload the page to update the display
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to reset threshold.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to reset threshold.');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-undo"></span> Reset');
+                }
+            });
+        });
+        
+        // Handle notification settings form submission
+        $(document).on('submit', '#srwm-notification-settings-form', function(e) {
+            e.preventDefault();
+            
+            var $form = $(this);
+            var $submitBtn = $form.find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+            
+            // Disable submit button and show loading
+            $submitBtn.prop('disabled', true).text('Saving...');
+            
+            var formData = new FormData($form[0]);
+            formData.append('action', 'srwm_save_notification_settings');
+            formData.append('nonce', srwm_admin.nonce);
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Notification settings saved successfully!');
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to save notification settings.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to save notification settings.');
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+        
+        // Handle email templates form submission
+        $(document).on('submit', '#srwm-email-templates-form', function(e) {
+            e.preventDefault();
+            
+            var $form = $(this);
+            var $submitBtn = $form.find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+            
+            // Disable submit button and show loading
+            $submitBtn.prop('disabled', true).text('Saving...');
+            
+            var formData = new FormData($form[0]);
+            formData.append('action', 'srwm_save_email_templates');
+            formData.append('nonce', srwm_admin.nonce);
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Email templates saved successfully!');
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to save email templates.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to save email templates.');
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+        
+        // Handle global threshold form submission
+        $(document).on('submit', '#srwm-global-threshold-form', function(e) {
+            e.preventDefault();
+            
+            var $form = $(this);
+            var $submitBtn = $form.find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+            var globalThreshold = $form.find('input[name="srwm_global_threshold"]').val();
+            
+            if (!globalThreshold || globalThreshold < 0) {
+                showAdminMessage('error', 'Please enter a valid global threshold value.');
+                return;
+            }
+            
+            // Disable submit button and show loading
+            $submitBtn.prop('disabled', true).text('Saving...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_save_global_threshold',
+                    nonce: srwm_admin.nonce,
+                    global_threshold: globalThreshold
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Global threshold saved successfully!');
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to save global threshold.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to save global threshold.');
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+        
+        // Handle generate restock link buttons
+        $(document).on('click', '.generate-restock-link', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            var supplierEmail = prompt('Enter supplier email address:');
+            
+            if (!supplierEmail || !isValidEmail(supplierEmail)) {
+                showAdminMessage('error', 'Please enter a valid email address.');
+                return;
+            }
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).text('Generating...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_generate_restock_link',
+                    nonce: srwm_admin.nonce,
+                    product_id: productId,
+                    supplier_email: supplierEmail
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Restock link generated successfully!');
+                        if (response.data && response.data.link) {
+                            // Show the generated link
+                            var linkText = 'Restock Link: ' + response.data.link;
+                            showAdminMessage('info', linkText);
+                        }
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to generate restock link.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to generate restock link.');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Generate Link');
+                }
+            });
+        });
+        
+        // Handle generate PO buttons
+        $(document).on('click', '#srwm-generate-po, .generate-po', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            var supplierName = prompt('Enter supplier name:');
+            var supplierEmail = prompt('Enter supplier email address:');
+            
+            if (!supplierName || !supplierEmail || !isValidEmail(supplierEmail)) {
+                showAdminMessage('error', 'Please enter valid supplier information.');
+                return;
+            }
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).text('Generating...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_generate_po',
+                    nonce: srwm_admin.nonce,
+                    product_id: productId,
+                    supplier_name: supplierName,
+                    supplier_email: supplierEmail
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'Purchase order generated successfully!');
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to generate purchase order.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to generate purchase order.');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Generate PO');
+                }
+            });
+        });
+        
+        // Handle generate CSV upload link buttons
+        $(document).on('click', '#srwm-generate-csv-link, .generate-csv-link', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            var supplierEmail = prompt('Enter supplier email address:');
+            
+            if (!supplierEmail || !isValidEmail(supplierEmail)) {
+                showAdminMessage('error', 'Please enter a valid email address.');
+                return;
+            }
+            
+            // Disable button and show loading
+            $btn.prop('disabled', true).text('Generating...');
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'srwm_generate_csv_upload_link',
+                    nonce: srwm_admin.nonce,
+                    supplier_email: supplierEmail
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showAdminMessage('success', response.data || 'CSV upload link generated successfully!');
+                        if (response.data && response.data.link) {
+                            // Show the generated link
+                            var linkText = 'CSV Upload Link: ' + response.data.link;
+                            showAdminMessage('info', linkText);
+                        }
+                    } else {
+                        showAdminMessage('error', response.data || 'Failed to generate CSV upload link.');
+                    }
+                },
+                error: function() {
+                    showAdminMessage('error', 'Failed to generate CSV upload link.');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Generate Link');
+                }
+            });
+        });
+        
+        // Email validation helper function
+        function isValidEmail(email) {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
         // Initialize tooltips
         initTooltips();
         
