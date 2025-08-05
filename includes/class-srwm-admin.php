@@ -7052,7 +7052,7 @@ class SRWM_Admin {
             }
             
             function copyLinkToClipboard(token) {
-                const uploadUrl = '<?php echo admin_url('admin-ajax.php'); ?>?srwm_upload=csv&token=' + token;
+                const uploadUrl = '<?php echo site_url(); ?>/?srwm_csv_upload=1&token=' + token;
                 
                 navigator.clipboard.writeText(uploadUrl).then(function() {
                     showNotification('Upload link copied to clipboard!', 'success');
