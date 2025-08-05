@@ -1363,19 +1363,35 @@ class SmartRestockWaitlistManager {
      * AJAX: Save global threshold (Pro)
      */
     public function ajax_save_global_threshold() {
+        error_log('SRWM: Global threshold save handler called');
+        
         check_ajax_referer('srwm_admin_nonce', 'nonce');
         
-        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Global threshold - insufficient permissions');
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!$this->license_manager->is_pro_active()) {
+            error_log('SRWM: Global threshold - pro license not active');
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro license required. Please activate your license first.', 'smart-restock-waitlist'))));
+        }
+        
+        if (!isset($_POST['global_threshold'])) {
+            error_log('SRWM: Global threshold - missing data');
+            wp_die(json_encode(array('success' => false, 'message' => __('Global threshold value is required.', 'smart-restock-waitlist'))));
         }
         
         $global_threshold = intval($_POST['global_threshold']);
+        error_log('SRWM: Global threshold value: ' . $global_threshold);
         
         if ($global_threshold < 0) {
+            error_log('SRWM: Global threshold - invalid value');
             wp_die(json_encode(array('success' => false, 'message' => __('Global threshold must be a positive number.', 'smart-restock-waitlist'))));
         }
         
-        update_option('srwm_global_threshold', $global_threshold);
+        $result = update_option('srwm_global_threshold', $global_threshold);
+        error_log('SRWM: Global threshold update_option result: ' . ($result !== false ? 'success' : 'failed'));
         
         wp_die(json_encode(array('success' => true, 'message' => __('Global threshold saved successfully!', 'smart-restock-waitlist'))));
     }
