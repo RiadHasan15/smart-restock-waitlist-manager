@@ -5036,6 +5036,58 @@ class SRWM_Admin {
                         </div>
                     </div>
                     
+                    <!-- Product Selection Section -->
+                    <div class="srwm-product-selection-section">
+                        <div class="srwm-section-header">
+                            <h3><i class="fas fa-search"></i> <?php _e('Select Products for Restock', 'smart-restock-waitlist'); ?></h3>
+                        </div>
+                        
+                        <!-- Search and Filter Controls -->
+                        <div class="srwm-search-filters">
+                            <div class="srwm-search-box">
+                                <input type="text" id="quick-restock-product-search" placeholder="<?php _e('Search products by name, SKU, or category...', 'smart-restock-waitlist'); ?>">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="srwm-filters">
+                                <select id="quick-restock-category-filter">
+                                    <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
+                                    <?php foreach ($categories as $slug => $name): ?>
+                                        <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($name); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <select id="quick-restock-stock-filter">
+                                    <option value=""><?php _e('All Stock Status', 'smart-restock-waitlist'); ?></option>
+                                    <option value="instock"><?php _e('In Stock', 'smart-restock-waitlist'); ?></option>
+                                    <option value="outofstock"><?php _e('Out of Stock', 'smart-restock-waitlist'); ?></option>
+                                    <option value="lowstock"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Product Selection Controls -->
+                        <div class="srwm-selection-controls">
+                            <div class="srwm-selection-info">
+                                <span id="selected-products-count">0</span> <?php _e('products selected', 'smart-restock-waitlist'); ?>
+                            </div>
+                            <div class="srwm-selection-actions">
+                                <button type="button" class="button button-secondary" id="select-all-products">
+                                    <i class="fas fa-check-square"></i> <?php _e('Select All', 'smart-restock-waitlist'); ?>
+                                </button>
+                                <button type="button" class="button button-secondary" id="clear-selection">
+                                    <i class="fas fa-square"></i> <?php _e('Clear Selection', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Products Grid -->
+                        <div class="srwm-products-grid" id="quick-restock-products-grid">
+                            <div class="srwm-loading">
+                                <span class="spinner is-active"></span>
+                                <?php _e('Loading products...', 'smart-restock-waitlist'); ?>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Quick Restock Links Table -->
                     <div class="srwm-quick-restock-links-section">
                         <div class="srwm-table-header">
@@ -5424,6 +5476,182 @@ class SRWM_Admin {
         .srwm-quick-restock-links-table th:nth-child(4) { width: 15%; } /* Expires */
         .srwm-quick-restock-links-table th:nth-child(5) { width: 10%; } /* Status */
         .srwm-quick-restock-links-table th:nth-child(6) { width: 10%; } /* Actions */
+        
+        /* Product Selection Section Styles */
+        .srwm-product-selection-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .srwm-product-selection-section .srwm-section-header {
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .srwm-product-selection-section .srwm-section-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-search-filters {
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .srwm-search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .srwm-search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        .srwm-filters {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .srwm-filters select {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            color: #374151;
+            min-width: 150px;
+        }
+        
+        .srwm-filters select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .srwm-selection-controls {
+            padding: 16px 20px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .srwm-selection-info {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .srwm-selection-info span {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+        
+        .srwm-selection-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .srwm-products-grid {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .srwm-product-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .srwm-product-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-product-card.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .srwm-product-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+        }
+        
+        .srwm-product-info {
+            flex: 1;
+        }
+        
+        .srwm-product-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-product-sku {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-product-stock {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .srwm-product-stock.instock {
+            color: #059669;
+        }
+        
+        .srwm-product-stock.outofstock {
+            color: #dc2626;
+        }
+        
+        .srwm-product-stock.lowstock {
+            color: #d97706;
+        }
         
         .srwm-quick-restock-form {
             padding: 24px;
@@ -6604,6 +6832,9 @@ class SRWM_Admin {
             // Load quick restock links on page load
             loadQuickRestockLinks();
             
+            // Load products for quick restock selection
+            loadQuickRestockProducts();
+            
             // Debug: Check if Quick Restock tab content exists
             console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
             console.log('Quick Restock tab content length:', $('#quick-restock-tab').html().length);
@@ -6665,6 +6896,19 @@ class SRWM_Admin {
             // Refresh quick restock links
             $('#refresh-quick-links-btn').on('click', function() {
                 loadQuickRestockLinks();
+            });
+            
+            // Quick Restock Product Selection functionality
+            $('#quick-restock-product-search').on('input', debounce(filterQuickRestockProducts, 300));
+            $('#quick-restock-category-filter, #quick-restock-stock-filter').on('change', filterQuickRestockProducts);
+            
+            // Product selection controls
+            $('#select-all-products').on('click', function() {
+                selectAllProducts();
+            });
+            
+            $('#clear-selection').on('click', function() {
+                clearProductSelection();
             });
             
             // Quick restock modal events
@@ -7466,6 +7710,127 @@ class SRWM_Admin {
             window.copyQuickRestockLinkToClipboard = copyQuickRestockLinkToClipboard;
             window.viewQuickRestockLinkDetails = viewQuickRestockLinkDetails;
             window.deleteQuickRestockLink = deleteQuickRestockLink;
+            
+            // Product Selection Functions
+            let allProducts = [];
+            let filteredProducts = [];
+            let selectedProducts = new Set();
+            
+            function loadQuickRestockProducts() {
+                $('#quick-restock-products-grid').html('<div class="srwm-loading"><span class="spinner is-active"></span> Loading products...</div>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_products_for_restock',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            allProducts = response.data;
+                            filteredProducts = [...allProducts];
+                            displayQuickRestockProducts(filteredProducts);
+                        } else {
+                            $('#quick-restock-products-grid').html('<div class="srwm-error">Error loading products: ' + response.data + '</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#quick-restock-products-grid').html('<div class="srwm-error">Error loading products. Please try again.</div>');
+                    }
+                });
+            }
+            
+            function displayQuickRestockProducts(products) {
+                if (products.length === 0) {
+                    $('#quick-restock-products-grid').html('<div class="srwm-empty">No products found matching your criteria.</div>');
+                    return;
+                }
+                
+                let html = '';
+                products.forEach(function(product) {
+                    const isSelected = selectedProducts.has(product.id);
+                    const stockClass = product.stock_status === 'instock' ? 'instock' : 
+                                     (product.stock_status === 'outofstock' ? 'outofstock' : 'lowstock');
+                    
+                    html += `
+                        <div class="srwm-product-card ${isSelected ? 'selected' : ''}" data-product-id="${product.id}">
+                            <input type="checkbox" class="srwm-product-checkbox" ${isSelected ? 'checked' : ''} 
+                                   onchange="toggleProductSelection(${product.id}, this.checked)">
+                            <div class="srwm-product-info">
+                                <div class="srwm-product-name">${product.name}</div>
+                                <div class="srwm-product-sku">SKU: ${product.sku || 'N/A'}</div>
+                                <div class="srwm-product-stock ${stockClass}">
+                                    Stock: ${product.stock_quantity || 0} | Status: ${product.stock_status}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                $('#quick-restock-products-grid').html(html);
+                updateSelectedCount();
+            }
+            
+            function filterQuickRestockProducts() {
+                const searchTerm = $('#quick-restock-product-search').val().toLowerCase();
+                const categoryFilter = $('#quick-restock-category-filter').val();
+                const stockFilter = $('#quick-restock-stock-filter').val();
+                
+                filteredProducts = allProducts.filter(function(product) {
+                    // Search filter
+                    const matchesSearch = !searchTerm || 
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        (product.sku && product.sku.toLowerCase().includes(searchTerm));
+                    
+                    // Category filter
+                    const matchesCategory = !categoryFilter || product.category === categoryFilter;
+                    
+                    // Stock filter
+                    const matchesStock = !stockFilter || product.stock_status === stockFilter;
+                    
+                    return matchesSearch && matchesCategory && matchesStock;
+                });
+                
+                displayQuickRestockProducts(filteredProducts);
+            }
+            
+            function toggleProductSelection(productId, isSelected) {
+                if (isSelected) {
+                    selectedProducts.add(productId);
+                } else {
+                    selectedProducts.delete(productId);
+                }
+                
+                updateSelectedCount();
+                
+                // Update card appearance
+                const card = $(`.srwm-product-card[data-product-id="${productId}"]`);
+                if (isSelected) {
+                    card.addClass('selected');
+                } else {
+                    card.removeClass('selected');
+                }
+            }
+            
+            function selectAllProducts() {
+                filteredProducts.forEach(function(product) {
+                    selectedProducts.add(product.id);
+                });
+                displayQuickRestockProducts(filteredProducts);
+            }
+            
+            function clearProductSelection() {
+                selectedProducts.clear();
+                displayQuickRestockProducts(filteredProducts);
+            }
+            
+            function updateSelectedCount() {
+                $('#selected-products-count').text(selectedProducts.size);
+            }
+            
+            // Global function for product selection
+            window.toggleProductSelection = toggleProductSelection;
         });
         </script>
         <?php
