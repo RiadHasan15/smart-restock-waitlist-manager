@@ -5334,6 +5334,60 @@ class SRWM_Admin {
             </div>
         </div>
         
+        <!-- Upload Link Generation Modal -->
+        <div id="upload-link-modal" class="srwm-modal" style="display: none;">
+            <div class="srwm-modal-content">
+                <div class="srwm-modal-header">
+                    <h3><?php _e('Generate Upload Link', 'smart-restock-waitlist'); ?></h3>
+                    <button class="srwm-modal-close">&times;</button>
+                </div>
+                <div class="srwm-modal-body">
+                    <div id="upload-link-loading" style="display: none;">
+                        <div class="srwm-loading">
+                            <span class="spinner is-active"></span>
+                            <?php _e('Generating upload link...', 'smart-restock-waitlist'); ?>
+                        </div>
+                    </div>
+                    <div id="upload-link-content">
+                        <div class="srwm-upload-link-info">
+                            <div class="srwm-info-card">
+                                <h4><i class="fas fa-info-circle"></i> <?php _e('Upload Link Details', 'smart-restock-waitlist'); ?></h4>
+                                <ul>
+                                    <li><strong><?php _e('Link Duration:', 'smart-restock-waitlist'); ?></strong> <?php _e('7 days', 'smart-restock-waitlist'); ?></li>
+                                    <li><strong><?php _e('Email Notification:', 'smart-restock-waitlist'); ?></strong> <?php _e('Automatically sent to supplier', 'smart-restock-waitlist'); ?></li>
+                                    <li><strong><?php _e('File Format:', 'smart-restock-waitlist'); ?></strong> <?php _e('CSV, Excel (.xlsx, .xls)', 'smart-restock-waitlist'); ?></li>
+                                    <li><strong><?php _e('Max File Size:', 'smart-restock-waitlist'); ?></strong> <?php _e('10MB', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div id="upload-link-result" style="display: none;">
+                            <div class="srwm-success-card">
+                                <h4><i class="fas fa-check-circle"></i> <?php _e('Upload Link Generated!', 'smart-restock-waitlist'); ?></h4>
+                                <div class="srwm-link-details">
+                                    <p><strong><?php _e('Supplier:', 'smart-restock-waitlist'); ?></strong> <span id="link-supplier-name"></span></p>
+                                    <p><strong><?php _e('Email:', 'smart-restock-waitlist'); ?></strong> <span id="link-supplier-email"></span></p>
+                                    <p><strong><?php _e('Expires:', 'smart-restock-waitlist'); ?></strong> <span id="link-expires"></span></p>
+                                </div>
+                                <div class="srwm-link-url">
+                                    <label><?php _e('Upload Link:', 'smart-restock-waitlist'); ?></label>
+                                    <div class="srwm-url-copy">
+                                        <input type="text" id="generated-upload-url" readonly>
+                                        <button type="button" class="button button-primary" id="copy-link-btn">
+                                            <i class="fas fa-copy"></i> <?php _e('Copy', 'smart-restock-waitlist'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button" id="cancel-upload-link"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
+                    <button type="button" class="button button-primary" id="generate-upload-link-btn"><?php _e('Generate Link', 'smart-restock-waitlist'); ?></button>
+                </div>
+            </div>
+        </div>
+        
         <style>
         .srwm-suppliers-container {
             margin-top: 20px;
@@ -5837,6 +5891,129 @@ class SRWM_Admin {
             border: 1px solid #e2e8f0;
         }
         
+        /* Upload Link Modal Styles */
+        .srwm-info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-info-card h4 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-info-card h4 i {
+            color: #3b82f6;
+        }
+        
+        .srwm-info-card ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .srwm-info-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4b5563;
+        }
+        
+        .srwm-info-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .srwm-success-card {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 1px solid #86efac;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-success-card h4 {
+            margin: 0 0 15px 0;
+            color: #166534;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-success-card h4 i {
+            color: #16a34a;
+        }
+        
+        .srwm-link-details {
+            margin-bottom: 20px;
+        }
+        
+        .srwm-link-details p {
+            margin: 8px 0;
+            color: #166534;
+        }
+        
+        .srwm-link-url label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #166534;
+        }
+        
+        .srwm-url-copy {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .srwm-url-copy input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #86efac;
+            border-radius: 6px;
+            background: white;
+            color: #1f2937;
+            font-size: 13px;
+            font-family: monospace;
+        }
+        
+        .srwm-url-copy input:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+        
+        #copy-link-btn {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        #copy-link-btn:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+        
+        #copy-link-btn.copied {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        
         @media (max-width: 768px) {
             .srwm-suppliers-header {
                 flex-direction: column;
@@ -5858,6 +6035,20 @@ class SRWM_Admin {
             
             .supplier-stats {
                 grid-template-columns: 1fr;
+            }
+            
+            .srwm-url-copy {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .srwm-url-copy input {
+                font-size: 12px;
+            }
+            
+            #copy-link-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
         </style>
@@ -5896,6 +6087,21 @@ class SRWM_Admin {
             // Confirm delete
             $('#confirm-delete').on('click', function() {
                 deleteSupplier();
+            });
+            
+            // Upload link generation
+            $('#generate-upload-link-btn').on('click', function() {
+                generateUploadLink();
+            });
+            
+            // Copy link button
+            $('#copy-link-btn').on('click', function() {
+                copyUploadLink();
+            });
+            
+            // Cancel upload link
+            $('#cancel-upload-link').on('click', function() {
+                closeAllModals();
             });
             
             // Close modal on outside click
@@ -6092,6 +6298,12 @@ class SRWM_Admin {
             function closeAllModals() {
                 $('.srwm-modal').hide();
                 currentSupplierId = null;
+                
+                // Reset upload link modal
+                $('#upload-link-content').show();
+                $('#upload-link-result').hide();
+                $('#upload-link-loading').hide();
+                $('#generate-upload-link-btn').prop('disabled', false).text('Generate Link');
             }
             
             function showNotification(message, type) {
@@ -6127,9 +6339,90 @@ class SRWM_Admin {
             };
             window.deleteSupplierConfirm = deleteSupplierConfirm;
             window.generateUploadLink = function(supplierId) {
-                // TODO: Implement upload link generation
-                showNotification('Upload link generation coming soon!', 'info');
+                openUploadLinkModal(supplierId);
             };
+            
+            function openUploadLinkModal(supplierId) {
+                currentSupplierId = supplierId;
+                $('#upload-link-modal').show();
+                $('#upload-link-content').show();
+                $('#upload-link-result').hide();
+                $('#upload-link-loading').hide();
+            }
+            
+            function generateUploadLink() {
+                if (!currentSupplierId) {
+                    showNotification('No supplier selected.', 'error');
+                    return;
+                }
+                
+                $('#upload-link-loading').show();
+                $('#upload-link-content').hide();
+                $('#generate-upload-link-btn').prop('disabled', true);
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_generate_supplier_upload_link',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        supplier_id: currentSupplierId
+                    },
+                    success: function(response) {
+                        $('#upload-link-loading').hide();
+                        $('#generate-upload-link-btn').prop('disabled', false);
+                        
+                        if (response.success) {
+                            displayUploadLinkResult(response.data);
+                            showNotification(response.data.message, 'success');
+                        } else {
+                            $('#upload-link-content').show();
+                            showNotification(response.data || 'Error generating upload link', 'error');
+                        }
+                    },
+                    error: function() {
+                        $('#upload-link-loading').hide();
+                        $('#upload-link-content').show();
+                        $('#generate-upload-link-btn').prop('disabled', false);
+                        showNotification('Error generating upload link. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function displayUploadLinkResult(data) {
+                $('#link-supplier-name').text(data.supplier_name);
+                $('#link-supplier-email').text(data.supplier_email);
+                $('#link-expires').text(new Date(data.expires_at).toLocaleString());
+                $('#generated-upload-url').val(data.upload_url);
+                
+                $('#upload-link-content').show();
+                $('#upload-link-result').show();
+                
+                // Update button text
+                $('#generate-upload-link-btn').text('Generate Another Link');
+            }
+            
+            function copyUploadLink() {
+                const urlInput = document.getElementById('generated-upload-url');
+                urlInput.select();
+                urlInput.setSelectionRange(0, 99999); // For mobile devices
+                
+                try {
+                    document.execCommand('copy');
+                    const copyBtn = $('#copy-link-btn');
+                    copyBtn.addClass('copied');
+                    copyBtn.html('<i class="fas fa-check"></i> Copied!');
+                    
+                    setTimeout(function() {
+                        copyBtn.removeClass('copied');
+                        copyBtn.html('<i class="fas fa-copy"></i> Copy');
+                    }, 2000);
+                    
+                    showNotification('Upload link copied to clipboard!', 'success');
+                } catch (err) {
+                    showNotification('Failed to copy link. Please copy manually.', 'error');
+                }
+            }
         });
         </script>
         <?php
