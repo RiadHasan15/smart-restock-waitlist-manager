@@ -79,126 +79,532 @@ class SRWM_Pro_CSV_Upload {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?php _e('Bulk Restock Upload', 'smart-restock-waitlist'); ?></title>
+            <title><?php _e('Bulk Restock Upload - Professional Stock Management', 'smart-restock-waitlist'); ?></title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
             <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f4f4;
+                * {
                     margin: 0;
-                    padding: 20px;
+                    padding: 0;
+                    box-sizing: border-box;
                 }
+                
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    padding: 20px;
+                    color: #333;
+                }
+                
                 .container {
-                    max-width: 800px;
+                    max-width: 1000px;
                     margin: 0 auto;
                     background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    position: relative;
+                }
+                
+                .container::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+                }
+                
+                .header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 40px 30px;
+                    text-align: center;
+                    position: relative;
                     overflow: hidden;
                 }
-                .header {
-                    background-color: #2c3e50;
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
+                
+                .header::before {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+                    animation: float 6s ease-in-out infinite;
                 }
+                
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(180deg); }
+                }
+                
+                .header h1 {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    margin-bottom: 10px;
+                    position: relative;
+                    z-index: 1;
+                }
+                
+                .header p {
+                    font-size: 1.1rem;
+                    opacity: 0.9;
+                    position: relative;
+                    z-index: 1;
+                }
+                
+                .header-icon {
+                    font-size: 3rem;
+                    margin-bottom: 20px;
+                    position: relative;
+                    z-index: 1;
+                }
+                
                 .content {
+                    padding: 40px;
+                }
+                
+                .upload-section {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                    margin-bottom: 40px;
+                }
+                
+                .upload-form {
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
                     padding: 30px;
+                    border-radius: 15px;
+                    border: 2px solid #e2e8f0;
+                    position: relative;
                 }
-                .upload-info {
-                    background-color: #f8f9fa;
-                    padding: 20px;
-                    border-radius: 5px;
-                    margin-bottom: 20px;
+                
+                .upload-form::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #10b981, #059669);
                 }
+                
                 .form-group {
-                    margin-bottom: 20px;
+                    margin-bottom: 25px;
                 }
-                label {
+                
+                .form-group label {
                     display: block;
-                    margin-bottom: 5px;
-                    font-weight: bold;
-                    color: #495057;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 0.95rem;
                 }
+                
+                .file-upload-area {
+                    border: 3px dashed #d1d5db;
+                    border-radius: 12px;
+                    padding: 40px 20px;
+                    text-align: center;
+                    background: white;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                    position: relative;
+                }
+                
+                .file-upload-area:hover {
+                    border-color: #667eea;
+                    background: #f8fafc;
+                }
+                
+                .file-upload-area.dragover {
+                    border-color: #10b981;
+                    background: #f0fdf4;
+                }
+                
+                .file-upload-icon {
+                    font-size: 3rem;
+                    color: #9ca3af;
+                    margin-bottom: 15px;
+                }
+                
+                .file-upload-text {
+                    font-size: 1.1rem;
+                    color: #6b7280;
+                    margin-bottom: 10px;
+                }
+                
+                .file-upload-hint {
+                    font-size: 0.9rem;
+                    color: #9ca3af;
+                }
+                
                 input[type="file"] {
+                    position: absolute;
+                    opacity: 0;
                     width: 100%;
-                    padding: 10px;
-                    border: 2px solid #e9ecef;
-                    border-radius: 4px;
-                    font-size: 16px;
+                    height: 100%;
+                    cursor: pointer;
                 }
-                .button {
-                    background-color: #27ae60;
+                
+                .upload-button {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                     color: white;
-                    padding: 15px 30px;
+                    padding: 18px 40px;
                     border: none;
-                    border-radius: 5px;
-                    font-size: 16px;
+                    border-radius: 12px;
+                    font-size: 1.1rem;
+                    font-weight: 600;
                     cursor: pointer;
                     width: 100%;
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
                 }
-                .button:hover {
-                    background-color: #219a52;
+                
+                .upload-button::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                    transition: left 0.5s;
                 }
-                .csv-template {
-                    background-color: #e8f4fd;
-                    padding: 15px;
-                    border-radius: 5px;
+                
+                .upload-button:hover::before {
+                    left: 100%;
+                }
+                
+                .upload-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+                }
+                
+                .upload-button:active {
+                    transform: translateY(0);
+                }
+                
+                .info-section {
+                    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                    padding: 30px;
+                    border-radius: 15px;
+                    border: 2px solid #bfdbfe;
+                }
+                
+                .info-section h3 {
+                    color: #1e40af;
+                    font-size: 1.3rem;
                     margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                 }
-                .csv-template h4 {
-                    margin-top: 0;
-                    color: #2c3e50;
+                
+                .info-section h3 i {
+                    font-size: 1.5rem;
                 }
-                .csv-template code {
+                
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                    margin-bottom: 25px;
+                }
+                
+                .info-item {
                     background: white;
-                    padding: 10px;
-                    border-radius: 3px;
+                    padding: 20px;
+                    border-radius: 10px;
+                    border-left: 4px solid #3b82f6;
+                }
+                
+                .info-item h4 {
+                    color: #1f2937;
+                    font-size: 1rem;
+                    margin-bottom: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .info-item p {
+                    color: #6b7280;
+                    font-size: 0.9rem;
+                    line-height: 1.5;
+                }
+                
+                .csv-template {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    border: 2px solid #e5e7eb;
+                    margin-top: 25px;
+                }
+                
+                .csv-template h4 {
+                    color: #374151;
+                    font-size: 1.1rem;
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .csv-template code {
+                    background: #1f2937;
+                    color: #f9fafb;
+                    padding: 20px;
+                    border-radius: 8px;
                     display: block;
-                    font-family: monospace;
+                    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                    font-size: 0.9rem;
+                    line-height: 1.6;
                     white-space: pre-wrap;
+                    overflow-x: auto;
+                }
+                
+                .requirements {
+                    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                    padding: 25px;
+                    border-radius: 12px;
+                    border: 2px solid #f59e0b;
+                    margin-top: 30px;
+                }
+                
+                .requirements h4 {
+                    color: #92400e;
+                    font-size: 1.1rem;
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .requirements ul {
+                    list-style: none;
+                    padding: 0;
+                }
+                
+                .requirements li {
+                    color: #78350f;
+                    padding: 8px 0;
+                    padding-left: 25px;
+                    position: relative;
+                    font-size: 0.95rem;
+                }
+                
+                .requirements li::before {
+                    content: '✓';
+                    position: absolute;
+                    left: 0;
+                    color: #059669;
+                    font-weight: bold;
+                    font-size: 1.1rem;
+                }
+                
+                .footer-note {
+                    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+                    padding: 20px;
+                    border-radius: 12px;
+                    text-align: center;
+                    margin-top: 30px;
+                    border: 1px solid #d1d5db;
+                }
+                
+                .footer-note p {
+                    color: #6b7280;
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                }
+                
+                @media (max-width: 768px) {
+                    .upload-section {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .info-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .header h1 {
+                        font-size: 2rem;
+                    }
+                    
+                    .content {
+                        padding: 20px;
+                    }
                 }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
+                    <div class="header-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
                     <h1><?php _e('Bulk Restock Upload', 'smart-restock-waitlist'); ?></h1>
-                    <p><?php echo get_bloginfo('name'); ?></p>
+                    <p><?php echo get_bloginfo('name'); ?> - <?php _e('Professional Stock Management System', 'smart-restock-waitlist'); ?></p>
                 </div>
                 
                 <div class="content">
-                    <div class="upload-info">
-                        <h3><?php _e('Upload Instructions', 'smart-restock-waitlist'); ?></h3>
-                        <p><?php _e('Please upload a CSV file with your restock information. The file should contain product SKU and quantity columns.', 'smart-restock-waitlist'); ?></p>
-                    </div>
-                    
-                    <div class="csv-template">
-                        <h4><?php _e('CSV Template', 'smart-restock-waitlist'); ?></h4>
-                        <p><?php _e('Your CSV file should follow this format:', 'smart-restock-waitlist'); ?></p>
-                        <code>sku,quantity
-ABC123,50
-DEF456,25
-GHI789,100</code>
-                    </div>
-                    
-                    <form method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="srwm_csv_token" value="<?php echo esc_attr($token); ?>">
-                        
-                        <div class="form-group">
-                            <label for="csv_file"><?php _e('Select CSV File:', 'smart-restock-waitlist'); ?></label>
-                            <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                    <div class="upload-section">
+                        <div class="upload-form">
+                            <h3 style="color: #374151; margin-bottom: 25px; font-size: 1.3rem;">
+                                <i class="fas fa-upload"></i> <?php _e('Upload Your CSV File', 'smart-restock-waitlist'); ?>
+                            </h3>
+                            
+                            <form method="post" enctype="multipart/form-data" id="csvUploadForm">
+                                <input type="hidden" name="srwm_csv_token" value="<?php echo esc_attr($token); ?>">
+                                
+                                <div class="form-group">
+                                    <label for="csv_file">
+                                        <i class="fas fa-file-csv"></i> <?php _e('Select CSV File', 'smart-restock-waitlist'); ?>
+                                    </label>
+                                    <div class="file-upload-area" id="fileUploadArea">
+                                        <div class="file-upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <div class="file-upload-text">
+                                            <?php _e('Click to browse or drag & drop your CSV file here', 'smart-restock-waitlist'); ?>
+                                        </div>
+                                        <div class="file-upload-hint">
+                                            <?php _e('Maximum file size: 5MB | Supported format: .csv', 'smart-restock-waitlist'); ?>
+                                        </div>
+                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" name="srwm_csv_submit" class="upload-button">
+                                    <i class="fas fa-rocket"></i> <?php _e('Process Restock Data', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </form>
                         </div>
                         
-                        <button type="submit" name="srwm_csv_submit" class="button">
-                            <?php _e('Upload and Process', 'smart-restock-waitlist'); ?>
-                        </button>
-                    </form>
+                        <div class="info-section">
+                            <h3>
+                                <i class="fas fa-info-circle"></i> <?php _e('Upload Information', 'smart-restock-waitlist'); ?>
+                            </h3>
+                            
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <h4>
+                                        <i class="fas fa-clock"></i> <?php _e('Processing Time', 'smart-restock-waitlist'); ?>
+                                    </h4>
+                                    <p><?php _e('Files are processed instantly. You\'ll receive immediate feedback on the upload results.', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <h4>
+                                        <i class="fas fa-shield-alt"></i> <?php _e('Security', 'smart-restock-waitlist'); ?>
+                                    </h4>
+                                    <p><?php _e('Your data is processed securely. Files are automatically deleted after processing.', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <h4>
+                                        <i class="fas fa-bell"></i> <?php _e('Notifications', 'smart-restock-waitlist'); ?>
+                                    </h4>
+                                    <p><?php _e('Customers on the waitlist will be automatically notified when stock is updated.', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <h4>
+                                        <i class="fas fa-chart-line"></i> <?php _e('Analytics', 'smart-restock-waitlist'); ?>
+                                    </h4>
+                                    <p><?php _e('All restock activities are logged for reporting and analytics purposes.', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                            </div>
+                            
+                            <div class="csv-template">
+                                <h4>
+                                    <i class="fas fa-table"></i> <?php _e('CSV Format Template', 'smart-restock-waitlist'); ?>
+                                </h4>
+                                <p style="color: #6b7280; margin-bottom: 15px; font-size: 0.95rem;">
+                                    <?php _e('Your CSV file must follow this exact format:', 'smart-restock-waitlist'); ?>
+                                </p>
+                                <code>Product ID,SKU,Quantity,Notes
+62,ABC123,50,Restocked from main warehouse
+63,DEF456,25,Priority restock
+64,GHI789,100,Bulk order fulfillment</code>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <p style="margin-top: 20px; font-size: 14px; color: #666;">
-                        <?php _e('The system will automatically update product stock levels and notify waiting customers.', 'smart-restock-waitlist'); ?>
-                    </p>
+                    <div class="requirements">
+                        <h4>
+                            <i class="fas fa-check-circle"></i> <?php _e('File Requirements', 'smart-restock-waitlist'); ?>
+                        </h4>
+                        <ul>
+                            <li><?php _e('File must be in CSV format (.csv extension)', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Maximum file size: 5 megabytes', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('First row must contain column headers', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Product ID must match existing products in the system', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Quantity must be a positive number', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('SKU must match the product SKU in the system', 'smart-restock-waitlist'); ?></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-note">
+                        <p>
+                            <i class="fas fa-lightbulb"></i> 
+                            <strong><?php _e('Pro Tip:', 'smart-restock-waitlist'); ?></strong> 
+                            <?php _e('Download our CSV template from the admin dashboard to ensure your file format is correct. The system will automatically validate your data and provide detailed feedback on any issues.', 'smart-restock-waitlist'); ?>
+                        </p>
+                    </div>
                 </div>
             </div>
+            
+            <script>
+                // File upload area interactions
+                const fileUploadArea = document.getElementById('fileUploadArea');
+                const fileInput = document.getElementById('csv_file');
+                
+                fileUploadArea.addEventListener('click', () => fileInput.click());
+                
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        const fileName = this.files[0].name;
+                        const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
+                        
+                        fileUploadArea.innerHTML = `
+                            <div class="file-upload-icon" style="color: #10b981;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="file-upload-text" style="color: #059669; font-weight: 600;">
+                                ${fileName}
+                            </div>
+                            <div class="file-upload-hint">
+                                Size: ${fileSize} MB
+                            </div>
+                        `;
+                    }
+                });
+                
+                // Drag and drop functionality
+                fileUploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.add('dragover');
+                });
+                
+                fileUploadArea.addEventListener('dragleave', () => {
+                    fileUploadArea.classList.remove('dragover');
+                });
+                
+                fileUploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('dragover');
+                    
+                    if (e.dataTransfer.files.length > 0) {
+                        fileInput.files = e.dataTransfer.files;
+                        fileInput.dispatchEvent(new Event('change'));
+                    }
+                });
+            </script>
         </body>
         </html>
         <?php
