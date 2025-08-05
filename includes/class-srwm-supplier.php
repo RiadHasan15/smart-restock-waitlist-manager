@@ -181,9 +181,9 @@ class SRWM_Supplier {
         
         $data = array(
             'product_id' => $product_id,
-            'supplier_email' => $email,
-            'supplier_name' => $name,
-            'notification_channels' => maybe_serialize($channels),
+            'email' => $email,
+            'name' => $name,
+            'channels' => maybe_serialize($channels),
             'threshold' => $threshold > 0 ? $threshold : null
         );
         
@@ -216,10 +216,10 @@ class SRWM_Supplier {
         }
         
         $data = array(
-            'email' => $result->supplier_email,
-            'name' => $result->supplier_name,
+            'email' => $result->email,
+            'name' => $result->name,
             'threshold' => $result->threshold,
-            'channels' => maybe_unserialize($result->notification_channels) ?: array('email' => true)
+            'channels' => maybe_unserialize($result->channels) ?: array('email' => true)
         );
         
         if ($this->license_manager->is_pro_active() && isset($result->auto_generate_po)) {
@@ -237,7 +237,7 @@ class SRWM_Supplier {
         
         $table = $wpdb->prefix . 'srwm_suppliers';
         
-        return $wpdb->get_results(
+        $results = $wpdb->get_results(
             "SELECT s.*, p.post_title as product_name, wc.stock_quantity as current_stock
              FROM $table s
              JOIN {$wpdb->posts} p ON s.product_id = p.ID
@@ -246,6 +246,14 @@ class SRWM_Supplier {
              ORDER BY p.post_title",
             ARRAY_A
         );
+        
+        // Map the database column names to the expected keys
+        foreach ($results as &$result) {
+            $result['supplier_name'] = $result['name'];
+            $result['supplier_email'] = $result['email'];
+        }
+        
+        return $results;
     }
     
     /**
@@ -374,7 +382,7 @@ class SRWM_Supplier {
         $table = $wpdb->prefix . 'srwm_suppliers';
         
         return $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM $table WHERE supplier_email = %s",
+            "SELECT * FROM $table WHERE email = %s",
             $email
         ));
     }
@@ -388,7 +396,7 @@ class SRWM_Supplier {
         $table = $wpdb->prefix . 'srwm_suppliers';
         
         return $wpdb->get_results(
-            "SELECT DISTINCT supplier_email, supplier_name FROM $table ORDER BY supplier_name"
+            "SELECT DISTINCT email, name FROM $table ORDER BY name"
         );
     }
 }
