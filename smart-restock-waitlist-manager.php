@@ -53,7 +53,7 @@ class SRWM_License_Manager {
     /**
      * Refresh license data from database
      */
-    private function refresh_license_data() {
+    public function refresh_license_data() {
         $this->license_key = get_option($this->plugin_slug . '_license_key', '');
         $this->license_status = get_option($this->plugin_slug . '_license_status', 'inactive');
     }
@@ -168,7 +168,25 @@ class SRWM_License_Manager {
         // Debug logging
         $this->debug_license_data();
         
-        $this->add_notice('success', __('License deactivated successfully!', 'smart-restock-waitlist'));
+        // Force reload Pro classes in main plugin
+        global $srwm_plugin;
+        if (isset($srwm_plugin) && method_exists($srwm_plugin, 'reload_pro_classes')) {
+            $srwm_plugin->reload_pro_classes();
+        }
+        
+        $this->add_notice('success', __('License deactivated successfully! Pro features have been disabled. Please refresh the page to see the changes.', 'smart-restock-waitlist'));
+        
+        // Force admin menu to be rebuilt on next page load
+        delete_transient('srwm_admin_menu_built');
+        
+        // Add JavaScript to force page reload
+        add_action('admin_footer', function() {
+            echo '<script>
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            </script>';
+        });
     }
     
     /**
@@ -554,9 +572,7 @@ class SmartRestockWaitlistManager {
         $this->load_core_classes();
         
         // Load Pro classes if license is active
-        if ($this->license_manager->is_pro_active()) {
-            $this->load_pro_classes();
-        }
+        $this->maybe_load_pro_classes();
         
         // Initialize admin
         if (is_admin()) {
@@ -568,6 +584,47 @@ class SmartRestockWaitlistManager {
         
         // Add AJAX handlers
         $this->add_ajax_handlers();
+    }
+    
+    /**
+     * Check and load Pro classes if license is active
+     */
+    private function maybe_load_pro_classes() {
+        // Refresh license manager data
+        $this->license_manager->refresh_license_data();
+        
+        if ($this->license_manager->is_pro_active()) {
+            $this->load_pro_classes();
+        }
+    }
+    
+    /**
+     * Force reload Pro classes (called after license status changes)
+     */
+    public function reload_pro_classes() {
+        // Clear any existing Pro class instances
+        $pro_classes = array('SRWM_Pro_Restock', 'SRWM_Pro_Purchase_Order', 'SRWM_Pro_CSV_Upload');
+        
+        foreach ($pro_classes as $class_name) {
+            if (class_exists($class_name)) {
+                try {
+                    $reflection = new ReflectionClass($class_name);
+                    if ($reflection->hasProperty('instance')) {
+                        $property = $reflection->getProperty('instance');
+                        $property->setAccessible(true);
+                        $property->setValue(null, null);
+                    }
+                } catch (Exception $e) {
+                    // Ignore reflection errors
+                }
+            }
+        }
+        
+        // Clear any cached license status
+        wp_cache_delete('srwm_license_status', 'options');
+        
+        // Reload Pro classes based on current license status
+        $this->maybe_load_pro_classes();
     }
     
     /**
@@ -587,6 +644,13 @@ class SmartRestockWaitlistManager {
         require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-restock.php';
         require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-purchase-order.php';
         require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-csv-upload.php';
+    }
+    
+    /**
+     * Check if Pro classes should be loaded
+     */
+    public function should_load_pro_classes() {
+        return $this->license_manager->is_pro_active();
     }
     
     /**
@@ -1093,4 +1157,5 @@ class SmartRestockWaitlistManager {
 }
 
 // Initialize the plugin
-new SmartRestockWaitlistManager();
+global $srwm_plugin;
+$srwm_plugin = new SmartRestockWaitlistManager();
