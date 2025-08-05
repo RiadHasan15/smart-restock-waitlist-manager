@@ -1249,15 +1249,20 @@ class SmartRestockWaitlistManager {
         
         // Save threshold as product meta
         error_log('SRWM: About to save threshold - product_id: ' . $product_id . ', threshold: ' . $threshold);
+        
+        // Get existing value first
+        $existing_value = get_post_meta($product_id, '_srwm_threshold', true);
+        error_log('SRWM: Existing threshold value: ' . $existing_value);
+        
         $result = update_post_meta($product_id, '_srwm_threshold', $threshold);
         error_log('SRWM: update_post_meta result: ' . ($result !== false ? 'success' : 'failed'));
         
-        if ($result !== false) {
+        // Consider it successful if:
+        // 1. update_post_meta() returned true (value changed)
+        // 2. update_post_meta() returned false but the value is already correct (no change needed)
+        if ($result !== false || $existing_value == $threshold) {
             wp_die(json_encode(array('success' => true, 'message' => __('Threshold saved successfully!', 'smart-restock-waitlist'))));
         } else {
-            // Check if the meta already exists
-            $existing_value = get_post_meta($product_id, '_srwm_threshold', true);
-            error_log('SRWM: Existing threshold value: ' . $existing_value);
             wp_die(json_encode(array('success' => false, 'message' => __('Failed to save threshold. Please try again.', 'smart-restock-waitlist'))));
         }
     }
