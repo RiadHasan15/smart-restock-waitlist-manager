@@ -515,9 +515,9 @@ class SRWM_Pro_CSV_Upload {
                                             <?php _e('Click to browse or drag & drop your CSV file here', 'smart-restock-waitlist'); ?>
                                         </div>
                                         <div class="file-upload-hint">
-                                            <?php _e('Maximum file size: 5MB | Supported format: .csv', 'smart-restock-waitlist'); ?>
+                                            <?php _e('Maximum file size: 10MB | Supported formats: .csv, .xlsx, .xls', 'smart-restock-waitlist'); ?>
                                         </div>
-                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                                        <input type="file" id="csv_file" name="csv_file" accept=".csv,.xlsx,.xls" required>
                                     </div>
                                 </div>
                                 
@@ -582,12 +582,13 @@ class SRWM_Pro_CSV_Upload {
                             <i class="fas fa-check-circle"></i> <?php _e('File Requirements', 'smart-restock-waitlist'); ?>
                         </h4>
                         <ul>
-                            <li><?php _e('File must be in CSV format (.csv extension)', 'smart-restock-waitlist'); ?></li>
-                            <li><?php _e('Maximum file size: 5 megabytes', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('File must be in CSV, XLSX, or XLS format', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Maximum file size: 10 megabytes', 'smart-restock-waitlist'); ?></li>
                             <li><?php _e('First row must contain column headers', 'smart-restock-waitlist'); ?></li>
                             <li><?php _e('Product ID must match existing products in the system', 'smart-restock-waitlist'); ?></li>
                             <li><?php _e('Quantity must be a positive number', 'smart-restock-waitlist'); ?></li>
                             <li><?php _e('SKU must match the product SKU in the system', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Real-time validation will check your data before upload', 'smart-restock-waitlist'); ?></li>
                         </ul>
                     </div>
                     
@@ -611,53 +612,381 @@ class SRWM_Pro_CSV_Upload {
                 fileInput.addEventListener('change', function() {
                     if (this.files.length > 0) {
                         const file = this.files[0];
-                        const fileName = file.name;
-                        const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                        
-                        // Add loading animation
-                        const iconElement = fileUploadArea.querySelector('.file-upload-icon');
-                        const textElement = fileUploadArea.querySelector('.file-upload-text');
-                        const hintElement = fileUploadArea.querySelector('.file-upload-hint');
-                        
-                        if (iconElement) {
-                            iconElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                            iconElement.style.color = '#f59e0b';
-                        }
-                        
-                        if (textElement) {
-                            textElement.textContent = 'Processing file...';
-                            textElement.style.color = '#f59e0b';
-                            textElement.style.fontWeight = '600';
-                        }
-                        
-                        if (hintElement) {
-                            hintElement.textContent = `Validating ${fileName}`;
-                        }
-                        
-                        // Simulate file validation (you can add real validation here)
-                        setTimeout(() => {
-                            if (iconElement) {
-                                iconElement.innerHTML = '<i class="fas fa-check-circle"></i>';
-                                iconElement.style.color = '#10b981';
-                                iconElement.style.animation = 'bounceIn 0.6s ease';
-                            }
-                            
-                            if (textElement) {
-                                textElement.textContent = fileName;
-                                textElement.style.color = '#059669';
-                                textElement.style.fontWeight = '600';
-                            }
-                            
-                            if (hintElement) {
-                                hintElement.textContent = `Size: ${fileSize} MB • Ready to upload`;
-                                hintElement.style.color = '#059669';
-                            }
-                            
-                            // Add success animation
-                            fileUploadArea.style.animation = 'pulse 0.6s ease';
-                        }, 1500);
+                        validateAndPreviewFile(file);
                     }
                 });
+                
+                // Real-time file validation with preview
+                function validateAndPreviewFile(file) {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    
+                    // Show loading state
+                    const iconElement = fileUploadArea.querySelector('.file-upload-icon');
+                    const textElement = fileUploadArea.querySelector('.file-upload-text');
+                    const hintElement = fileUploadArea.querySelector('.file-upload-hint');
+                    
+                    if (iconElement) {
+                        iconElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        iconElement.style.color = '#f59e0b';
+                    }
+                    
+                    if (textElement) {
+                        textElement.textContent = 'Validating file...';
+                        textElement.style.color = '#f59e0b';
+                        textElement.style.fontWeight = '600';
+                    }
+                    
+                    if (hintElement) {
+                        hintElement.textContent = `Processing ${fileName}`;
+                    }
+                    
+                    // Validate file type
+                    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+                    const fileExtension = fileName.split('.').pop().toLowerCase();
+                    const allowedExtensions = ['csv', 'xlsx', 'xls'];
+                    
+                    if (!allowedExtensions.includes(fileExtension)) {
+                        showFileError('Invalid file type. Please upload a CSV, XLSX, or XLS file.');
+                        return;
+                    }
+                    
+                    // Validate file size (10MB limit)
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    if (file.size > maxSize) {
+                        showFileError(`File size exceeds 10MB limit. Your file size is: ${fileSize} MB`);
+                        return;
+                    }
+                    
+                    // Read and preview file
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const csvData = parseCSVData(e.target.result);
+                            const validation = validateCSVData(csvData);
+                            
+                            if (validation.valid) {
+                                showFileSuccess(fileName, fileSize, csvData, validation);
+                            } else {
+                                showFileWarning(fileName, fileSize, csvData, validation);
+                            }
+                        } catch (error) {
+                            showFileError('Error reading file: ' + error.message);
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        showFileError('Error reading file. Please try again.');
+                    };
+                    
+                    reader.readAsText(file);
+                }
+                
+                // Parse CSV data
+                function parseCSVData(csvText) {
+                    const lines = csvText.split('\n');
+                    const data = [];
+                    
+                    if (lines.length < 2) {
+                        throw new Error('File must contain at least a header row and one data row');
+                    }
+                    
+                    const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        if (lines[i].trim()) {
+                            const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                            const row = {};
+                            
+                            header.forEach((key, index) => {
+                                row[key] = values[index] || '';
+                            });
+                            
+                            data.push(row);
+                        }
+                    }
+                    
+                    return { header, data };
+                }
+                
+                // Validate CSV data
+                function validateCSVData(csvData) {
+                    const validation = {
+                        valid: true,
+                        errors: [],
+                        warnings: [],
+                        suggestions: [],
+                        validRows: 0,
+                        invalidRows: 0
+                    };
+                    
+                    csvData.data.forEach((row, index) => {
+                        let rowValid = true;
+                        
+                        // Check for required fields
+                        if (!row.sku && !row['product_sku'] && !row['product sku']) {
+                            validation.errors.push(`Row ${index + 1}: Missing SKU`);
+                            rowValid = false;
+                        }
+                        
+                        if (!row.quantity && !row.qty && !row.stock) {
+                            validation.errors.push(`Row ${index + 1}: Missing quantity`);
+                            rowValid = false;
+                        }
+                        
+                        // Validate quantity
+                        const qty = parseInt(row.quantity || row.qty || row.stock);
+                        if (isNaN(qty) || qty < 0) {
+                            validation.warnings.push(`Row ${index + 1}: Invalid quantity (${row.quantity || row.qty || row.stock})`);
+                        }
+                        
+                        if (rowValid) {
+                            validation.validRows++;
+                        } else {
+                            validation.invalidRows++;
+                        }
+                    });
+                    
+                    validation.valid = validation.errors.length === 0;
+                    return validation;
+                }
+                
+                // Show file success
+                function showFileSuccess(fileName, fileSize, csvData, validation) {
+                    const iconElement = fileUploadArea.querySelector('.file-upload-icon');
+                    const textElement = fileUploadArea.querySelector('.file-upload-text');
+                    const hintElement = fileUploadArea.querySelector('.file-upload-hint');
+                    
+                    if (iconElement) {
+                        iconElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                        iconElement.style.color = '#10b981';
+                        iconElement.style.animation = 'bounceIn 0.6s ease';
+                    }
+                    
+                    if (textElement) {
+                        textElement.textContent = fileName;
+                        textElement.style.color = '#059669';
+                        textElement.style.fontWeight = '600';
+                    }
+                    
+                    if (hintElement) {
+                        hintElement.textContent = `Size: ${fileSize} MB • ${validation.validRows} rows ready`;
+                        hintElement.style.color = '#059669';
+                    }
+                    
+                    // Add success animation
+                    fileUploadArea.style.animation = 'pulse 0.6s ease';
+                    
+                    // Show preview button
+                    showPreviewButton(csvData, validation);
+                }
+                
+                // Show file warning
+                function showFileWarning(fileName, fileSize, csvData, validation) {
+                    const iconElement = fileUploadArea.querySelector('.file-upload-icon');
+                    const textElement = fileUploadArea.querySelector('.file-upload-text');
+                    const hintElement = fileUploadArea.querySelector('.file-upload-hint');
+                    
+                    if (iconElement) {
+                        iconElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                        iconElement.style.color = '#f59e0b';
+                    }
+                    
+                    if (textElement) {
+                        textElement.textContent = fileName;
+                        textElement.style.color = '#f59e0b';
+                        textElement.style.fontWeight = '600';
+                    }
+                    
+                    if (hintElement) {
+                        hintElement.textContent = `${validation.warnings.length} warnings found`;
+                        hintElement.style.color = '#f59e0b';
+                    }
+                    
+                    // Show preview button with warnings
+                    showPreviewButton(csvData, validation, true);
+                }
+                
+                // Show file error
+                function showFileError(message) {
+                    const iconElement = fileUploadArea.querySelector('.file-upload-icon');
+                    const textElement = fileUploadArea.querySelector('.file-upload-text');
+                    const hintElement = fileUploadArea.querySelector('.file-upload-hint');
+                    
+                    if (iconElement) {
+                        iconElement.innerHTML = '<i class="fas fa-times-circle"></i>';
+                        iconElement.style.color = '#ef4444';
+                    }
+                    
+                    if (textElement) {
+                        textElement.textContent = 'Upload Failed';
+                        textElement.style.color = '#dc2626';
+                        textElement.style.fontWeight = '600';
+                    }
+                    
+                    if (hintElement) {
+                        hintElement.textContent = message;
+                        hintElement.style.color = '#dc2626';
+                    }
+                    
+                    // Reset file input
+                    fileInput.value = '';
+                }
+                
+                // Show preview button
+                function showPreviewButton(csvData, validation, hasWarnings = false) {
+                    // Remove existing preview button
+                    const existingButton = document.querySelector('.srwm-preview-btn');
+                    if (existingButton) {
+                        existingButton.remove();
+                    }
+                    
+                    const button = document.createElement('button');
+                    button.className = 'srwm-preview-btn';
+                    button.innerHTML = '<i class="fas fa-eye"></i> Preview Data';
+                    button.style.cssText = `
+                        background: ${hasWarnings ? '#f59e0b' : '#10b981'};
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        margin-top: 15px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                    `;
+                    
+                    button.addEventListener('click', function() {
+                        showPreviewModal(csvData, validation);
+                    });
+                    
+                    fileUploadArea.appendChild(button);
+                }
+                
+                // Show preview modal
+                function showPreviewModal(csvData, validation) {
+                    // Remove existing modal
+                    const existingModal = document.querySelector('.srwm-preview-modal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+                    
+                    const modal = document.createElement('div');
+                    modal.className = 'srwm-preview-modal';
+                    modal.innerHTML = `
+                        <div class="srwm-preview-overlay">
+                            <div class="srwm-preview-content">
+                                <div class="srwm-preview-header">
+                                    <h3><i class="fas fa-table"></i> Data Preview</h3>
+                                    <button class="srwm-preview-close" onclick="closePreviewModal()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="srwm-preview-body">
+                                    <div class="srwm-validation-summary">
+                                        <div class="validation-item valid">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>${validation.validRows} valid rows</span>
+                                        </div>
+                                        ${validation.warnings.length > 0 ? `
+                                            <div class="validation-item warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                <span>${validation.warnings.length} warnings</span>
+                                            </div>
+                                        ` : ''}
+                                        ${validation.errors.length > 0 ? `
+                                            <div class="validation-item error">
+                                                <i class="fas fa-times-circle"></i>
+                                                <span>${validation.errors.length} errors</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <div class="srwm-preview-table">
+                                        ${generatePreviewTable(csvData)}
+                                    </div>
+                                    ${validation.warnings.length > 0 ? `
+                                        <div class="srwm-warnings-section">
+                                            <h4><i class="fas fa-exclamation-triangle"></i> Warnings</h4>
+                                            <ul>
+                                                ${validation.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="srwm-preview-footer">
+                                    <button class="srwm-btn-secondary" onclick="closePreviewModal()">Cancel</button>
+                                    <button class="srwm-btn-primary" onclick="proceedWithUpload()">
+                                        <i class="fas fa-upload"></i> Proceed with Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Add animation
+                    setTimeout(() => {
+                        modal.querySelector('.srwm-preview-content').style.transform = 'scale(1)';
+                        modal.querySelector('.srwm-preview-content').style.opacity = '1';
+                    }, 10);
+                }
+                
+                // Generate preview table
+                function generatePreviewTable(csvData) {
+                    if (!csvData.data || csvData.data.length === 0) {
+                        return '<p>No data to preview</p>';
+                    }
+                    
+                    const headers = Object.keys(csvData.data[0]);
+                    const previewRows = csvData.data.slice(0, 10); // Show first 10 rows
+                    
+                    let tableHTML = '<table class="srwm-preview-table-inner">';
+                    
+                    // Header
+                    tableHTML += '<thead><tr>';
+                    headers.forEach(header => {
+                        tableHTML += `<th>${header}</th>`;
+                    });
+                    tableHTML += '</tr></thead>';
+                    
+                    // Body
+                    tableHTML += '<tbody>';
+                    previewRows.forEach(row => {
+                        tableHTML += '<tr>';
+                        headers.forEach(header => {
+                            tableHTML += `<td>${row[header] || ''}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody>';
+                    tableHTML += '</table>';
+                    
+                    if (csvData.data.length > 10) {
+                        tableHTML += `<p class="srwm-preview-note">Showing first 10 rows of ${csvData.data.length} total rows</p>`;
+                    }
+                    
+                    return tableHTML;
+                }
+                
+                // Close preview modal
+                function closePreviewModal() {
+                    const modal = document.querySelector('.srwm-preview-modal');
+                    if (modal) {
+                        modal.querySelector('.srwm-preview-content').style.transform = 'scale(0.9)';
+                        modal.querySelector('.srwm-preview-content').style.opacity = '0';
+                        setTimeout(() => {
+                            modal.remove();
+                        }, 300);
+                    }
+                }
+                
+                // Proceed with upload
+                function proceedWithUpload() {
+                    closePreviewModal();
+                    // The form will be submitted normally
+                    console.log('Proceeding with upload...');
+                }
                 
                 // Drag and drop functionality
                 fileUploadArea.addEventListener('dragover', (e) => {
@@ -730,6 +1059,212 @@ class SRWM_Pro_CSV_Upload {
                         opacity: 1;
                     }
                 }
+                
+                /* Preview Modal Styles */
+                .srwm-preview-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .srwm-preview-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(5px);
+                }
+                
+                .srwm-preview-content {
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+                    max-width: 90%;
+                    max-height: 90%;
+                    width: 800px;
+                    transform: scale(0.9);
+                    opacity: 0;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    overflow: hidden;
+                }
+                
+                .srwm-preview-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 20px 25px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .srwm-preview-header h3 {
+                    margin: 0;
+                    font-size: 1.2rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .srwm-preview-close {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 5px;
+                    border-radius: 50%;
+                    transition: background 0.3s ease;
+                }
+                
+                .srwm-preview-close:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+                
+                .srwm-preview-body {
+                    padding: 25px;
+                    max-height: 500px;
+                    overflow-y: auto;
+                }
+                
+                .srwm-validation-summary {
+                    display: flex;
+                    gap: 15px;
+                    margin-bottom: 20px;
+                    flex-wrap: wrap;
+                }
+                
+                .validation-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                }
+                
+                .validation-item.valid {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #059669;
+                }
+                
+                .validation-item.warning {
+                    background: rgba(245, 158, 11, 0.1);
+                    color: #d97706;
+                }
+                
+                .validation-item.error {
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #dc2626;
+                }
+                
+                .srwm-preview-table {
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                }
+                
+                .srwm-preview-table-inner {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.9rem;
+                }
+                
+                .srwm-preview-table-inner th,
+                .srwm-preview-table-inner td {
+                    padding: 8px 12px;
+                    text-align: left;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+                
+                .srwm-preview-table-inner th {
+                    background: #f1f5f9;
+                    font-weight: 600;
+                    color: #374151;
+                }
+                
+                .srwm-preview-note {
+                    text-align: center;
+                    color: #6b7280;
+                    font-style: italic;
+                    margin-top: 10px;
+                }
+                
+                .srwm-warnings-section {
+                    background: rgba(245, 158, 11, 0.05);
+                    border: 1px solid rgba(245, 158, 11, 0.2);
+                    border-radius: 8px;
+                    padding: 15px;
+                }
+                
+                .srwm-warnings-section h4 {
+                    margin: 0 0 10px 0;
+                    color: #d97706;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .srwm-warnings-section ul {
+                    margin: 0;
+                    padding-left: 20px;
+                    color: #6b7280;
+                }
+                
+                .srwm-warnings-section li {
+                    margin-bottom: 5px;
+                }
+                
+                .srwm-preview-footer {
+                    padding: 20px 25px;
+                    border-top: 1px solid #e2e8f0;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 12px;
+                }
+                
+                .srwm-btn-secondary {
+                    background: #6b7280;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                }
+                
+                .srwm-btn-secondary:hover {
+                    background: #4b5563;
+                }
+                
+                .srwm-btn-primary {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .srwm-btn-primary:hover {
+                    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                    transform: translateY(-1px);
+                }
             </style>
         </body>
         </html>
@@ -784,20 +1319,28 @@ class SRWM_Pro_CSV_Upload {
             wp_die($error_message);
         }
         
-        // Check file size (5MB limit)
-        $max_size = 5 * 1024 * 1024; // 5MB in bytes
+        // Check file size (10MB limit)
+        $max_size = 10 * 1024 * 1024; // 10MB in bytes
         if ($file['size'] > $max_size) {
-            wp_die(sprintf(__('File size exceeds the maximum limit of 5MB. Your file size is: %s', 'smart-restock-waitlist'), size_format($file['size'])));
+            wp_die(sprintf(__('File size exceeds the maximum limit of 10MB. Your file size is: %s', 'smart-restock-waitlist'), size_format($file['size'])));
         }
         
         // Validate file type
         $file_type = wp_check_filetype($file['name']);
-        if ($file_type['ext'] !== 'csv') {
-            wp_die(__('Please upload a valid CSV file.', 'smart-restock-waitlist'));
+        $allowed_extensions = array('csv', 'xlsx', 'xls');
+        
+        if (!in_array($file_type['ext'], $allowed_extensions)) {
+            wp_die(__('Please upload a valid CSV, XLSX, or XLS file.', 'smart-restock-waitlist'));
         }
         
-        // Read CSV file
-        $csv_data = $this->read_csv_file($file['tmp_name']);
+        // Read file based on type
+        $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        
+        if ($file_extension === 'csv') {
+            $csv_data = $this->read_csv_file($file['tmp_name']);
+        } else {
+            $csv_data = $this->read_excel_file($file['tmp_name']);
+        }
         
         if (!$csv_data) {
             wp_die(__('Failed to read CSV file. Please check the file format.', 'smart-restock-waitlist'));
@@ -819,6 +1362,73 @@ class SRWM_Pro_CSV_Upload {
             // Display results
             $this->display_upload_results($results);
         }
+    }
+    
+    /**
+     * Read Excel file (XLSX/XLS)
+     */
+    private function read_excel_file($file_path) {
+        // For now, we'll convert Excel to CSV format
+        // In a production environment, you might want to use a library like PhpSpreadsheet
+        
+        // Simple conversion for basic Excel files
+        $data = array();
+        
+        // Try to read as CSV first (some Excel files can be read as CSV)
+        if (($handle = fopen($file_path, 'r')) !== false) {
+            // Read header row
+            $header = fgetcsv($handle);
+            
+            if (!$header || count($header) < 2) {
+                fclose($handle);
+                return false;
+            }
+            
+            // Find column indexes
+            $sku_index = false;
+            $quantity_index = false;
+            
+            $header_lower = array_map('strtolower', $header);
+            
+            // Try different possible SKU column names
+            $sku_names = array('sku', 'product_sku', 'product sku', 'product-sku', 'product_id', 'product id', 'product-id');
+            foreach ($sku_names as $sku_name) {
+                $index = array_search($sku_name, $header_lower);
+                if ($index !== false) {
+                    $sku_index = $index;
+                    break;
+                }
+            }
+            
+            // Try different possible quantity column names
+            $quantity_names = array('quantity', 'qty', 'stock', 'stock_quantity', 'stock quantity', 'stock-quantity');
+            foreach ($quantity_names as $quantity_name) {
+                $index = array_search($quantity_name, $header_lower);
+                if ($index !== false) {
+                    $quantity_index = $index;
+                    break;
+                }
+            }
+            
+            if ($sku_index === false || $quantity_index === false) {
+                fclose($handle);
+                return false;
+            }
+            
+            // Read data rows
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count($row) >= 2) {
+                    $data[] = array(
+                        'sku' => trim($row[$sku_index]),
+                        'quantity' => intval($row[$quantity_index])
+                    );
+                }
+            }
+            
+            fclose($handle);
+        }
+        
+        return $data;
     }
     
     /**
