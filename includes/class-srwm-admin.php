@@ -112,6 +112,15 @@ class SRWM_Admin {
             
             add_submenu_page(
                 'smart-restock-waitlist',
+                __('CSV Approvals', 'smart-restock-waitlist'),
+                __('CSV Approvals', 'smart-restock-waitlist'),
+                'manage_woocommerce',
+                'smart-restock-waitlist-csv-approvals',
+                array($this, 'render_csv_approvals_page')
+            );
+            
+            add_submenu_page(
+                'smart-restock-waitlist',
                 __('Stock Thresholds', 'smart-restock-waitlist'),
                 __('Stock Thresholds', 'smart-restock-waitlist'),
                 'manage_woocommerce',
@@ -2518,6 +2527,400 @@ class SRWM_Admin {
     }
     
     /**
+     * Render CSV Approvals page
+     */
+    public function render_csv_approvals_page() {
+        if (!$this->license_manager->is_pro_active()) {
+            $this->render_pro_feature_locked();
+            return;
+        }
+        
+        ?>
+        <div class="wrap srwm-pro-page">
+            <div class="srwm-pro-header">
+                <h1><?php _e('CSV Upload Approvals', 'smart-restock-waitlist'); ?></h1>
+                <div class="srwm-pro-actions">
+                    <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
+                        <span class="dashicons dashicons-arrow-left-alt"></span>
+                        <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="srwm-pro-card">
+                <div class="srwm-pro-card-header">
+                    <h2><?php _e('Pending Approvals', 'smart-restock-waitlist'); ?></h2>
+                    <p><?php _e('Review and approve or reject CSV uploads from suppliers.', 'smart-restock-waitlist'); ?></p>
+                </div>
+                <div class="srwm-pro-card-content">
+                    <div id="srwm-approvals-container">
+                        <div class="srwm-loading">
+                            <span class="spinner is-active"></span>
+                            <?php _e('Loading approvals...', 'smart-restock-waitlist'); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Approval Modal -->
+            <div id="srwm-approval-modal" class="srwm-modal" style="display: none;">
+                <div class="srwm-modal-content">
+                    <div class="srwm-modal-header">
+                        <h3 id="srwm-modal-title"><?php _e('Review Upload', 'smart-restock-waitlist'); ?></h3>
+                        <span class="srwm-modal-close">&times;</span>
+                    </div>
+                    <div class="srwm-modal-body">
+                        <div id="srwm-upload-details"></div>
+                        <div class="srwm-form-group">
+                            <label for="srwm-admin-notes"><?php _e('Admin Notes (Optional):', 'smart-restock-waitlist'); ?></label>
+                            <textarea id="srwm-admin-notes" rows="3" placeholder="<?php _e('Add any notes about this approval...', 'smart-restock-waitlist'); ?>"></textarea>
+                        </div>
+                    </div>
+                    <div class="srwm-modal-footer">
+                        <button type="button" class="button button-secondary srwm-modal-close"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>
+                        <button type="button" class="button button-danger" id="srwm-reject-upload"><?php _e('Reject', 'smart-restock-waitlist'); ?></button>
+                        <button type="button" class="button button-primary" id="srwm-approve-upload"><?php _e('Approve', 'smart-restock-waitlist'); ?></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .srwm-approval-item {
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 15px;
+                transition: all 0.3s ease;
+            }
+            
+            .srwm-approval-item:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            
+            .srwm-approval-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            
+            .srwm-approval-info {
+                flex: 1;
+            }
+            
+            .srwm-approval-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 5px;
+            }
+            
+            .srwm-approval-meta {
+                color: #6b7280;
+                font-size: 0.9rem;
+            }
+            
+            .srwm-approval-status {
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+            
+            .srwm-status-pending {
+                background: #fef3c7;
+                color: #92400e;
+            }
+            
+            .srwm-status-approved {
+                background: #d1fae5;
+                color: #065f46;
+            }
+            
+            .srwm-status-rejected {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+            
+            .srwm-approval-actions {
+                display: flex;
+                gap: 10px;
+            }
+            
+            .srwm-upload-preview {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .srwm-upload-preview h4 {
+                margin: 0 0 10px 0;
+                color: #374151;
+                font-size: 0.95rem;
+            }
+            
+            .srwm-upload-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.9rem;
+            }
+            
+            .srwm-upload-table th,
+            .srwm-upload-table td {
+                padding: 8px 12px;
+                text-align: left;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .srwm-upload-table th {
+                background: #f1f5f9;
+                font-weight: 600;
+                color: #374151;
+            }
+            
+            .srwm-modal {
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+            
+            .srwm-modal-content {
+                background-color: white;
+                margin: 5% auto;
+                padding: 0;
+                border-radius: 12px;
+                width: 80%;
+                max-width: 600px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            }
+            
+            .srwm-modal-header {
+                padding: 20px 25px;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .srwm-modal-header h3 {
+                margin: 0;
+                color: #1f2937;
+            }
+            
+            .srwm-modal-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #6b7280;
+            }
+            
+            .srwm-modal-body {
+                padding: 25px;
+            }
+            
+            .srwm-modal-footer {
+                padding: 20px 25px;
+                border-top: 1px solid #e2e8f0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            
+            .srwm-loading {
+                text-align: center;
+                padding: 40px;
+                color: #6b7280;
+            }
+            
+            .srwm-no-approvals {
+                text-align: center;
+                padding: 40px;
+                color: #6b7280;
+            }
+        </style>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            let currentApprovalId = null;
+            
+            // Load approvals
+            function loadApprovals() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_csv_approvals',
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            displayApprovals(response.data);
+                        } else {
+                            $('#srwm-approvals-container').html('<div class="srwm-no-approvals">' + response.message + '</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#srwm-approvals-container').html('<div class="srwm-no-approvals">Error loading approvals</div>');
+                    }
+                });
+            }
+            
+            // Display approvals
+            function displayApprovals(approvals) {
+                if (approvals.length === 0) {
+                    $('#srwm-approvals-container').html('<div class="srwm-no-approvals">No pending approvals</div>');
+                    return;
+                }
+                
+                let html = '';
+                approvals.forEach(function(approval) {
+                    const uploadData = JSON.parse(approval.upload_data);
+                    const statusClass = 'srwm-status-' + approval.status;
+                    
+                    html += '<div class="srwm-approval-item">';
+                    html += '<div class="srwm-approval-header">';
+                    html += '<div class="srwm-approval-info">';
+                    html += '<div class="srwm-approval-title">' + approval.file_name + '</div>';
+                    html += '<div class="srwm-approval-meta">';
+                    html += 'Supplier: ' + approval.supplier_email + ' | ';
+                    html += 'Uploaded: ' + new Date(approval.created_at).toLocaleString() + ' | ';
+                    html += 'Rows: ' + uploadData.length;
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="srwm-approval-status ' + statusClass + '">' + approval.status + '</div>';
+                    html += '</div>';
+                    
+                    if (approval.status === 'pending') {
+                        html += '<div class="srwm-approval-actions">';
+                        html += '<button class="button button-primary" onclick="reviewUpload(' + approval.id + ')">Review</button>';
+                        html += '</div>';
+                    } else {
+                        html += '<div class="srwm-approval-meta">';
+                        if (approval.admin_notes) {
+                            html += '<strong>Admin Notes:</strong> ' + approval.admin_notes;
+                        }
+                        html += '</div>';
+                    }
+                    
+                    html += '<div class="srwm-upload-preview">';
+                    html += '<h4>Upload Preview:</h4>';
+                    html += '<table class="srwm-upload-table">';
+                    html += '<thead><tr><th>SKU</th><th>Quantity</th></tr></thead><tbody>';
+                    
+                    uploadData.slice(0, 5).forEach(function(row) {
+                        html += '<tr><td>' + row.sku + '</td><td>' + row.quantity + '</td></tr>';
+                    });
+                    
+                    if (uploadData.length > 5) {
+                        html += '<tr><td colspan="2">... and ' + (uploadData.length - 5) + ' more rows</td></tr>';
+                    }
+                    
+                    html += '</tbody></table>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+                
+                $('#srwm-approvals-container').html(html);
+            }
+            
+            // Review upload
+            window.reviewUpload = function(approvalId) {
+                currentApprovalId = approvalId;
+                $('#srwm-modal-title').text('Review Upload #' + approvalId);
+                $('#srwm-admin-notes').val('');
+                $('#srwm-approval-modal').show();
+            };
+            
+            // Close modal
+            $('.srwm-modal-close').click(function() {
+                $('#srwm-approval-modal').hide();
+            });
+            
+            // Approve upload
+            $('#srwm-approve-upload').click(function() {
+                if (!currentApprovalId) return;
+                
+                const adminNotes = $('#srwm-admin-notes').val();
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_approve_csv_upload',
+                        approval_id: currentApprovalId,
+                        admin_notes: adminNotes,
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#srwm-approval-modal').hide();
+                            loadApprovals();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Error processing approval');
+                    }
+                });
+            });
+            
+            // Reject upload
+            $('#srwm-reject-upload').click(function() {
+                if (!currentApprovalId) return;
+                
+                const adminNotes = $('#srwm-admin-notes').val();
+                if (!adminNotes.trim()) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_reject_csv_upload',
+                        approval_id: currentApprovalId,
+                        admin_notes: adminNotes,
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#srwm-approval-modal').hide();
+                            loadApprovals();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Error processing rejection');
+                    }
+                });
+            });
+            
+            // Load approvals on page load
+            loadApprovals();
+        });
+        </script>
+        <?php
+        $this->enqueue_modern_styles();
+        ?>
+        <?php
+    }
+    
+    /**
      * Render Stock Thresholds page
      */
     public function render_thresholds_page() {
@@ -2800,6 +3203,20 @@ class SRWM_Admin {
                                        <?php checked(get_option('srwm_auto_generate_po'), 'yes'); ?>>
                                 <?php _e('Automatically generate purchase orders when stock is low', 'smart-restock-waitlist'); ?>
                             </label>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('CSV Upload Approval', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="srwm_csv_require_approval" value="yes" 
+                                       <?php checked(get_option('srwm_csv_require_approval', 'yes'), 'yes'); ?>>
+                                <?php _e('Require admin approval for CSV uploads before updating stock', 'smart-restock-waitlist'); ?>
+                            </label>
+                            <p class="description">
+                                <?php _e('When enabled, CSV uploads will be stored for review before processing. When disabled, uploads are processed immediately.', 'smart-restock-waitlist'); ?>
+                            </p>
                         </td>
                     </tr>
                 </table>

@@ -992,6 +992,11 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_save_email_templates', array($this, 'ajax_save_email_templates'));
         add_action('wp_ajax_srwm_save_global_threshold', array($this, 'ajax_save_global_threshold'));
         add_action('wp_ajax_srwm_download_csv_template', array($this, 'ajax_download_csv_template'));
+        
+        // CSV Approval AJAX handlers
+        add_action('wp_ajax_srwm_approve_csv_upload', array($this, 'ajax_approve_csv_upload'));
+        add_action('wp_ajax_srwm_reject_csv_upload', array($this, 'ajax_reject_csv_upload'));
+        add_action('wp_ajax_srwm_get_csv_approvals', array($this, 'ajax_get_csv_approvals'));
     }
     
     /**
@@ -1440,6 +1445,185 @@ class SmartRestockWaitlistManager {
     }
     
     /**
+     * AJAX: Get CSV upload approvals
+     */
+    public function ajax_get_csv_approvals() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        // Check if Pro features are active
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro features are not active.', 'smart-restock-waitlist'))));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        $approvals = $wpdb->get_results("
+            SELECT * FROM $table 
+            ORDER BY created_at DESC 
+            LIMIT 50
+        ");
+        
+        wp_die(json_encode(array('success' => true, 'data' => $approvals)));
+    }
+    
+    /**
+     * AJAX: Approve CSV upload
+     */
+    public function ajax_approve_csv_upload() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        // Check if Pro features are active
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro features are not active.', 'smart-restock-waitlist'))));
+        }
+        
+        $approval_id = intval($_POST['approval_id']);
+        $admin_notes = sanitize_textarea_field($_POST['admin_notes'] ?? '');
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        // Get approval data
+        $approval = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $approval_id));
+        
+        if (!$approval || $approval->status !== 'pending') {
+            wp_die(json_encode(array('success' => false, 'message' => __('Invalid approval or already processed.', 'smart-restock-waitlist'))));
+        }
+        
+        // Process the CSV data
+        $upload_data = json_decode($approval->upload_data, true);
+        $results = array('success' => 0, 'errors' => array(), 'skipped' => 0);
+        
+        foreach ($upload_data as $row) {
+            $sku = $row['sku'];
+            $quantity = intval($row['quantity']);
+            
+            if (empty($sku) || $quantity <= 0) {
+                $results['skipped']++;
+                continue;
+            }
+            
+            // Find product by SKU
+            $product_id = wc_get_product_id_by_sku($sku);
+            
+            if (!$product_id) {
+                $results['errors'][] = sprintf(__('Product with SKU "%s" not found.', 'smart-restock-waitlist'), $sku);
+                continue;
+            }
+            
+            // Restock the product
+            $result = SRWM_Waitlist::restock_and_notify($product_id, $quantity);
+            
+            if ($result) {
+                $results['success']++;
+            } else {
+                $results['errors'][] = sprintf(__('Failed to restock product with SKU "%s".', 'smart-restock-waitlist'), $sku);
+            }
+        }
+        
+        // Update approval status
+        $wpdb->update(
+            $table,
+            array(
+                'status' => 'approved',
+                'admin_notes' => $admin_notes,
+                'processed_at' => current_time('mysql'),
+                'processed_by' => get_current_user_id()
+            ),
+            array('id' => $approval_id),
+            array('%s', '%s', '%s', '%d'),
+            array('%d')
+        );
+        
+        // Send email notification to supplier
+        $this->send_approval_notification($approval->supplier_email, 'approved', $results);
+        
+        wp_die(json_encode(array(
+            'success' => true, 
+            'message' => sprintf(__('Approved! %d products restocked successfully.', 'smart-restock-waitlist'), $results['success']),
+            'results' => $results
+        )));
+    }
+    
+    /**
+     * AJAX: Reject CSV upload
+     */
+    public function ajax_reject_csv_upload() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        // Check if Pro features are active
+        if (!$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Pro features are not active.', 'smart-restock-waitlist'))));
+        }
+        
+        $approval_id = intval($_POST['approval_id']);
+        $admin_notes = sanitize_textarea_field($_POST['admin_notes'] ?? '');
+        
+        if (empty($admin_notes)) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Please provide a reason for rejection.', 'smart-restock-waitlist'))));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_csv_approvals';
+        
+        // Get approval data
+        $approval = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $approval_id));
+        
+        if (!$approval || $approval->status !== 'pending') {
+            wp_die(json_encode(array('success' => false, 'message' => __('Invalid approval or already processed.', 'smart-restock-waitlist'))));
+        }
+        
+        // Update approval status
+        $wpdb->update(
+            $table,
+            array(
+                'status' => 'rejected',
+                'admin_notes' => $admin_notes,
+                'processed_at' => current_time('mysql'),
+                'processed_by' => get_current_user_id()
+            ),
+            array('id' => $approval_id),
+            array('%s', '%s', '%s', '%d'),
+            array('%d')
+        );
+        
+        // Send email notification to supplier
+        $this->send_approval_notification($approval->supplier_email, 'rejected', array('reason' => $admin_notes));
+        
+        wp_die(json_encode(array('success' => true, 'message' => __('Upload rejected successfully.', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * Send approval notification email
+     */
+    private function send_approval_notification($supplier_email, $status, $data) {
+        $subject = $status === 'approved' 
+            ? __('CSV Upload Approved - Stock Updated', 'smart-restock-waitlist')
+            : __('CSV Upload Rejected', 'smart-restock-waitlist');
+        
+        $message = $status === 'approved' 
+            ? sprintf(__('Your CSV upload has been approved and processed successfully. %d products were restocked.', 'smart-restock-waitlist'), $data['success'])
+            : sprintf(__('Your CSV upload has been rejected. Reason: %s', 'smart-restock-waitlist'), $data['reason']);
+        
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        
+        wp_mail($supplier_email, $subject, $message, $headers);
+    }
+    
+    /**
      * Create database tables
      */
     public function create_tables() {
@@ -1544,10 +1728,32 @@ class SmartRestockWaitlistManager {
                 KEY status (status)
             ) $charset_collate;";
             
+            // CSV upload approvals table
+            $table_approvals = $wpdb->prefix . 'srwm_csv_approvals';
+            $sql_approvals = "CREATE TABLE $table_approvals (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                token varchar(255) NOT NULL,
+                supplier_email varchar(255) NOT NULL,
+                file_name varchar(255) NOT NULL,
+                file_size int(11) NOT NULL,
+                upload_data longtext NOT NULL,
+                status enum('pending', 'approved', 'rejected') DEFAULT 'pending',
+                admin_notes text,
+                created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                processed_at datetime DEFAULT NULL,
+                processed_by bigint(20) DEFAULT NULL,
+                ip_address varchar(45) DEFAULT NULL,
+                PRIMARY KEY (id),
+                KEY token (token),
+                KEY status (status),
+                KEY created_at (created_at)
+            ) $charset_collate;";
+            
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             dbDelta($sql_tokens);
             dbDelta($sql_csv_tokens);
             dbDelta($sql_po);
+            dbDelta($sql_approvals);
         }
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
