@@ -3343,6 +3343,46 @@ class SRWM_Admin {
                 font-size: 1.1rem;
             }
             
+            /* Error handling styles */
+            .srwm-error-card {
+                border-color: #ef4444;
+                background: rgba(239, 68, 68, 0.05);
+            }
+            
+            .srwm-error-message {
+                color: #dc2626;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 15px;
+                background: rgba(239, 68, 68, 0.1);
+                border-radius: 8px;
+                border-left: 4px solid #ef4444;
+            }
+            
+            .srwm-error-message i {
+                color: #ef4444;
+            }
+            
+            .srwm-error-container {
+                text-align: center;
+                padding: 40px 20px;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            
+            .srwm-error-container .srwm-error-message {
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+            
+            .srwm-error-container button {
+                margin-top: 15px;
+            }
+            
             .srwm-filter-notice {
                 background: #f0f9ff;
                 border: 1px solid #0ea5e9;
@@ -3396,43 +3436,88 @@ class SRWM_Admin {
             
             // Load approvals
             function loadApprovals() {
-                // Get token filter from URL if present
-                var urlParams = new URLSearchParams(window.location.search);
-                var tokenFilter = urlParams.get('token');
-                
-                var ajaxData = {
-                    action: 'srwm_get_csv_approvals',
-                    nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
-                };
-                
-                if (tokenFilter) {
-                    ajaxData.token = tokenFilter;
-                }
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    dataType: 'json',
-                    data: ajaxData,
-                    success: function(response) {
-                        console.log('CSV Approvals Response:', response);
-                        console.log('Response type:', typeof response);
-                        console.log('Response.success:', response.success);
-                        console.log('Response.data:', response.data);
-                        
-                        if (response.success) {
-                            console.log('Calling displayApprovals with:', response.data);
-                            displayApprovals(response.data);
-                        } else {
-                            console.log('Response not successful, showing error');
-                            $('#srwm-approvals-container').html('<div class="srwm-no-approvals">' + (response.message || 'Unknown error') + '</div>');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('CSV Approvals Error:', xhr.responseText, status, error);
-                        $('#srwm-approvals-container').html('<div class="srwm-no-approvals">Error loading approvals: ' + error + '</div>');
+                try {
+                    console.log('Starting to load approvals...');
+                    
+                    // Show loading state
+                    $('#srwm-approvals-container').html('<div class="srwm-loading"><span class="spinner is-active"></span> Loading approvals...</div>');
+                    
+                    // Get token filter from URL if present
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var tokenFilter = urlParams.get('token');
+                    
+                    var ajaxData = {
+                        action: 'srwm_get_csv_approvals',
+                        nonce: '<?php echo wp_create_nonce('srwm_admin_nonce'); ?>'
+                    };
+                    
+                    if (tokenFilter) {
+                        ajaxData.token = tokenFilter;
+                        console.log('Filtering by token:', tokenFilter);
                     }
-                });
+                    
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        dataType: 'json',
+                        data: ajaxData,
+                        timeout: 30000, // 30 second timeout
+                        success: function(response) {
+                            console.log('CSV Approvals Response:', response);
+                            
+                            try {
+                                if (response && response.success) {
+                                    console.log('Calling displayApprovals with:', response.data);
+                                    displayApprovals(response.data);
+                                } else {
+                                    console.log('Response not successful, showing error');
+                                    const errorMessage = response && response.message ? response.message : 'Unknown error occurred';
+                                    showError('Failed to load approvals: ' + errorMessage);
+                                }
+                            } catch (error) {
+                                console.error('Error processing response:', error);
+                                showError('Error processing server response: ' + error.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('CSV Approvals Error:', xhr.responseText, status, error);
+                            
+                            let errorMessage = 'Error loading approvals';
+                            
+                            if (status === 'timeout') {
+                                errorMessage = 'Request timed out. Please try again.';
+                            } else if (status === 'error') {
+                                errorMessage = 'Network error. Please check your connection.';
+                            } else if (xhr.responseText) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    errorMessage = response.message || errorMessage;
+                                } catch (e) {
+                                    errorMessage = error || errorMessage;
+                                }
+                            }
+                            
+                            showError(errorMessage);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error in loadApprovals:', error);
+                    showError('Error initializing approval loader: ' + error.message);
+                }
+            }
+            
+            // Show error message
+            function showError(message) {
+                const errorHtml = '<div class="srwm-error-container">' +
+                    '<div class="srwm-error-message">' +
+                    '<i class="fas fa-exclamation-triangle"></i> ' + message +
+                    '</div>' +
+                    '<button class="button button-primary" onclick="loadApprovals()">' +
+                    '<i class="fas fa-redo"></i> Retry' +
+                    '</button>' +
+                    '</div>';
+                
+                $('#srwm-approvals-container').html(errorHtml);
             }
             
             // Display approvals
@@ -3454,18 +3539,23 @@ class SRWM_Admin {
                 }
                 */
                 
+                console.log('Starting to generate HTML for approvals...');
+                
                 let html = '';
+                let processedCount = 0;
+                
                 approvals.forEach(function(approval, index) {
-                    console.log('Processing approval:', approval);
-                    
-                    let uploadData = [];
                     try {
-                        uploadData = JSON.parse(approval.upload_data);
-                        console.log('Parsed upload data:', uploadData);
-                    } catch (error) {
-                        console.error('Error parsing upload data:', error);
-                        uploadData = [];
-                    }
+                        console.log('Processing approval:', approval);
+                        
+                        let uploadData = [];
+                        try {
+                            uploadData = JSON.parse(approval.upload_data);
+                            console.log('Parsed upload data:', uploadData);
+                        } catch (error) {
+                            console.error('Error parsing upload data:', error);
+                            uploadData = [];
+                        }
                     
                     const statusClass = 'srwm-status-' + approval.status;
                     const statusIcon = getStatusIcon(approval.status);
@@ -3543,6 +3633,20 @@ class SRWM_Admin {
                     }
                     html += '</div>';
                     html += '</div>';
+                    
+                    processedCount++;
+                    console.log('Successfully processed approval ' + processedCount + ' of ' + approvals.length);
+                    
+                } catch (error) {
+                    console.error('Error processing approval:', error);
+                    html += '<div class="srwm-approval-card srwm-error-card">';
+                    html += '<div class="srwm-approval-card-content">';
+                    html += '<div class="srwm-error-message">';
+                    html += '<i class="fas fa-exclamation-triangle"></i> Error processing approval: ' + error.message;
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
                 });
                 
                 console.log('Generated HTML length:', html.length);
