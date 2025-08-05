@@ -4845,44 +4845,67 @@ class SRWM_Admin {
                 <?php _e('Supplier Management', 'smart-restock-waitlist'); ?>
             </h1>
             
-            <div class="srwm-suppliers-container">
-                <!-- Header with Search and Filters -->
-                <div class="srwm-suppliers-header">
-                    <div class="srwm-search-filters">
-                        <div class="srwm-search-box">
-                            <input type="text" id="supplier-search" placeholder="<?php _e('Search suppliers...', 'smart-restock-waitlist'); ?>">
-                            <i class="fas fa-search"></i>
+            <!-- Horizontal Tabs Navigation -->
+            <div class="srwm-tabs-navigation">
+                <button class="srwm-tab-button active" data-tab="suppliers">
+                    <i class="fas fa-users"></i>
+                    <?php _e('Manage Suppliers', 'smart-restock-waitlist'); ?>
+                </button>
+                <button class="srwm-tab-button" data-tab="csv-upload">
+                    <i class="fas fa-upload"></i>
+                    <?php _e('CSV Upload', 'smart-restock-waitlist'); ?>
+                </button>
+                <button class="srwm-tab-button" data-tab="quick-restock">
+                    <i class="fas fa-bolt"></i>
+                    <?php _e('Quick Restock', 'smart-restock-waitlist'); ?>
+                </button>
+            </div>
+            
+            <!-- Tab Content Container -->
+            <div class="srwm-tab-content-container">
+                <!-- Suppliers Tab -->
+                <div class="srwm-tab-content active" id="suppliers-tab">
+                    <div class="srwm-suppliers-container">
+                        <!-- Header with Search and Filters -->
+                        <div class="srwm-suppliers-header">
+                            <div class="srwm-search-filters">
+                                <div class="srwm-search-box">
+                                    <input type="text" id="supplier-search" placeholder="<?php _e('Search suppliers...', 'smart-restock-waitlist'); ?>">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <div class="srwm-filters">
+                                    <select id="category-filter">
+                                        <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
+                                        <?php foreach ($categories as $slug => $name): ?>
+                                            <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($name); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <select id="status-filter">
+                                        <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
+                                        <option value="active"><?php _e('Active', 'smart-restock-waitlist'); ?></option>
+                                        <option value="inactive"><?php _e('Inactive', 'smart-restock-waitlist'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="button button-primary" id="add-supplier-btn">
+                                <i class="fas fa-plus"></i>
+                                <?php _e('Add New Supplier', 'smart-restock-waitlist'); ?>
+                            </button>
                         </div>
-                        <div class="srwm-filters">
-                            <select id="category-filter">
-                                <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
-                                <?php foreach ($categories as $slug => $name): ?>
-                                    <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($name); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <select id="status-filter">
-                                <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
-                                <option value="active"><?php _e('Active', 'smart-restock-waitlist'); ?></option>
-                                <option value="inactive"><?php _e('Inactive', 'smart-restock-waitlist'); ?></option>
-                            </select>
+                        
+                        <!-- Suppliers Grid -->
+                        <div class="srwm-suppliers-grid" id="suppliers-grid">
+                            <div class="srwm-loading">
+                                <span class="spinner is-active"></span>
+                                <?php _e('Loading suppliers...', 'smart-restock-waitlist'); ?>
+                            </div>
                         </div>
                     </div>
-                    <button class="button button-primary" id="add-supplier-btn">
-                        <i class="fas fa-plus"></i>
-                        <?php _e('Add New Supplier', 'smart-restock-waitlist'); ?>
-                    </button>
                 </div>
                 
-                <!-- Suppliers Grid -->
-                <div class="srwm-suppliers-grid" id="suppliers-grid">
-                    <div class="srwm-loading">
-                        <span class="spinner is-active"></span>
-                        <?php _e('Loading suppliers...', 'smart-restock-waitlist'); ?>
-                    </div>
-                </div>
-                
-                <!-- CSV Upload Section -->
-                <div class="srwm-csv-upload-section">
+                <!-- CSV Upload Tab -->
+                <div class="srwm-tab-content" id="csv-upload-tab">
+                    <div class="srwm-csv-upload-section">
                     <div class="srwm-section-header">
                         <h2><i class="fas fa-upload"></i> <?php _e('CSV Upload Management', 'smart-restock-waitlist'); ?></h2>
                         <div class="srwm-section-actions">
@@ -4977,8 +5000,9 @@ class SRWM_Admin {
                     </div>
                 </div>
                 
-                <!-- Quick Restock Section -->
-                <div class="srwm-quick-restock-section">
+                <!-- Quick Restock Tab -->
+                <div class="srwm-tab-content" id="quick-restock-tab">
+                    <div class="srwm-quick-restock-section">
                     <div class="srwm-section-header">
                         <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
                         <div class="srwm-section-actions">
@@ -5045,6 +5069,7 @@ class SRWM_Admin {
                             </table>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -5282,8 +5307,78 @@ class SRWM_Admin {
         </div>
         
         <style>
-        .srwm-suppliers-container {
+        /* Horizontal Tabs Navigation */
+        .srwm-tabs-navigation {
+            display: flex;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
             margin-top: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .srwm-tab-button {
+            flex: 1;
+            background: #f8fafc;
+            border: none;
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .srwm-tab-button:last-child {
+            border-right: none;
+        }
+        
+        .srwm-tab-button:hover {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .srwm-tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .srwm-tab-button.active i {
+            color: white;
+        }
+        
+        .srwm-tab-button i {
+            font-size: 16px;
+            color: #64748b;
+        }
+        
+        .srwm-tab-content-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-tab-content {
+            display: none;
+            padding: 0;
+        }
+        
+        .srwm-tab-content.active {
+            display: block;
+        }
+        
+        .srwm-suppliers-container {
+            margin-top: 0;
         }
         
         /* Light theme for form inputs */
@@ -6368,6 +6463,19 @@ class SRWM_Admin {
             function getCategoryName(categorySlug) {
                 return categories[categorySlug] || categorySlug;
             }
+            
+            // Tab switching functionality
+            $('.srwm-tab-button').on('click', function() {
+                const tabId = $(this).data('tab');
+                
+                // Remove active class from all tabs and buttons
+                $('.srwm-tab-button').removeClass('active');
+                $('.srwm-tab-content').removeClass('active');
+                
+                // Add active class to clicked button and corresponding content
+                $(this).addClass('active');
+                $('#' + tabId + '-tab').addClass('active');
+            });
             
             // Load suppliers on page load
             loadSuppliers();
