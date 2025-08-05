@@ -122,6 +122,7 @@
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
+                dataType: 'json',
                 data: ajaxData,
                 success: function(response) {
                     console.log('Threshold save response:', response);
@@ -170,6 +171,7 @@
             $.ajax({
                 url: srwm_admin.ajax_url,
                 type: 'POST',
+                dataType: 'json',
                 data: ajaxData,
                 success: function(response) {
                     console.log('Reset threshold response:', response);
@@ -510,24 +512,17 @@
     }
     
     function showAdminMessage(type, message) {
-        console.log('showAdminMessage called:', { type: type, message: message });
-        
         var messageClass = type === 'success' ? 'notice-success' : 'notice-error';
         var $notice = $('<div class="notice ' + messageClass + ' is-dismissible"><p>' + message + '</p></div>');
         
-        console.log('Notice element created:', $notice[0].outerHTML);
-        
         // Insert at the top of the page
         var $target = $('.wrap h1');
-        console.log('Target element found:', $target.length > 0 ? 'yes' : 'no');
         
         if ($target.length > 0) {
             $target.after($notice);
-            console.log('Notice inserted after h1');
         } else {
             // Fallback: insert at the beginning of .wrap
             $('.wrap').prepend($notice);
-            console.log('Notice inserted at beginning of .wrap');
         }
         
         // Auto-dismiss after 5 seconds
@@ -544,8 +539,6 @@
                 $(this).remove();
             });
         });
-        
-        console.log('showAdminMessage completed');
     }
     
     function initTooltips() {
