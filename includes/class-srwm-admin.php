@@ -4975,6 +4975,22 @@ class SRWM_Admin {
                             </div>
                         </div>
                         
+                        <!-- Search and Filter Controls -->
+                        <div class="srwm-search-filters">
+                            <div class="srwm-search-box">
+                                <input type="text" id="upload-links-search" placeholder="<?php _e('Search by supplier name, company, or email...', 'smart-restock-waitlist'); ?>">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="srwm-filters">
+                                <select id="upload-links-status-filter">
+                                    <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
+                                    <option value="active"><?php _e('Active', 'smart-restock-waitlist'); ?></option>
+                                    <option value="used"><?php _e('Used', 'smart-restock-waitlist'); ?></option>
+                                    <option value="expired"><?php _e('Expired', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="srwm-table-container">
                             <table class="srwm-upload-links-table">
                                 <thead>
@@ -5748,6 +5764,19 @@ class SRWM_Admin {
                 order: 3;
                 text-align: center;
             }
+        }
+        
+        /* Upload Links Table Pagination */
+        .srwm-pagination-cell {
+            padding: 0 !important;
+            border: none !important;
+        }
+        
+        .srwm-pagination-cell .srwm-pagination {
+            margin: 0;
+            border-radius: 0;
+            border: none;
+            background: #f8fafc;
         }
         
         /* Selected Products Display */
@@ -7026,7 +7055,16 @@ class SRWM_Admin {
             
             // Refresh upload links
             $('#refresh-links-btn').on('click', function() {
-                loadUploadLinks();
+                loadUploadLinks(1);
+            });
+            
+            // Upload links search and filter
+            $('#upload-links-search').on('input', debounce(function() {
+                loadUploadLinks(1);
+            }, 300));
+            
+            $('#upload-links-status-filter').on('change', function() {
+                loadUploadLinks(1);
             });
             
             // Quick Restock functionality - Generate links for selected products
@@ -7401,19 +7439,30 @@ class SRWM_Admin {
                 }
             }
             
-            function loadUploadLinks() {
+            let currentUploadLinksPage = 1;
+            
+            function loadUploadLinks(page = 1) {
+                currentUploadLinksPage = page;
                 $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Loading upload links...</td></tr>');
+                
+                const searchTerm = $('#upload-links-search').val();
+                const statusFilter = $('#upload-links-status-filter').val();
                 
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     data: {
                         action: 'srwm_get_csv_upload_links',
-                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        page: page,
+                        per_page: 10,
+                        search: searchTerm,
+                        status: statusFilter
                     },
                     success: function(response) {
                         if (response.success) {
-                            displayUploadLinks(response.data);
+                            const data = response.data;
+                            displayUploadLinks(data.links, data.pagination);
                         } else {
                             $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading upload links: ' + response.data + '</td></tr>');
                         }
@@ -7424,9 +7473,7 @@ class SRWM_Admin {
                 });
             }
             
-            function displayUploadLinks(links) {
-                console.log('Displaying upload links:', links);
-                
+            function displayUploadLinks(links, pagination) {
                 if (links.length === 0) {
                     $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-empty">No upload links found. Generate links from supplier cards above.</td></tr>');
                     return;
@@ -7434,12 +7481,10 @@ class SRWM_Admin {
                 
                 let html = '';
                 links.forEach(function(link, index) {
-                    console.log('Processing link:', link, 'used field:', link.used, 'type:', typeof link.used, 'parsed:', parseInt(link.used));
                     const expiresDate = new Date(link.expires_at);
                     const now = new Date();
                     const isExpired = expiresDate < now;
                     const status = isExpired ? 'expired' : (parseInt(link.used) === 1 ? 'used' : 'active');
-                    console.log('Status determination:', { isExpired, used: parseInt(link.used), status });
                     
                     // Check if this is a newly generated link (first in the list and active)
                     const isNewLink = index === 0 && status === 'active' && parseInt(link.upload_count) === 0;
@@ -7481,8 +7526,55 @@ class SRWM_Admin {
                     `;
                 });
                 
-                console.log('Generated HTML for upload links table:', html);
+                // Add pagination row if needed
+                if (pagination && pagination.total_pages > 1) {
+                    html += generateUploadLinksPaginationControls(pagination);
+                }
+                
                 $('#upload-links-tbody').html(html);
+            }
+            
+            function generateUploadLinksPaginationControls(pagination) {
+                let html = '<tr><td colspan="6" class="srwm-pagination-cell">';
+                html += '<div class="srwm-pagination">';
+                
+                // Previous button
+                if (pagination.has_prev) {
+                    html += `<button class="srwm-pagination-btn" onclick="loadUploadLinks(${pagination.current_page - 1})">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>`;
+                }
+                
+                // Page numbers
+                html += '<div class="srwm-page-numbers">';
+                for (let i = 1; i <= pagination.total_pages; i++) {
+                    if (i === pagination.current_page) {
+                        html += `<span class="srwm-page-number active">${i}</span>`;
+                    } else if (i === 1 || i === pagination.total_pages || 
+                              (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+                        html += `<button class="srwm-page-number" onclick="loadUploadLinks(${i})">${i}</button>`;
+                    } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                        html += '<span class="srwm-page-ellipsis">...</span>';
+                    }
+                }
+                html += '</div>';
+                
+                // Next button
+                if (pagination.has_next) {
+                    html += `<button class="srwm-pagination-btn" onclick="loadUploadLinks(${pagination.current_page + 1})">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>`;
+                }
+                
+                // Page info
+                html += `<div class="srwm-page-info">
+                            Showing ${((pagination.current_page - 1) * pagination.per_page) + 1} to 
+                            ${Math.min(pagination.current_page * pagination.per_page, pagination.total_count)} 
+                            of ${pagination.total_count} upload links
+                        </div>`;
+                
+                html += '</div></td></tr>';
+                return html;
             }
             
             function downloadCSVTemplate() {
