@@ -990,49 +990,180 @@ class SRWM_Pro_CSV_Upload {
                     
                     const modal = document.createElement('div');
                     modal.className = 'srwm-preview-modal';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 10000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    `;
+                    
                     modal.innerHTML = `
-                        <div class="srwm-preview-overlay">
-                            <div class="srwm-preview-content">
-                                <div class="srwm-preview-header">
-                                    <h3><i class="fas fa-table"></i> Data Preview</h3>
-                                    <button class="srwm-preview-close">
+                        <div class="srwm-preview-overlay" style="
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.5);
+                            backdrop-filter: blur(5px);
+                        ">
+                            <div class="srwm-preview-content" style="
+                                background: white;
+                                border-radius: 16px;
+                                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+                                max-width: 90%;
+                                max-height: 90%;
+                                width: 800px;
+                                transform: scale(0.9);
+                                opacity: 0;
+                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                overflow: hidden;
+                                position: relative;
+                                z-index: 10001;
+                            ">
+                                <div class="srwm-preview-header" style="
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    color: white;
+                                    padding: 20px 25px;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                ">
+                                    <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-table"></i> Data Preview
+                                    </h3>
+                                    <button class="srwm-preview-close" style="
+                                        background: none;
+                                        border: none;
+                                        color: white;
+                                        font-size: 1.5rem;
+                                        cursor: pointer;
+                                        padding: 5px;
+                                        border-radius: 50%;
+                                        transition: background 0.3s ease;
+                                    ">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <div class="srwm-preview-body">
-                                    <div class="srwm-validation-summary">
-                                        <div class="validation-item valid">
+                                <div class="srwm-preview-body" style="
+                                    padding: 25px;
+                                    max-height: 500px;
+                                    overflow-y: auto;
+                                ">
+                                    <div class="srwm-validation-summary" style="
+                                        display: flex;
+                                        gap: 15px;
+                                        margin-bottom: 20px;
+                                        flex-wrap: wrap;
+                                    ">
+                                        <div class="validation-item valid" style="
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 8px;
+                                            padding: 8px 12px;
+                                            border-radius: 8px;
+                                            font-size: 0.9rem;
+                                            font-weight: 600;
+                                            background: rgba(16, 185, 129, 0.1);
+                                            color: #059669;
+                                        ">
                                             <i class="fas fa-check-circle"></i>
                                             <span>${validation.validRows} valid rows</span>
                                         </div>
                                         ${validation.warnings.length > 0 ? `
-                                            <div class="validation-item warning">
+                                            <div class="validation-item warning" style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                padding: 8px 12px;
+                                                border-radius: 8px;
+                                                font-size: 0.9rem;
+                                                font-weight: 600;
+                                                background: rgba(245, 158, 11, 0.1);
+                                                color: #d97706;
+                                            ">
                                                 <i class="fas fa-exclamation-triangle"></i>
                                                 <span>${validation.warnings.length} warnings</span>
                                             </div>
                                         ` : ''}
                                         ${validation.errors.length > 0 ? `
-                                            <div class="validation-item error">
+                                            <div class="validation-item error" style="
+                                                display: flex;
+                                                align-items: center;
+                                                gap: 8px;
+                                                padding: 8px 12px;
+                                                border-radius: 8px;
+                                                font-size: 0.9rem;
+                                                font-weight: 600;
+                                                background: rgba(239, 68, 68, 0.1);
+                                                color: #dc2626;
+                                            ">
                                                 <i class="fas fa-times-circle"></i>
                                                 <span>${validation.errors.length} errors</span>
                                             </div>
                                         ` : ''}
                                     </div>
-                                    <div class="srwm-preview-table">
+                                    <div class="srwm-preview-table" style="
+                                        background: #f8fafc;
+                                        border-radius: 8px;
+                                        padding: 15px;
+                                        margin-bottom: 20px;
+                                    ">
                                         ${generatePreviewTable(csvData)}
                                     </div>
                                     ${validation.warnings.length > 0 ? `
-                                        <div class="srwm-warnings-section">
-                                            <h4><i class="fas fa-exclamation-triangle"></i> Warnings</h4>
-                                            <ul>
-                                                ${validation.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                        <div class="srwm-warnings-section" style="
+                                            background: rgba(245, 158, 11, 0.05);
+                                            border: 1px solid rgba(245, 158, 11, 0.2);
+                                            border-radius: 8px;
+                                            padding: 15px;
+                                        ">
+                                            <h4 style="margin: 0 0 10px 0; color: #d97706; display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-exclamation-triangle"></i> Warnings
+                                            </h4>
+                                            <ul style="margin: 0; padding-left: 20px; color: #6b7280;">
+                                                ${validation.warnings.map(warning => `<li style="margin-bottom: 5px;">${warning}</li>`).join('')}
                                             </ul>
                                         </div>
                                     ` : ''}
                                 </div>
-                                <div class="srwm-preview-footer">
-                                    <button class="srwm-btn-secondary">Cancel</button>
-                                    <button class="srwm-btn-primary">
+                                <div class="srwm-preview-footer" style="
+                                    padding: 20px 25px;
+                                    border-top: 1px solid #e2e8f0;
+                                    display: flex;
+                                    justify-content: flex-end;
+                                    gap: 12px;
+                                ">
+                                    <button class="srwm-btn-secondary" style="
+                                        background: #6b7280;
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                        transition: all 0.3s ease;
+                                    ">Cancel</button>
+                                    <button class="srwm-btn-primary" style="
+                                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                        transition: all 0.3s ease;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                    ">
                                         <i class="fas fa-upload"></i> Proceed with Upload
                                     </button>
                                 </div>
@@ -1058,11 +1189,6 @@ class SRWM_Pro_CSV_Upload {
                     proceedButton.addEventListener('click', function() {
                         proceedWithUpload();
                     });
-                    
-                    // Ensure modal is centered and visible
-                    modal.style.display = 'flex';
-                    modal.style.alignItems = 'center';
-                    modal.style.justifyContent = 'center';
                     
                     // Add animation
                     setTimeout(() => {
