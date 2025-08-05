@@ -1995,7 +1995,53 @@ class SmartRestockWaitlistManager {
             $supplier->trust_score = $this->calculate_trust_score($supplier->id);
         }
         
-        wp_send_json_success($suppliers);
+        // Get categories for the response
+        $categories = $this->get_product_categories();
+        
+        wp_send_json_success(array(
+            'suppliers' => $suppliers,
+            'categories' => $categories
+        ));
+    }
+    
+    /**
+     * Get WooCommerce product categories
+     */
+    private function get_product_categories() {
+        $categories = array();
+        
+        if (taxonomy_exists('product_cat')) {
+            $terms = get_terms(array(
+                'taxonomy' => 'product_cat',
+                'hide_empty' => false,
+                'orderby' => 'name',
+                'order' => 'ASC'
+            ));
+            
+            if (!is_wp_error($terms)) {
+                foreach ($terms as $term) {
+                    $categories[$term->slug] = $term->name;
+                }
+            }
+        }
+        
+        // Add some default categories if no WooCommerce categories exist
+        if (empty($categories)) {
+            $categories = array(
+                'electronics' => __('Electronics', 'smart-restock-waitlist'),
+                'clothing' => __('Fashion & Apparel', 'smart-restock-waitlist'),
+                'home' => __('Home & Garden', 'smart-restock-waitlist'),
+                'automotive' => __('Automotive', 'smart-restock-waitlist'),
+                'health' => __('Health & Beauty', 'smart-restock-waitlist'),
+                'sports' => __('Sports & Outdoors', 'smart-restock-waitlist'),
+                'books' => __('Books & Media', 'smart-restock-waitlist'),
+                'toys' => __('Toys & Games', 'smart-restock-waitlist'),
+                'food' => __('Food & Beverages', 'smart-restock-waitlist'),
+                'other' => __('Other', 'smart-restock-waitlist')
+            );
+        }
+        
+        return $categories;
     }
     
     /**

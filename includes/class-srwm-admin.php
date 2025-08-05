@@ -5147,9 +5147,50 @@ class SRWM_Admin {
     }
     
     /**
+     * Get WooCommerce product categories
+     */
+    private function get_product_categories() {
+        $categories = array();
+        
+        if (taxonomy_exists('product_cat')) {
+            $terms = get_terms(array(
+                'taxonomy' => 'product_cat',
+                'hide_empty' => false,
+                'orderby' => 'name',
+                'order' => 'ASC'
+            ));
+            
+            if (!is_wp_error($terms)) {
+                foreach ($terms as $term) {
+                    $categories[$term->slug] = $term->name;
+                }
+            }
+        }
+        
+        // Add some default categories if no WooCommerce categories exist
+        if (empty($categories)) {
+            $categories = array(
+                'electronics' => __('Electronics', 'smart-restock-waitlist'),
+                'clothing' => __('Fashion & Apparel', 'smart-restock-waitlist'),
+                'home' => __('Home & Garden', 'smart-restock-waitlist'),
+                'automotive' => __('Automotive', 'smart-restock-waitlist'),
+                'health' => __('Health & Beauty', 'smart-restock-waitlist'),
+                'sports' => __('Sports & Outdoors', 'smart-restock-waitlist'),
+                'books' => __('Books & Media', 'smart-restock-waitlist'),
+                'toys' => __('Toys & Games', 'smart-restock-waitlist'),
+                'food' => __('Food & Beverages', 'smart-restock-waitlist'),
+                'other' => __('Other', 'smart-restock-waitlist')
+            );
+        }
+        
+        return $categories;
+    }
+    
+    /**
      * Render Supplier Management page
      */
     public function render_suppliers_page() {
+        $categories = $this->get_product_categories();
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline">
@@ -5168,11 +5209,9 @@ class SRWM_Admin {
                         <div class="srwm-filters">
                             <select id="category-filter">
                                 <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
-                                <option value="electronics"><?php _e('Electronics', 'smart-restock-waitlist'); ?></option>
-                                <option value="clothing"><?php _e('Fashion & Apparel', 'smart-restock-waitlist'); ?></option>
-                                <option value="home"><?php _e('Home & Garden', 'smart-restock-waitlist'); ?></option>
-                                <option value="automotive"><?php _e('Automotive', 'smart-restock-waitlist'); ?></option>
-                                <option value="health"><?php _e('Health & Beauty', 'smart-restock-waitlist'); ?></option>
+                                <?php foreach ($categories as $slug => $name): ?>
+                                    <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($name); ?></option>
+                                <?php endforeach; ?>
                             </select>
                             <select id="status-filter">
                                 <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
@@ -5244,11 +5283,9 @@ class SRWM_Admin {
                                 <label for="supplier-category"><?php _e('Category', 'smart-restock-waitlist'); ?></label>
                                 <select id="supplier-category" name="category">
                                     <option value=""><?php _e('Select Category', 'smart-restock-waitlist'); ?></option>
-                                    <option value="electronics"><?php _e('Electronics', 'smart-restock-waitlist'); ?></option>
-                                    <option value="clothing"><?php _e('Fashion & Apparel', 'smart-restock-waitlist'); ?></option>
-                                    <option value="home"><?php _e('Home & Garden', 'smart-restock-waitlist'); ?></option>
-                                    <option value="automotive"><?php _e('Automotive', 'smart-restock-waitlist'); ?></option>
-                                    <option value="health"><?php _e('Health & Beauty', 'smart-restock-waitlist'); ?></option>
+                                    <?php foreach ($categories as $slug => $name): ?>
+                                        <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($name); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
@@ -5300,6 +5337,151 @@ class SRWM_Admin {
         <style>
         .srwm-suppliers-container {
             margin-top: 20px;
+        }
+        
+        /* Light theme for form inputs */
+        .srwm-form-group input,
+        .srwm-form-group select,
+        .srwm-form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+        
+        .srwm-form-group input:focus,
+        .srwm-form-group select:focus,
+        .srwm-form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+        
+        .srwm-form-group input::placeholder,
+        .srwm-form-group textarea::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        .srwm-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        /* Modal styling improvements */
+        .srwm-modal-content {
+            background: #ffffff !important;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .srwm-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 24px;
+            margin: 0;
+            border-bottom: none;
+        }
+        
+        .srwm-modal-header h3 {
+            margin: 0;
+            color: white !important;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .srwm-modal-close {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white !important;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            color: white !important;
+        }
+        
+        .srwm-modal-body {
+            padding: 24px;
+            background: #ffffff !important;
+        }
+        
+        .srwm-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 24px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 0;
+            background: #f8fafc;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        /* Button styling */
+        .srwm-modal-footer .button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .srwm-modal-footer .button-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .srwm-modal-footer .button-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-modal-footer .button:not(.button-primary) {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .srwm-modal-footer .button:not(.button-primary):hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .button-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            border-color: #dc2626 !important;
+            color: white !important;
+        }
+        
+        .button-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
         
         .srwm-suppliers-header {
@@ -5439,7 +5621,18 @@ class SRWM_Admin {
         .supplier-company {
             color: #6b7280;
             font-size: 0.9rem;
+            margin: 0 0 4px 0;
+        }
+        
+        .supplier-category {
+            color: #3b82f6;
+            font-size: 0.8rem;
             margin: 0 0 8px 0;
+            font-weight: 500;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
         }
         
         .supplier-email {
@@ -5561,55 +5754,7 @@ class SRWM_Admin {
             z-index: 9999;
         }
         
-        .srwm-modal-content {
-            background: white;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        .srwm-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 24px 0 24px;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 24px;
-        }
-        
-        .srwm-modal-header h3 {
-            margin: 0;
-            color: #1f2937;
-            font-size: 1.3rem;
-        }
-        
-        .srwm-modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        
-        .srwm-modal-close:hover {
-            background: #f3f4f6;
-            color: #374151;
-        }
-        
-        .srwm-modal-body {
-            padding: 0 24px;
-        }
+
         
         .srwm-form-row {
             display: grid;
@@ -5622,41 +5767,7 @@ class SRWM_Admin {
             margin-bottom: 20px;
         }
         
-        .srwm-form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .srwm-form-group input,
-        .srwm-form-group select,
-        .srwm-form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-        
-        .srwm-form-group input:focus,
-        .srwm-form-group select:focus,
-        .srwm-form-group textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .srwm-modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            padding: 24px;
-            border-top: 1px solid #e2e8f0;
-            margin-top: 24px;
-        }
+
         
         .button-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
@@ -5671,6 +5782,59 @@ class SRWM_Admin {
             padding: 40px;
             color: #6b7280;
             font-size: 1.1rem;
+        }
+        
+        /* Professional improvements */
+        .srwm-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+        }
+        
+        .srwm-error {
+            text-align: center;
+            padding: 20px;
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        /* Enhanced search box */
+        .srwm-search-box input {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+        
+        .srwm-search-box input::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        /* Enhanced filter dropdowns */
+        .srwm-filters select {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+        
+        /* Professional card improvements */
+        .srwm-supplier-card {
+            border: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .srwm-supplier-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+        }
+        
+        /* Professional header */
+        .srwm-suppliers-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
         }
         
         @media (max-width: 768px) {
@@ -5701,6 +5865,11 @@ class SRWM_Admin {
         <script>
         jQuery(document).ready(function($) {
             let currentSupplierId = null;
+            let categories = <?php echo json_encode($categories); ?>;
+            
+            function getCategoryName(categorySlug) {
+                return categories[categorySlug] || categorySlug;
+            }
             
             // Load suppliers on page load
             loadSuppliers();
@@ -5755,7 +5924,7 @@ class SRWM_Admin {
                     },
                     success: function(response) {
                         if (response.success) {
-                            displaySuppliers(response.data);
+                            displaySuppliers(response.data.suppliers);
                         } else {
                             $('#suppliers-grid').html('<div class="srwm-error">Error loading suppliers: ' + response.data + '</div>');
                         }
@@ -5776,6 +5945,7 @@ class SRWM_Admin {
                 suppliers.forEach(function(supplier) {
                     const avatarText = supplier.supplier_name.charAt(0).toUpperCase();
                     const lastUpload = supplier.last_upload ? new Date(supplier.last_upload).toLocaleDateString() : 'Never';
+                    const categoryName = supplier.category ? getCategoryName(supplier.category) : 'No category';
                     
                     html += `
                         <div class="srwm-supplier-card">
@@ -5785,6 +5955,7 @@ class SRWM_Admin {
                                 <div class="supplier-info">
                                     <h3>${supplier.supplier_name}</h3>
                                     <p class="supplier-company">${supplier.company_name || 'No company name'}</p>
+                                    <p class="supplier-category">${categoryName}</p>
                                     <a href="mailto:${supplier.supplier_email}" class="supplier-email">${supplier.supplier_email}</a>
                                 </div>
                             </div>
