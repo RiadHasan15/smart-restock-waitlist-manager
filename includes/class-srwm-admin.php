@@ -1234,6 +1234,182 @@ class SRWM_Admin {
             }
         }
         
+        /* Notifications Grid - Modern Design */
+        .srwm-notifications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .srwm-notification-card {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-notification-card:hover {
+            border-color: #007cba;
+            box-shadow: 0 2px 8px rgba(0, 124, 186, 0.1);
+        }
+        
+        .srwm-notification-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .srwm-notification-icon {
+            width: 50px;
+            height: 50px;
+            background: #007cba;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .srwm-notification-title {
+            flex: 1;
+        }
+        
+        .srwm-notification-title h3 {
+            margin: 0 0 5px 0;
+            color: #1d2327;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .srwm-notification-title p {
+            margin: 0;
+            color: #646970;
+            font-size: 14px;
+        }
+        
+        .srwm-notification-toggle {
+            margin-left: auto;
+        }
+        
+        .srwm-notification-content {
+            margin-top: 15px;
+        }
+        
+        /* Toggle Switch - Modern Design */
+        .srwm-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .srwm-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .srwm-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .srwm-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .srwm-slider {
+            background-color: #007cba;
+        }
+        
+        input:checked + .srwm-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Templates Grid - Modern Design */
+        .srwm-templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .srwm-template-card {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-template-card:hover {
+            border-color: #007cba;
+            box-shadow: 0 2px 8px rgba(0, 124, 186, 0.1);
+        }
+        
+        .srwm-template-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .srwm-template-icon {
+            width: 50px;
+            height: 50px;
+            background: #007cba;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .srwm-template-title {
+            flex: 1;
+        }
+        
+        .srwm-template-title h3 {
+            margin: 0 0 5px 0;
+            color: #1d2327;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .srwm-template-title p {
+            margin: 0;
+            color: #646970;
+            font-size: 14px;
+        }
+        
+        .srwm-template-content {
+            margin-top: 15px;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .srwm-dashboard-header {
