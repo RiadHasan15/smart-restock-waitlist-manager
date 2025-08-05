@@ -48,6 +48,7 @@ class SRWM_Pro_CSV_Upload {
         // Debug: Log request information
         error_log('CSV Upload Debug: REQUEST_METHOD = ' . $_SERVER['REQUEST_METHOD']);
         error_log('CSV Upload Debug: $_POST = ' . print_r($_POST, true));
+        error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
         
         // Handle the upload form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_csv_submit'])) {
@@ -485,12 +486,17 @@ class SRWM_Pro_CSV_Upload {
                                         <div class="file-upload-hint">
                                             <?php _e('Maximum file size: 5MB | Supported format: .csv', 'smart-restock-waitlist'); ?>
                                         </div>
-                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required style="opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer;">
+                                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
                                     </div>
                                 </div>
                                 
                                 <button type="submit" name="srwm_csv_submit" class="upload-button">
                                     <i class="fas fa-rocket"></i> <?php _e('Process Restock Data', 'smart-restock-waitlist'); ?>
+                                </button>
+                                
+                                <!-- Debug button for testing -->
+                                <button type="submit" name="srwm_csv_submit" value="test" class="upload-button" style="margin-top: 10px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-bug"></i> Test Form Submission (No File)
                                 </button>
                             </form>
                         </div>
@@ -581,17 +587,25 @@ class SRWM_Pro_CSV_Upload {
                         const fileName = this.files[0].name;
                         const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
                         
-                        fileUploadArea.innerHTML = `
-                            <div class="file-upload-icon" style="color: #10b981;">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="file-upload-text" style="color: #059669; font-weight: 600;">
-                                ${fileName}
-                            </div>
-                            <div class="file-upload-hint">
-                                Size: ${fileSize} MB
-                            </div>
-                        `;
+                        // Update the display without removing the file input
+                        const iconElement = fileUploadArea.querySelector('.file-upload-icon');
+                        const textElement = fileUploadArea.querySelector('.file-upload-text');
+                        const hintElement = fileUploadArea.querySelector('.file-upload-hint');
+                        
+                        if (iconElement) {
+                            iconElement.innerHTML = '<i class="fas fa-check-circle"></i>';
+                            iconElement.style.color = '#10b981';
+                        }
+                        
+                        if (textElement) {
+                            textElement.textContent = fileName;
+                            textElement.style.color = '#059669';
+                            textElement.style.fontWeight = '600';
+                        }
+                        
+                        if (hintElement) {
+                            hintElement.textContent = `Size: ${fileSize} MB`;
+                        }
                     }
                 });
                 
@@ -627,6 +641,11 @@ class SRWM_Pro_CSV_Upload {
     private function process_csv_upload($token) {
         // Debug: Log upload information
         error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
+        
+        // Check if this is a test submission
+        if (isset($_POST['srwm_csv_submit']) && $_POST['srwm_csv_submit'] === 'test') {
+            wp_die(__('Form submission is working! The issue is with file upload. $_FILES array is empty.', 'smart-restock-waitlist'));
+        }
         
         if (!isset($_FILES['csv_file'])) {
             wp_die(__('No file was uploaded. Please select a CSV file.', 'smart-restock-waitlist'));
