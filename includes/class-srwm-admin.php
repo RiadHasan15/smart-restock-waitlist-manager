@@ -6431,52 +6431,40 @@ class SRWM_Admin {
             align-items: center;
         }
         
-        /* Quick Restock Table Specific Styles */
+        /* Quick Restock Table Specific Styles - Matching CSV Upload Colors */
         .srwm-quick-restock-links-table .srwm-table-action-btn {
             padding: 6px 12px;
             border: none;
             border-radius: 4px;
             font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            text-decoration: none;
-            color: #374151;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.secondary {
             background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .srwm-quick-restock-links-table .srwm-table-action-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
         }
         
         .srwm-quick-restock-links-table .srwm-table-action-btn:hover {
-            background: #e5e7eb;
             transform: translateY(-1px);
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.copy {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.copy:hover {
-            background: #bfdbfe;
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.view {
-            background: #dcfce7;
-            color: #166534;
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.view:hover {
-            background: #bbf7d0;
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.delete {
-            background: #fef2f2;
-            color: #dc2626;
-        }
-        
-        .srwm-quick-restock-links-table .srwm-table-action-btn.delete:hover {
-            background: #fecaca;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         .srwm-table-action-btn i {
