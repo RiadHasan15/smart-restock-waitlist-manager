@@ -517,7 +517,7 @@ class SRWM_Admin {
      * Render analytics page
      */
     public function render_analytics_page() {
-        $analytics = new SRWM_Analytics();
+        $analytics = SRWM_Analytics::get_instance();
         $analytics_data = $analytics->get_analytics_data();
         ?>
         <div class="wrap">
@@ -639,7 +639,7 @@ class SRWM_Admin {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_results($wpdb->prepare(
+        return $wpdb->get_results(
             "SELECT p.ID as product_id, p.post_title as name, pm.meta_value as sku,
                     wc.stock_quantity as stock, COUNT(w.id) as waitlist_count
              FROM {$wpdb->posts} p
@@ -649,14 +649,15 @@ class SRWM_Admin {
              WHERE p.post_type = 'product' AND p.post_status = 'publish'
              GROUP BY p.ID
              ORDER BY waitlist_count DESC",
-        ), ARRAY_A);
+            ARRAY_A
+        );
     }
     
     /**
      * Get products with supplier alerts
      */
     private function get_supplier_products() {
-        $supplier = new SRWM_Supplier();
+        $supplier = SRWM_Supplier::get_instance();
         return $supplier->get_products_with_suppliers();
     }
     

@@ -79,13 +79,13 @@ class SRWM_Analytics {
         $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
         $logs_table = $wpdb->prefix . 'srwm_restock_logs';
         
-        $result = $wpdb->get_var($wpdb->prepare(
+        $result = $wpdb->get_var(
             "SELECT AVG(DATEDIFF(r.timestamp, w.date_added)) as avg_days
              FROM $logs_table r
              JOIN $waitlist_table w ON r.product_id = w.product_id
              WHERE w.date_added <= r.timestamp
              AND w.notified = 1"
-        ));
+        );
         
         return round($result, 1);
     }
