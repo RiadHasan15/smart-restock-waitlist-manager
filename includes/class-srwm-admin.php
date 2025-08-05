@@ -5233,6 +5233,102 @@ class SRWM_Admin {
                         <?php _e('Loading suppliers...', 'smart-restock-waitlist'); ?>
                     </div>
                 </div>
+                
+                <!-- CSV Upload Section -->
+                <div class="srwm-csv-upload-section">
+                    <div class="srwm-section-header">
+                        <h2><i class="fas fa-upload"></i> <?php _e('CSV Upload Management', 'smart-restock-waitlist'); ?></h2>
+                        <div class="srwm-section-actions">
+                            <button class="button button-primary" id="download-template-btn">
+                                <i class="fas fa-download"></i> <?php _e('Download Template', 'smart-restock-waitlist'); ?>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- CSV Upload Info Cards -->
+                    <div class="srwm-info-cards">
+                        <div class="srwm-info-card">
+                            <div class="srwm-info-icon">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="srwm-info-content">
+                                <h4><?php _e('Generate Upload Links', 'smart-restock-waitlist'); ?></h4>
+                                <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-info-card">
+                            <div class="srwm-info-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="srwm-info-content">
+                                <h4><?php _e('Approval Required', 'smart-restock-waitlist'); ?></h4>
+                                <p><?php _e('CSV uploads require admin approval before stock is updated. Review uploads in the CSV Approvals tab.', 'smart-restock-waitlist'); ?></p>
+                                <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>" class="srwm-link-btn">
+                                    <?php _e('View Pending Approvals', 'smart-restock-waitlist'); ?>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CSV Format Requirements -->
+                    <div class="srwm-format-requirements">
+                        <h3><i class="fas fa-file-csv"></i> <?php _e('CSV Format Requirements', 'smart-restock-waitlist'); ?></h3>
+                        <div class="srwm-requirements-grid">
+                            <div class="srwm-requirement">
+                                <i class="fas fa-check-circle"></i>
+                                <span><?php _e('File must be in CSV format', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                            <div class="srwm-requirement">
+                                <i class="fas fa-check-circle"></i>
+                                <span><?php _e('Required columns: Product ID, Quantity', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                            <div class="srwm-requirement">
+                                <i class="fas fa-check-circle"></i>
+                                <span><?php _e('Optional columns: SKU, Notes', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                            <div class="srwm-requirement">
+                                <i class="fas fa-check-circle"></i>
+                                <span><?php _e('Maximum file size: 10MB', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Links Table -->
+                    <div class="srwm-upload-links-section">
+                        <div class="srwm-table-header">
+                            <h3><i class="fas fa-list"></i> <?php _e('Generated Upload Links', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-table-actions">
+                                <button class="button button-secondary" id="refresh-links-btn">
+                                    <i class="fas fa-sync-alt"></i> <?php _e('Refresh', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-table-container">
+                            <table class="srwm-upload-links-table">
+                                <thead>
+                                    <tr>
+                                        <th><?php _e('Upload Link', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Expires', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Uploads', 'smart-restock-waitlist'); ?></th>
+                                        <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="upload-links-tbody">
+                                    <tr>
+                                        <td colspan="6" class="srwm-loading">
+                                            <span class="spinner is-active"></span>
+                                            <?php _e('Loading upload links...', 'smart-restock-waitlist'); ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -6014,6 +6110,352 @@ class SRWM_Admin {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
         }
         
+        /* CSV Upload Section Styles */
+        .srwm-csv-upload-section {
+            margin-top: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .srwm-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .srwm-section-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .srwm-section-header h2 i {
+            font-size: 1.2rem;
+        }
+        
+        .srwm-section-actions .button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-section-actions .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Info Cards */
+        .srwm-info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 24px;
+            background: #f8fafc;
+        }
+        
+        .srwm-info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-info-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .srwm-info-content h4 {
+            margin: 0 0 8px 0;
+            color: #1f2937;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .srwm-info-content p {
+            margin: 0 0 12px 0;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        
+        .srwm-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-link-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* Format Requirements */
+        .srwm-format-requirements {
+            padding: 24px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .srwm-format-requirements h3 {
+            margin: 0 0 20px 0;
+            color: #1f2937;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .srwm-format-requirements h3 i {
+            color: #3b82f6;
+        }
+        
+        .srwm-requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .srwm-requirement {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .srwm-requirement i {
+            color: #10b981;
+            font-size: 1.1rem;
+        }
+        
+        .srwm-requirement span {
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        /* Upload Links Table */
+        .srwm-upload-links-section {
+            padding: 24px;
+        }
+        
+        .srwm-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-table-header h3 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .srwm-table-header h3 i {
+            color: #3b82f6;
+        }
+        
+        .srwm-table-actions .button {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-table-actions .button:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .srwm-table-container {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .srwm-upload-links-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .srwm-upload-links-table th {
+            background: #f8fafc;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .srwm-upload-links-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+            font-size: 0.9rem;
+        }
+        
+        .srwm-upload-links-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .srwm-upload-links-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .srwm-link-token {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .srwm-supplier-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .srwm-supplier-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .srwm-supplier-email {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+        
+        .srwm-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .srwm-status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .srwm-status-badge.used {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .srwm-status-badge.expired {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .srwm-upload-count {
+            text-align: center;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .srwm-table-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .srwm-table-action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .srwm-table-action-btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .srwm-table-action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .srwm-table-action-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .srwm-table-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
         @media (max-width: 768px) {
             .srwm-suppliers-header {
                 flex-direction: column;
@@ -6050,6 +6492,50 @@ class SRWM_Admin {
                 width: 100%;
                 justify-content: center;
             }
+            
+            /* CSV Upload Section Mobile */
+            .srwm-section-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .srwm-info-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-requirements-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-table-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .srwm-upload-links-table {
+                font-size: 0.8rem;
+            }
+            
+            .srwm-upload-links-table th,
+            .srwm-upload-links-table td {
+                padding: 8px 6px;
+            }
+            
+            .srwm-link-token {
+                max-width: 120px;
+                font-size: 0.7rem;
+            }
+            
+            .srwm-table-actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .srwm-table-action-btn {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
         }
         </style>
         
@@ -6064,6 +6550,9 @@ class SRWM_Admin {
             
             // Load suppliers on page load
             loadSuppliers();
+            
+            // Load upload links on page load
+            loadUploadLinks();
             
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
@@ -6102,6 +6591,16 @@ class SRWM_Admin {
             // Cancel upload link
             $('#cancel-upload-link').on('click', function() {
                 closeAllModals();
+            });
+            
+            // Download template
+            $('#download-template-btn').on('click', function() {
+                downloadCSVTemplate();
+            });
+            
+            // Refresh upload links
+            $('#refresh-links-btn').on('click', function() {
+                loadUploadLinks();
             });
             
             // Close modal on outside click
@@ -6421,6 +6920,157 @@ class SRWM_Admin {
                     showNotification('Upload link copied to clipboard!', 'success');
                 } catch (err) {
                     showNotification('Failed to copy link. Please copy manually.', 'error');
+                }
+            }
+            
+            function loadUploadLinks() {
+                $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-loading"><span class="spinner is-active"></span> Loading upload links...</td></tr>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_csv_upload_links',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            displayUploadLinks(response.data);
+                        } else {
+                            $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading upload links: ' + response.data + '</td></tr>');
+                        }
+                    },
+                    error: function() {
+                        $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-error">Error loading upload links. Please try again.</td></tr>');
+                    }
+                });
+            }
+            
+            function displayUploadLinks(links) {
+                if (links.length === 0) {
+                    $('#upload-links-tbody').html('<tr><td colspan="6" class="srwm-empty">No upload links found. Generate links from supplier cards above.</td></tr>');
+                    return;
+                }
+                
+                let html = '';
+                links.forEach(function(link) {
+                    const expiresDate = new Date(link.expires_at);
+                    const now = new Date();
+                    const isExpired = expiresDate < now;
+                    const status = isExpired ? 'expired' : (link.used ? 'used' : 'active');
+                    
+                    html += `
+                        <tr>
+                            <td>
+                                <div class="srwm-link-token" title="${link.token}">${link.token}</div>
+                            </td>
+                            <td>
+                                <div class="srwm-supplier-info">
+                                    <div class="srwm-supplier-name">${link.supplier_name || 'Unknown'}</div>
+                                    <div class="srwm-supplier-email">${link.supplier_email}</div>
+                                </div>
+                            </td>
+                            <td>${expiresDate.toLocaleDateString()} ${expiresDate.toLocaleTimeString()}</td>
+                            <td>
+                                <span class="srwm-status-badge ${status}">
+                                    <i class="fas fa-${status === 'active' ? 'check-circle' : (status === 'used' ? 'clock' : 'times-circle')}"></i>
+                                    ${status}
+                                </span>
+                            </td>
+                            <td class="srwm-upload-count">${link.upload_count || 0}</td>
+                            <td>
+                                <div class="srwm-table-actions">
+                                    <button class="srwm-table-action-btn primary" onclick="copyLinkToClipboard('${link.token}')" title="Copy Link">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="srwm-table-action-btn secondary" onclick="viewLinkDetails('${link.token}')" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="srwm-table-action-btn danger" onclick="deleteUploadLink('${link.token}')" title="Delete Link">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                $('#upload-links-tbody').html(html);
+            }
+            
+            function downloadCSVTemplate() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_download_csv_template',
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Create a temporary link to download the file
+                            const link = document.createElement('a');
+                            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data);
+                            link.download = 'csv_upload_template.csv';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            showNotification('CSV template downloaded successfully!', 'success');
+                        } else {
+                            showNotification('Error downloading template: ' + response.data, 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('Error downloading template. Please try again.', 'error');
+                    }
+                });
+            }
+            
+            function copyLinkToClipboard(token) {
+                const uploadUrl = '<?php echo admin_url('admin-ajax.php'); ?>?srwm_upload=csv&token=' + token;
+                
+                navigator.clipboard.writeText(uploadUrl).then(function() {
+                    showNotification('Upload link copied to clipboard!', 'success');
+                }).catch(function() {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = uploadUrl;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showNotification('Upload link copied to clipboard!', 'success');
+                });
+            }
+            
+            function viewLinkDetails(token) {
+                // TODO: Implement link details modal
+                showNotification('Link details feature coming soon!', 'info');
+            }
+            
+            function deleteUploadLink(token) {
+                if (confirm('Are you sure you want to delete this upload link? This action cannot be undone.')) {
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'srwm_delete_upload_link',
+                            nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                            token: token
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                loadUploadLinks();
+                                showNotification('Upload link deleted successfully!', 'success');
+                            } else {
+                                showNotification('Error deleting link: ' + response.data, 'error');
+                            }
+                        },
+                        error: function() {
+                            showNotification('Error deleting link. Please try again.', 'error');
+                        }
+                    });
                 }
             }
         });
