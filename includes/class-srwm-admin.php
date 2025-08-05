@@ -184,6 +184,7 @@ class SRWM_Admin {
         
         wp_localize_script('srwm-admin', 'srwm_admin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
+            'site_url' => site_url(),
             'nonce' => wp_create_nonce('srwm_admin_nonce'),
             'is_pro' => $this->license_manager->is_pro_active(),
             'messages' => array(

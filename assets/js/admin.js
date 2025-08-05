@@ -522,7 +522,7 @@
             
             var $btn = $(this);
             var token = $btn.data('token');
-            var link = window.location.origin + '/?srwm_csv_upload=1&token=' + token;
+            var link = srwm_admin.site_url + '/?srwm_csv_upload=1&token=' + token;
             
             // Copy to clipboard
             navigator.clipboard.writeText(link).then(function() {

@@ -1207,7 +1207,7 @@ class SmartRestockWaitlistManager {
                 $upload_url = add_query_arg(array(
                     'srwm_csv_upload' => '1',
                     'token' => $token
-                ), home_url());
+                ), site_url());
                 
                 wp_die(json_encode(array(
                     'success' => true, 
