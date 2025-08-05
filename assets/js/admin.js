@@ -197,6 +197,58 @@
             });
         });
         
+        // Handle global threshold form submission
+        $(document).on('submit', '#srwm-global-threshold-form', function(e) {
+            e.preventDefault();
+            
+            var $form = $(this);
+            var $submitBtn = $form.find('button[type="submit"]');
+            var originalText = $submitBtn.text();
+            var threshold = $form.find('input[name="srwm_global_threshold"]').val();
+            
+            console.log('Global threshold save attempt:', { threshold: threshold, nonce: srwm_admin.nonce });
+            
+            if (!threshold || threshold < 0) {
+                showAdminMessage('error', 'Please enter a valid threshold value.');
+                return;
+            }
+            
+            // Disable submit button and show loading
+            $submitBtn.prop('disabled', true).html('<span class="dashicons dashicons-update"></span> Saving...');
+            
+            var ajaxData = {
+                action: 'srwm_save_global_threshold',
+                nonce: srwm_admin.nonce,
+                global_threshold: threshold
+            };
+            
+            console.log('Global threshold AJAX data:', ajaxData);
+            
+            $.ajax({
+                url: srwm_admin.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: ajaxData,
+                success: function(response) {
+                    console.log('Global threshold response:', response);
+                    console.log('Response success type:', typeof response.success, 'Value:', response.success);
+                    
+                    if (response.success === true || response.success === 'true') {
+                        showAdminMessage('success', response.message || 'Global threshold saved successfully!');
+                    } else {
+                        showAdminMessage('error', response.message || 'Failed to save global threshold.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Global threshold error:', { xhr: xhr, status: status, error: error });
+                    showAdminMessage('error', 'Failed to save global threshold.');
+                },
+                complete: function() {
+                    $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + originalText);
+                }
+            });
+        });
+        
         // Handle notification settings form submission
         $(document).on('submit', '#srwm-notification-settings-form', function(e) {
             e.preventDefault();
