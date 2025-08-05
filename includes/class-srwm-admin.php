@@ -5651,6 +5651,105 @@ class SRWM_Admin {
             color: #d97706;
         }
         
+        /* Pagination Styles */
+        .srwm-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .srwm-pagination-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .srwm-pagination-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-pagination-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .srwm-page-numbers {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .srwm-page-number {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 36px;
+            text-align: center;
+        }
+        
+        .srwm-page-number:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .srwm-page-number.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .srwm-page-ellipsis {
+            color: #6b7280;
+            padding: 6px 8px;
+            font-size: 0.9rem;
+        }
+        
+        .srwm-page-info {
+            color: #6b7280;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .srwm-pagination {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .srwm-page-numbers {
+                order: 2;
+            }
+            
+            .srwm-page-info {
+                order: 3;
+                text-align: center;
+            }
+        }
+        
         /* Selected Products Display */
         .srwm-selected-products-info {
             background: #f8fafc;
@@ -7839,21 +7938,34 @@ class SRWM_Admin {
             let filteredProducts = [];
             let selectedProducts = new Set();
             
-            function loadQuickRestockProducts() {
+            let currentPage = 1;
+            let totalPages = 1;
+            let totalProducts = 0;
+            
+            function loadQuickRestockProducts(page = 1) {
+                currentPage = page;
                 $('#quick-restock-products-grid').html('<div class="srwm-loading"><span class="spinner is-active"></span> Loading products...</div>');
+                
+                const searchTerm = $('#quick-restock-product-search').val();
+                const categoryFilter = $('#quick-restock-category-filter').val();
+                const stockFilter = $('#quick-restock-stock-filter').val();
                 
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     data: {
                         action: 'srwm_get_products_for_restock',
-                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>'
+                        nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
+                        page: page,
+                        per_page: 10,
+                        search: searchTerm,
+                        category: categoryFilter,
+                        stock_status: stockFilter
                     },
                     success: function(response) {
                         if (response.success) {
-                            allProducts = response.data;
-                            filteredProducts = [...allProducts];
-                            displayQuickRestockProducts(filteredProducts);
+                            const data = response.data;
+                            displayQuickRestockProducts(data.products, data.pagination);
                         } else {
                             $('#quick-restock-products-grid').html('<div class="srwm-error">Error loading products: ' + response.data + '</div>');
                         }
@@ -7864,7 +7976,7 @@ class SRWM_Admin {
                 });
             }
             
-            function displayQuickRestockProducts(products) {
+            function displayQuickRestockProducts(products, pagination) {
                 if (products.length === 0) {
                     $('#quick-restock-products-grid').html('<div class="srwm-empty">No products found matching your criteria.</div>');
                     return;
@@ -7891,31 +8003,60 @@ class SRWM_Admin {
                     `;
                 });
                 
+                // Add pagination controls
+                if (pagination && pagination.total_pages > 1) {
+                    html += generatePaginationControls(pagination);
+                }
+                
                 $('#quick-restock-products-grid').html(html);
                 updateSelectedCount();
             }
             
+            function generatePaginationControls(pagination) {
+                let html = '<div class="srwm-pagination">';
+                
+                // Previous button
+                if (pagination.has_prev) {
+                    html += `<button class="srwm-pagination-btn" onclick="loadQuickRestockProducts(${pagination.current_page - 1})">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>`;
+                }
+                
+                // Page numbers
+                html += '<div class="srwm-page-numbers">';
+                for (let i = 1; i <= pagination.total_pages; i++) {
+                    if (i === pagination.current_page) {
+                        html += `<span class="srwm-page-number active">${i}</span>`;
+                    } else if (i === 1 || i === pagination.total_pages || 
+                              (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
+                        html += `<button class="srwm-page-number" onclick="loadQuickRestockProducts(${i})">${i}</button>`;
+                    } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                        html += '<span class="srwm-page-ellipsis">...</span>';
+                    }
+                }
+                html += '</div>';
+                
+                // Next button
+                if (pagination.has_next) {
+                    html += `<button class="srwm-pagination-btn" onclick="loadQuickRestockProducts(${pagination.current_page + 1})">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>`;
+                }
+                
+                // Page info
+                html += `<div class="srwm-page-info">
+                            Showing ${((pagination.current_page - 1) * pagination.per_page) + 1} to 
+                            ${Math.min(pagination.current_page * pagination.per_page, pagination.total_count)} 
+                            of ${pagination.total_count} products
+                        </div>`;
+                
+                html += '</div>';
+                return html;
+            }
+            
             function filterQuickRestockProducts() {
-                const searchTerm = $('#quick-restock-product-search').val().toLowerCase();
-                const categoryFilter = $('#quick-restock-category-filter').val();
-                const stockFilter = $('#quick-restock-stock-filter').val();
-                
-                filteredProducts = allProducts.filter(function(product) {
-                    // Search filter
-                    const matchesSearch = !searchTerm || 
-                        product.name.toLowerCase().includes(searchTerm) ||
-                        (product.sku && product.sku.toLowerCase().includes(searchTerm));
-                    
-                    // Category filter
-                    const matchesCategory = !categoryFilter || product.category === categoryFilter;
-                    
-                    // Stock filter
-                    const matchesStock = !stockFilter || product.stock_status === stockFilter;
-                    
-                    return matchesSearch && matchesCategory && matchesStock;
-                });
-                
-                displayQuickRestockProducts(filteredProducts);
+                // Reset to first page when filtering
+                loadQuickRestockProducts(1);
             }
             
             function toggleProductSelection(productId, isSelected) {
@@ -7937,15 +8078,21 @@ class SRWM_Admin {
             }
             
             function selectAllProducts() {
-                filteredProducts.forEach(function(product) {
-                    selectedProducts.add(product.id);
+                // Select all products on the current page
+                $('.srwm-product-checkbox').each(function() {
+                    const productId = parseInt($(this).closest('.srwm-product-card').data('product-id'));
+                    selectedProducts.add(productId);
+                    $(this).prop('checked', true);
+                    $(this).closest('.srwm-product-card').addClass('selected');
                 });
-                displayQuickRestockProducts(filteredProducts);
+                updateSelectedCount();
             }
             
             function clearProductSelection() {
                 selectedProducts.clear();
-                displayQuickRestockProducts(filteredProducts);
+                $('.srwm-product-checkbox').prop('checked', false);
+                $('.srwm-product-card').removeClass('selected');
+                updateSelectedCount();
             }
             
             function updateSelectedCount() {
@@ -7963,12 +8110,19 @@ class SRWM_Admin {
             window.toggleProductSelection = toggleProductSelection;
             
             function openBulkQuickRestockModal() {
-                // Get selected product details
+                // Get selected product details from the current page
                 const selectedProductDetails = [];
                 selectedProducts.forEach(function(productId) {
-                    const product = allProducts.find(p => p.id == productId);
-                    if (product) {
-                        selectedProductDetails.push(product);
+                    // Find the product card and extract details
+                    const productCard = $(`.srwm-product-card[data-product-id="${productId}"]`);
+                    if (productCard.length > 0) {
+                        const productName = productCard.find('.srwm-product-name').text();
+                        const productSku = productCard.find('.srwm-product-sku').text().replace('SKU: ', '');
+                        selectedProductDetails.push({
+                            id: productId,
+                            name: productName,
+                            sku: productSku
+                        });
                     }
                 });
                 
