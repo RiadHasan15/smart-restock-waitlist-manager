@@ -634,14 +634,22 @@ class SRWM_Pro_CSV_Upload {
             wp_die(__('Failed to read CSV file. Please check the file format.', 'smart-restock-waitlist'));
         }
         
-        // Process the data
-        $results = $this->process_csv_data($csv_data);
+        // Check if approval is required
+        $require_approval = get_option('srwm_csv_require_approval', 'yes');
         
-        // Mark token as used
-        $this->mark_token_used($token);
-        
-        // Display results
-        $this->display_upload_results($results);
+        if ($require_approval === 'yes') {
+            // Store for approval
+            $this->store_for_approval($token, $file, $csv_data);
+        } else {
+            // Process immediately
+            $results = $this->process_csv_data($csv_data);
+            
+            // Mark token as used
+            $this->mark_token_used($token);
+            
+            // Display results
+            $this->display_upload_results($results);
+        }
     }
     
     /**
@@ -742,6 +750,253 @@ class SRWM_Pro_CSV_Upload {
         }
         
         return $results;
+    }
+    
+    /**
+     * Store upload for approval
+     */
+    private function store_for_approval($token, $file, $csv_data) {
+        global $wpdb;
+        
+        // Get supplier email from token
+        $token_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT supplier_email FROM {$wpdb->prefix}srwm_csv_tokens WHERE token = %s",
+            $token
+        ));
+        
+        if (!$token_data) {
+            wp_die(__('Invalid upload token.', 'smart-restock-waitlist'));
+        }
+        
+        // Store in approvals table
+        $result = $wpdb->insert(
+            $wpdb->prefix . 'srwm_csv_approvals',
+            array(
+                'token' => $token,
+                'supplier_email' => $token_data->supplier_email,
+                'file_name' => $file['name'],
+                'file_size' => $file['size'],
+                'upload_data' => json_encode($csv_data),
+                'status' => 'pending',
+                'ip_address' => $this->get_client_ip(),
+                'created_at' => current_time('mysql')
+            ),
+            array('%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s')
+        );
+        
+        if ($result) {
+            // Mark token as used
+            $this->mark_token_used($token);
+            
+            // Send notification email to admin
+            $this->send_admin_notification($token_data->supplier_email, $file['name'], count($csv_data));
+            
+            // Display approval pending message
+            $this->display_approval_pending_message($token_data->supplier_email);
+        } else {
+            wp_die(__('Failed to store upload for approval. Please try again.', 'smart-restock-waitlist'));
+        }
+    }
+    
+    /**
+     * Send admin notification for pending approval
+     */
+    private function send_admin_notification($supplier_email, $file_name, $row_count) {
+        $admin_email = get_option('admin_email');
+        $subject = __('CSV Upload Pending Approval', 'smart-restock-waitlist');
+        
+        $message = sprintf(
+            __('A new CSV upload requires your approval:
+            
+Supplier: %s
+File: %s
+Rows: %d
+
+Please review and approve/reject this upload in your admin dashboard.', 'smart-restock-waitlist'),
+            $supplier_email,
+            $file_name,
+            $row_count
+        );
+        
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+        
+        wp_mail($admin_email, $subject, $message, $headers);
+    }
+    
+    /**
+     * Display approval pending message
+     */
+    private function display_approval_pending_message($supplier_email) {
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?php _e('Upload Submitted for Approval', 'smart-restock-waitlist'); ?></title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <style>
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    margin: 0;
+                    padding: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .container {
+                    max-width: 600px;
+                    background: white;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    text-align: center;
+                }
+                
+                .header {
+                    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+                    color: white;
+                    padding: 40px 30px;
+                    position: relative;
+                }
+                
+                .header-icon {
+                    font-size: 4rem;
+                    margin-bottom: 20px;
+                }
+                
+                .header h1 {
+                    font-size: 2rem;
+                    margin: 0;
+                    font-weight: 700;
+                }
+                
+                .content {
+                    padding: 40px;
+                }
+                
+                .status-message {
+                    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                    border: 2px solid #f59e0b;
+                    border-radius: 15px;
+                    padding: 30px;
+                    margin-bottom: 30px;
+                }
+                
+                .status-message h2 {
+                    color: #92400e;
+                    margin-bottom: 15px;
+                    font-size: 1.3rem;
+                }
+                
+                .status-message p {
+                    color: #78350f;
+                    line-height: 1.6;
+                    margin: 0;
+                }
+                
+                .info-box {
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 25px;
+                    margin-bottom: 25px;
+                }
+                
+                .info-box h3 {
+                    color: #374151;
+                    margin-bottom: 15px;
+                    font-size: 1.1rem;
+                }
+                
+                .info-box ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                
+                .info-box li {
+                    color: #6b7280;
+                    padding: 8px 0;
+                    padding-left: 25px;
+                    position: relative;
+                }
+                
+                .info-box li::before {
+                    content: '✓';
+                    position: absolute;
+                    left: 0;
+                    color: #10b981;
+                    font-weight: bold;
+                }
+                
+                .contact-info {
+                    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                    border: 2px solid #3b82f6;
+                    border-radius: 12px;
+                    padding: 25px;
+                }
+                
+                .contact-info h3 {
+                    color: #1e40af;
+                    margin-bottom: 15px;
+                    font-size: 1.1rem;
+                }
+                
+                .contact-info p {
+                    color: #1e40af;
+                    margin: 0;
+                    line-height: 1.6;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="header-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h1><?php _e('Upload Submitted', 'smart-restock-waitlist'); ?></h1>
+                </div>
+                
+                <div class="content">
+                    <div class="status-message">
+                        <h2>
+                            <i class="fas fa-hourglass-half"></i> 
+                            <?php _e('Pending Admin Approval', 'smart-restock-waitlist'); ?>
+                        </h2>
+                        <p><?php _e('Your CSV upload has been successfully submitted and is now waiting for admin approval. You will receive an email notification once the upload has been processed.', 'smart-restock-waitlist'); ?></p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>
+                            <i class="fas fa-info-circle"></i> 
+                            <?php _e('What happens next?', 'smart-restock-waitlist'); ?>
+                        </h3>
+                        <ul>
+                            <li><?php _e('Admin will review your upload data', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Stock will be updated upon approval', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('You\'ll receive email notification of the result', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Customers on waitlist will be notified automatically', 'smart-restock-waitlist'); ?></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="contact-info">
+                        <h3>
+                            <i class="fas fa-envelope"></i> 
+                            <?php _e('Contact Information', 'smart-restock-waitlist'); ?>
+                        </h3>
+                        <p><?php _e('If you have any questions about your upload, please contact the admin team. Your upload reference is:', 'smart-restock-waitlist'); ?> <strong><?php echo esc_html($supplier_email); ?></strong></p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
     }
     
     /**
