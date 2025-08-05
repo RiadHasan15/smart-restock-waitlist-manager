@@ -221,7 +221,6 @@ class SRWM_License_Manager {
             error_log('SRWM: Server unreachable: ' . $response->get_error_message());
         }
     }
-    }
     
     /**
      * Check license status
