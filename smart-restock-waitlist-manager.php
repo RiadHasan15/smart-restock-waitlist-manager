@@ -2570,6 +2570,11 @@ class SmartRestockWaitlistManager {
             wp_die(__('You do not have permission to perform this action.', 'smart-restock-waitlist'));
         }
         
+        // Check if WooCommerce is active
+        if (!function_exists('wc_get_products')) {
+            wp_send_json_error(__('WooCommerce is not active.', 'smart-restock-waitlist'));
+        }
+        
         // Get pagination parameters
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 10;
@@ -2612,52 +2617,63 @@ class SmartRestockWaitlistManager {
             }
         }
         
-        // Get products
-        $products = wc_get_products($args);
-        
-        // Get total count for pagination
-        $total_args = $args;
-        $total_args['limit'] = -1;
-        $total_products = wc_get_products($total_args);
-        $total_count = count($total_products);
-        
-        // Filter for low stock if needed
-        if ($stock_status === 'lowstock') {
-            $products = array_filter($products, function($product) {
-                $stock_quantity = $product->get_stock_quantity();
-                $low_stock_amount = $product->get_low_stock_amount();
-                return $stock_quantity !== null && $low_stock_amount !== null && $stock_quantity <= $low_stock_amount;
-            });
+        try {
+            // Get products
+            $products = wc_get_products($args);
+            
+            if ($products === false || !is_array($products)) {
+                wp_send_json_error(__('Failed to retrieve products from WooCommerce.', 'smart-restock-waitlist'));
+            }
+            
+            // Get total count for pagination
+            $total_args = $args;
+            $total_args['limit'] = -1;
+            $total_products = wc_get_products($total_args);
+            $total_count = is_array($total_products) ? count($total_products) : 0;
+            
+            // Filter for low stock if needed
+            if ($stock_status === 'lowstock') {
+                $products = array_filter($products, function($product) {
+                    $stock_quantity = $product->get_stock_quantity();
+                    $low_stock_amount = $product->get_low_stock_amount();
+                    return $stock_quantity !== null && $low_stock_amount !== null && $stock_quantity <= $low_stock_amount;
+                });
+            }
+            
+            $product_list = array();
+            foreach ($products as $product) {
+                if ($product && is_object($product)) {
+                    $product_list[] = array(
+                        'id' => $product->get_id(),
+                        'name' => $product->get_name(),
+                        'sku' => $product->get_sku(),
+                        'stock_quantity' => $product->get_stock_quantity(),
+                        'stock_status' => $product->get_stock_status(),
+                        'price' => $product->get_price(),
+                        'image_url' => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail') ?: '',
+                        'categories' => wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'names'))
+                    );
+                }
+            }
+            
+            // Calculate pagination info
+            $total_pages = $per_page > 0 ? ceil($total_count / $per_page) : 1;
+            
+            wp_send_json_success(array(
+                'products' => $product_list,
+                'pagination' => array(
+                    'current_page' => $page,
+                    'per_page' => $per_page,
+                    'total_count' => $total_count,
+                    'total_pages' => $total_pages,
+                    'has_next' => $page < $total_pages,
+                    'has_prev' => $page > 1
+                )
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error(__('Error retrieving products: ', 'smart-restock-waitlist') . $e->getMessage());
         }
-        
-        $product_list = array();
-        foreach ($products as $product) {
-            $product_list[] = array(
-                'id' => $product->get_id(),
-                'name' => $product->get_name(),
-                'sku' => $product->get_sku(),
-                'stock_quantity' => $product->get_stock_quantity(),
-                'stock_status' => $product->get_stock_status(),
-                'price' => $product->get_price(),
-                'image_url' => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail') ?: '',
-                'categories' => wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'names'))
-            );
-        }
-        
-        // Calculate pagination info
-        $total_pages = ceil($total_count / $per_page);
-        
-        wp_send_json_success(array(
-            'products' => $product_list,
-            'pagination' => array(
-                'current_page' => $page,
-                'per_page' => $per_page,
-                'total_count' => $total_count,
-                'total_pages' => $total_pages,
-                'has_next' => $page < $total_pages,
-                'has_prev' => $page > 1
-            )
-        ));
     }
     
     /**
