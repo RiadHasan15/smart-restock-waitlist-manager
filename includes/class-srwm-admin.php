@@ -156,6 +156,7 @@ class SRWM_Admin {
             register_setting('srwm_settings', 'srwm_whatsapp_enabled');
             register_setting('srwm_settings', 'srwm_sms_enabled');
             register_setting('srwm_settings', 'srwm_auto_generate_po');
+            register_setting('srwm_settings', 'srwm_csv_require_approval');
             register_setting('srwm_settings', 'srwm_company_name');
             register_setting('srwm_settings', 'srwm_company_address');
             register_setting('srwm_settings', 'srwm_company_phone');
@@ -330,6 +331,14 @@ class SRWM_Admin {
                         </div>
                         <h3><?php _e('Purchase Orders', 'smart-restock-waitlist'); ?></h3>
                         <p><?php _e('Generate and manage purchase orders', 'smart-restock-waitlist'); ?></p>
+                    </div>
+                    
+                    <div class="srwm-action-card" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>'">
+                        <div class="srwm-action-icon">
+                            <span class="dashicons dashicons-yes-alt"></span>
+                        </div>
+                        <h3><?php _e('CSV Approvals', 'smart-restock-waitlist'); ?></h3>
+                        <p><?php _e('Review and approve CSV uploads from suppliers', 'smart-restock-waitlist'); ?></p>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -1613,6 +1622,64 @@ class SRWM_Admin {
             background: linear-gradient(135deg, #6b7280, #4b5563) !important;
             color: white !important;
         }
+        
+        /* Approval Notice Styling */
+        .srwm-approval-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .srwm-approval-notice.srwm-auto-approval {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+        
+        .srwm-notice-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #f59e0b;
+        }
+        
+        .srwm-auto-approval .srwm-notice-icon {
+            color: #10b981;
+        }
+        
+        .srwm-notice-content {
+            flex: 1;
+        }
+        
+        .srwm-notice-content h4 {
+            margin: 0 0 8px 0;
+            color: #92400e;
+            font-size: 1.1rem;
+        }
+        
+        .srwm-auto-approval .srwm-notice-content h4 {
+            color: #065f46;
+        }
+        
+        .srwm-notice-content p {
+            margin: 0 0 15px 0;
+            color: #78350f;
+            line-height: 1.5;
+        }
+        
+        .srwm-auto-approval .srwm-notice-content p {
+            color: #047857;
+        }
         </style>
         <?php
     }
@@ -2426,6 +2493,37 @@ class SRWM_Admin {
                 </div>
                 <div class="srwm-pro-card-content">
                     <p><?php _e('Generate secure upload links for suppliers to update multiple products via CSV.', 'smart-restock-waitlist'); ?></p>
+                    
+                    <?php 
+                    $require_approval = get_option('srwm_csv_require_approval', 'yes');
+                    if ($require_approval === 'yes'): 
+                    ?>
+                    <div class="srwm-approval-notice">
+                        <div class="srwm-notice-icon">
+                            <span class="dashicons dashicons-clock"></span>
+                        </div>
+                        <div class="srwm-notice-content">
+                            <h4><?php _e('Approval Required', 'smart-restock-waitlist'); ?></h4>
+                            <p><?php _e('CSV uploads require admin approval before stock is updated. Review uploads in the CSV Approvals tab.', 'smart-restock-waitlist'); ?></p>
+                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-csv-approvals'); ?>" class="button button-small">
+                                <?php _e('View Pending Approvals', 'smart-restock-waitlist'); ?>
+                            </a>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <div class="srwm-approval-notice srwm-auto-approval">
+                        <div class="srwm-notice-icon">
+                            <span class="dashicons dashicons-yes-alt"></span>
+                        </div>
+                        <div class="srwm-notice-content">
+                            <h4><?php _e('Auto-Approval Enabled', 'smart-restock-waitlist'); ?></h4>
+                            <p><?php _e('CSV uploads are processed immediately without admin approval.', 'smart-restock-waitlist'); ?></p>
+                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>" class="button button-small">
+                                <?php _e('Change Setting', 'smart-restock-waitlist'); ?>
+                            </a>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 
                 <div class="srwm-csv-form">
                     <form id="srwm-generate-csv-form" method="post">
