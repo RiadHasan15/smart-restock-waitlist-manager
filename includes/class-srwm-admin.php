@@ -5003,7 +5003,7 @@ class SRWM_Admin {
                 <!-- Quick Restock Tab -->
                 <div class="srwm-tab-content" id="quick-restock-tab">
                     <div class="srwm-quick-restock-section">
-                    <div class="srwm-section-header">
+                        <div class="srwm-section-header">
                         <h2><i class="fas fa-bolt"></i> <?php _e('Quick Restock Operations', 'smart-restock-waitlist'); ?></h2>
                         <div class="srwm-section-actions">
                             <button class="button button-primary" id="generate-quick-restock-btn">
@@ -5067,6 +5067,14 @@ class SRWM_Admin {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Restock Form -->
+                    <div class="srwm-quick-restock-form">
+                        <div class="srwm-form-section">
+                            <h3><i class="fas fa-cog"></i> <?php _e('Quick Restock Configuration', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Generate secure, time-limited restock links for individual products. Suppliers can update stock immediately without admin approval.', 'smart-restock-waitlist'); ?></p>
                         </div>
                     </div>
                 </div>
@@ -5370,7 +5378,7 @@ class SRWM_Admin {
         
         .srwm-tab-content {
             display: none;
-            padding: 0;
+            padding: 20px;
         }
         
         .srwm-tab-content.active {
@@ -5379,6 +5387,43 @@ class SRWM_Admin {
         
         .srwm-suppliers-container {
             margin-top: 0;
+        }
+        
+        /* Quick Restock Section Styles */
+        .srwm-quick-restock-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .srwm-quick-restock-form {
+            padding: 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .srwm-form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .srwm-form-section h3 {
+            margin: 0 0 12px 0;
+            color: #374151;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-form-section p {
+            margin: 0;
+            color: #6b7280;
+            line-height: 1.5;
         }
         
         /* Light theme for form inputs */
@@ -6467,6 +6512,7 @@ class SRWM_Admin {
             // Tab switching functionality
             $('.srwm-tab-button').on('click', function() {
                 const tabId = $(this).data('tab');
+                console.log('Tab clicked:', tabId);
                 
                 // Remove active class from all tabs and buttons
                 $('.srwm-tab-button').removeClass('active');
@@ -6474,7 +6520,11 @@ class SRWM_Admin {
                 
                 // Add active class to clicked button and corresponding content
                 $(this).addClass('active');
-                $('#' + tabId + '-tab').addClass('active');
+                const targetTab = $('#' + tabId + '-tab');
+                targetTab.addClass('active');
+                
+                console.log('Target tab found:', targetTab.length > 0);
+                console.log('Target tab content:', targetTab.html().substring(0, 100) + '...');
             });
             
             // Load suppliers on page load
@@ -6485,6 +6535,10 @@ class SRWM_Admin {
             
             // Load quick restock links on page load
             loadQuickRestockLinks();
+            
+            // Debug: Check if Quick Restock tab content exists
+            console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
+            console.log('Quick Restock tab content length:', $('#quick-restock-tab').html().length);
             
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
