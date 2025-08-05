@@ -130,14 +130,14 @@ class SRWM_Analytics {
         $logs_table = $wpdb->prefix . 'srwm_restock_logs';
         
         return $wpdb->get_results(
-            "SELECT s.name as supplier_name, s.email as supplier_email,
+            "SELECT s.supplier_name, s.supplier_email,
                     COUNT(DISTINCT s.product_id) as products_managed,
                     COUNT(r.id) as total_restocks,
                     AVG(r.quantity) as avg_restock_quantity,
-                    AVG(DATEDIFF(r.timestamp, s.date_created)) as avg_response_time
+                    AVG(DATEDIFF(r.timestamp, s.created_at)) as avg_response_time
              FROM $suppliers_table s
              LEFT JOIN $logs_table r ON s.product_id = r.product_id
-             GROUP BY s.email
+             GROUP BY s.supplier_email
              ORDER BY total_restocks DESC"
         , ARRAY_A);
     }
