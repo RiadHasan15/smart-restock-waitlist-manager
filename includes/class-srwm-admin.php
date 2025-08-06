@@ -239,6 +239,16 @@ class SRWM_Admin {
                 true
             );
             
+            // Add inline script to ensure proper initialization
+            wp_add_inline_script('srwm-dashboard', '
+                console.log("Dashboard script loaded and ready");
+                if (typeof srwm_dashboard !== "undefined") {
+                    console.log("srwm_dashboard variables available");
+                } else {
+                    console.error("srwm_dashboard variables NOT available");
+                }
+            ');
+            
             wp_localize_script('srwm-dashboard', 'srwm_dashboard', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('srwm_dashboard_nonce'),
@@ -541,6 +551,10 @@ class SRWM_Admin {
                                     <button class="srwm-btn srwm-btn-sm srwm-btn-secondary srwm-btn-refresh-chart">
                                         <span class="dashicons dashicons-update"></span>
                                         <?php _e('Refresh', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testAjax()">
+                                        <span class="dashicons dashicons-admin-tools"></span>
+                                        Test AJAX
                                     </button>
                                 </div>
                             </div>

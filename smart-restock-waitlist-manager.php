@@ -1181,11 +1181,22 @@ class SmartRestockWaitlistManager {
      * AJAX: Test dashboard (for debugging)
      */
     public function ajax_test_dashboard() {
-        check_ajax_referer('srwm_dashboard_nonce', 'nonce');
+        // Log the request
+        error_log('Test dashboard AJAX called');
         
+        // Check nonce
+        if (!check_ajax_referer('srwm_dashboard_nonce', 'nonce', false)) {
+            error_log('Test dashboard nonce check failed');
+            wp_die(json_encode(array('success' => false, 'message' => __('Security check failed.', 'smart-restock-waitlist'))));
+        }
+        
+        // Check permissions
         if (!current_user_can('manage_woocommerce')) {
+            error_log('Test dashboard permission check failed');
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
+        
+        error_log('Test dashboard AJAX successful');
         
         // Simple test data
         $test_data = array(
