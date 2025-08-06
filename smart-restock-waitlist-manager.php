@@ -1435,6 +1435,135 @@ class SmartRestockWaitlistManager {
     }
     
     /**
+     * Send notification to supplier via multiple channels
+     */
+    public function send_supplier_notification($supplier_email, $product_id, $restock_link = '') {
+        // Get notification settings
+        $email_enabled = get_option('srwm_email_enabled', 'no');
+        $whatsapp_enabled = get_option('srwm_whatsapp_enabled', 'no');
+        $sms_enabled = get_option('srwm_sms_enabled', 'no');
+        
+        // Get product details
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            return false;
+        }
+        
+        // Get supplier details
+        global $wpdb;
+        $suppliers_table = $wpdb->prefix . 'srwm_suppliers';
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $suppliers_table WHERE supplier_email = %s",
+            $supplier_email
+        ));
+        
+        if (!$supplier) {
+            return false;
+        }
+        
+        // Get waitlist count
+        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+        $waitlist_count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $waitlist_table WHERE product_id = %d",
+            $product_id
+        )) ?: 0;
+        
+        // Prepare placeholders
+        $placeholders = array(
+            '{supplier_name}' => $supplier->contact_person ?: $supplier->company_name ?: 'Supplier',
+            '{product_name}' => $product->get_name(),
+            '{sku}' => $product->get_sku(),
+            '{current_stock}' => $product->get_stock_quantity(),
+            '{waitlist_count}' => $waitlist_count,
+            '{restock_link}' => $restock_link
+        );
+        
+        $success = true;
+        
+        // Send email notification
+        if ($email_enabled === 'yes') {
+            $email_template = get_option('srwm_email_template', $this->get_default_email_template());
+            $email_content = str_replace(array_keys($placeholders), array_values($placeholders), $email_template);
+            
+            $email_sent = wp_mail(
+                $supplier_email,
+                sprintf(__('Restock Request: %s', 'smart-restock-waitlist'), $product->get_name()),
+                $email_content,
+                array('Content-Type: text/html; charset=UTF-8')
+            );
+            
+            if (!$email_sent) {
+                $success = false;
+            }
+        }
+        
+        // Send WhatsApp notification (placeholder for now)
+        if ($whatsapp_enabled === 'yes') {
+            $whatsapp_api_key = get_option('srwm_whatsapp_api_key');
+            if ($whatsapp_api_key) {
+                $whatsapp_template = get_option('srwm_whatsapp_template', $this->get_default_whatsapp_template());
+                $whatsapp_content = str_replace(array_keys($placeholders), array_values($placeholders), $whatsapp_template);
+                
+                // TODO: Implement actual WhatsApp API integration
+                // For now, just log that it would be sent
+                error_log("WhatsApp notification would be sent to {$supplier_email}: {$whatsapp_content}");
+            }
+        }
+        
+        // Send SMS notification (placeholder for now)
+        if ($sms_enabled === 'yes') {
+            $sms_api_key = get_option('srwm_sms_api_key');
+            $sms_provider = get_option('srwm_sms_provider', 'twilio');
+            
+            if ($sms_api_key) {
+                $sms_template = get_option('srwm_sms_template', $this->get_default_sms_template());
+                $sms_content = str_replace(array_keys($placeholders), array_values($placeholders), $sms_template);
+                
+                // TODO: Implement actual SMS API integration
+                // For now, just log that it would be sent
+                error_log("SMS notification would be sent to {$supplier_email}: {$sms_content}");
+            }
+        }
+        
+        return $success;
+    }
+    
+    /**
+     * Get default email template
+     */
+    private function get_default_email_template() {
+        return "Hi {supplier_name},\n\n" .
+               "We need to restock the following product:\n\n" .
+               "Product: {product_name}\n" .
+               "SKU: {sku}\n" .
+               "Current Stock: {current_stock}\n" .
+               "Waitlist Count: {waitlist_count}\n\n" .
+               "Please use the following link to restock:\n{restock_link}\n\n" .
+               "Thank you,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default WhatsApp template
+     */
+    private function get_default_whatsapp_template() {
+        return "Hi {supplier_name},\n\n" .
+               "We need to restock the following product:\n\n" .
+               "Product: {product_name}\n" .
+               "SKU: {sku}\n" .
+               "Current Stock: {current_stock}\n" .
+               "Waitlist Count: {waitlist_count}\n\n" .
+               "Please use the following link to restock:\n{restock_link}\n\n" .
+               "Thank you,\n" . get_bloginfo('name');
+    }
+    
+    /**
+     * Get default SMS template
+     */
+    private function get_default_sms_template() {
+        return "Hi {supplier_name}, we need to restock {product_name} (SKU: {sku}). Current stock: {current_stock}, Waitlist: {waitlist_count}. Please check your email for the restock link.";
+    }
+    
+    /**
      * AJAX: Download CSV template (Pro)
      */
     public function ajax_download_csv_template() {

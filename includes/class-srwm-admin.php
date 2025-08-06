@@ -152,6 +152,18 @@ class SRWM_Admin {
             register_setting('srwm_settings', 'srwm_company_address');
             register_setting('srwm_settings', 'srwm_company_phone');
             register_setting('srwm_settings', 'srwm_company_email');
+            
+            // Notification settings
+            register_setting('srwm_notifications', 'srwm_email_enabled');
+            register_setting('srwm_notifications', 'srwm_email_template');
+            register_setting('srwm_notifications', 'srwm_whatsapp_enabled');
+            register_setting('srwm_notifications', 'srwm_whatsapp_api_key');
+            register_setting('srwm_notifications', 'srwm_whatsapp_template');
+            register_setting('srwm_notifications', 'srwm_sms_enabled');
+            register_setting('srwm_notifications', 'srwm_sms_provider');
+            register_setting('srwm_notifications', 'srwm_sms_api_key');
+            register_setting('srwm_notifications', 'srwm_sms_api_secret');
+            register_setting('srwm_notifications', 'srwm_sms_template');
         }
     }
     
@@ -204,6 +216,34 @@ class SRWM_Admin {
                 'export_error' => __('Failed to export data.', 'smart-restock-waitlist')
             )
         ));
+        
+        // Add notification-specific scripts
+        if (strpos($hook, 'smart-restock-waitlist-notifications') !== false) {
+            wp_add_inline_script('srwm-admin', '
+                jQuery(document).ready(function($) {
+                    // Handle form submission with feedback
+                    $("form[action=\"options.php\"]").on("submit", function() {
+                        const submitBtn = $(this).find("button[type=\"submit\"]");
+                        const originalText = submitBtn.html();
+                        
+                        // Show loading state
+                        submitBtn.html("<span class=\"dashicons dashicons-update-alt\" style=\"animation: spin 1s linear infinite;\"></span> Saving...");
+                        submitBtn.prop("disabled", true);
+                        
+                        // Re-enable after a short delay (form will redirect)
+                        setTimeout(function() {
+                            submitBtn.html(originalText);
+                            submitBtn.prop("disabled", false);
+                        }, 2000);
+                    });
+                    
+                    // Show success message if settings were saved
+                    if (window.location.search.includes("settings-updated=true")) {
+                        showNotification("Notification settings saved successfully!", "success");
+                    }
+                });
+            ');
+        }
     }
     
     /**
