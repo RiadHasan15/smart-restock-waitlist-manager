@@ -2155,6 +2155,16 @@ class SRWM_Admin {
             color: #991b1b;
         }
         
+        /* Error Messages */
+        .srwm-error {
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        
         /* Responsive Enhancements */
         @media (max-width: 768px) {
             .srwm-dashboard-tabs {

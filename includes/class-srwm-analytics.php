@@ -879,6 +879,363 @@ class SRWM_Analytics {
     }
     
     /**
+     * Get stat card details
+     */
+    public function get_stat_card_details($stat_type) {
+        global $wpdb;
+        
+        try {
+            switch($stat_type) {
+                case 'total_waitlist_customers':
+                    return $this->get_waitlist_customers_details();
+                case 'waitlist_products':
+                    return $this->get_waitlist_products_details();
+                case 'avg_restock_time':
+                    return $this->get_restock_time_details();
+                case 'today_waitlists':
+                    return $this->get_today_waitlists_details();
+                case 'today_restocks':
+                    return $this->get_today_restocks_details();
+                case 'pending_notifications':
+                    return $this->get_pending_notifications_details();
+                case 'low_stock_products':
+                    return $this->get_low_stock_products_details();
+                default:
+                    return array('error' => 'Invalid stat type');
+            }
+        } catch (Exception $e) {
+            error_log('SRWM Analytics: Exception in get_stat_card_details: ' . $e->getMessage());
+            return array('error' => 'Failed to load details');
+        }
+    }
+    
+    /**
+     * Get waitlist customers details
+     */
+    private function get_waitlist_customers_details() {
+        global $wpdb;
+        
+        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+        
+        // Check if table exists
+        if (!$this->table_exists($waitlist_table)) {
+            return $this->get_demo_waitlist_customers_details();
+        }
+        
+        // Get total customers
+        $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
+        
+        // Get active waitlists (not notified)
+        $active_waitlists = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 0");
+        
+        // Get average wait time
+        $avg_wait_time = $wpdb->get_var("
+            SELECT AVG(DATEDIFF(date_added, CURDATE())) 
+            FROM {$waitlist_table} 
+            WHERE notified = 1
+        ");
+        
+        // Get conversion rate (notified vs total)
+        $total_notified = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 1");
+        $conversion_rate = $total_customers > 0 ? round(($total_notified / $total_customers) * 100, 1) : 0;
+        
+        // Get recent activity
+        $recent_activity = $wpdb->get_results("
+            SELECT email, product_id, date_added, notified
+            FROM {$waitlist_table}
+            ORDER BY date_added DESC
+            LIMIT 10
+        ");
+        
+        return array(
+            'summary' => array(
+                'total_customers' => $total_customers ?: 0,
+                'active_waitlists' => $active_waitlists ?: 0,
+                'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
+                'conversion_rate' => $conversion_rate . '%'
+            ),
+            'recent_activity' => $recent_activity ?: array()
+        );
+    }
+    
+    /**
+     * Get waitlist products details
+     */
+    private function get_waitlist_products_details() {
+        global $wpdb;
+        
+        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($waitlist_table)) {
+            return $this->get_demo_waitlist_products_details();
+        }
+        
+        // Get product statistics
+        $product_stats = $wpdb->get_results("
+            SELECT 
+                product_id,
+                COUNT(*) as waitlist_count,
+                SUM(CASE WHEN notified = 0 THEN 1 ELSE 0 END) as active_count
+            FROM {$waitlist_table}
+            GROUP BY product_id
+            ORDER BY waitlist_count DESC
+            LIMIT 10
+        ");
+        
+        $total_products = count($product_stats);
+        $high_demand = 0;
+        
+        foreach ($product_stats as $product) {
+            if ($product->waitlist_count > 50) $high_demand++;
+        }
+        
+        return array(
+            'summary' => array(
+                'total_products' => $total_products,
+                'high_demand' => $high_demand,
+                'out_of_stock' => 0, // Would need WooCommerce integration
+                'low_stock' => 0     // Would need WooCommerce integration
+            ),
+            'top_products' => $product_stats
+        );
+    }
+    
+    /**
+     * Get restock time details
+     */
+    private function get_restock_time_details() {
+        global $wpdb;
+        
+        $restock_logs_table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        if (!$this->table_exists($restock_logs_table)) {
+            return $this->get_demo_restock_time_details();
+        }
+        
+        // Get restock statistics
+        $restock_stats = $wpdb->get_results("
+            SELECT 
+                product_id,
+                method,
+                timestamp,
+                quantity
+            FROM {$restock_logs_table}
+            ORDER BY timestamp DESC
+            LIMIT 20
+        ");
+        
+        $total_restocks = count($restock_stats);
+        $methods = array();
+        foreach ($restock_stats as $restock) {
+            $methods[$restock->method] = ($methods[$restock->method] ?? 0) + 1;
+        }
+        
+        return array(
+            'summary' => array(
+                'total_restocks' => $total_restocks,
+                'methods' => $methods
+            ),
+            'recent_activity' => $restock_stats
+        );
+    }
+    
+    /**
+     * Get today's waitlists details
+     */
+    private function get_today_waitlists_details() {
+        global $wpdb;
+        
+        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($waitlist_table)) {
+            return $this->get_demo_today_waitlists_details();
+        }
+        
+        // Get today's waitlists
+        $today_waitlists = $wpdb->get_results("
+            SELECT email, product_id, date_added
+            FROM {$waitlist_table}
+            WHERE DATE(date_added) = CURDATE()
+            ORDER BY date_added DESC
+        ");
+        
+        $new_today = count($today_waitlists);
+        $hourly_breakdown = array();
+        
+        foreach ($today_waitlists as $waitlist) {
+            $hour = date('H', strtotime($waitlist->date_added));
+            $hourly_breakdown[$hour] = ($hourly_breakdown[$hour] ?? 0) + 1;
+        }
+        
+        return array(
+            'summary' => array(
+                'new_today' => $new_today,
+                'hourly_breakdown' => $hourly_breakdown
+            ),
+            'recent_activity' => $today_waitlists
+        );
+    }
+    
+    /**
+     * Get today's restocks details
+     */
+    private function get_today_restocks_details() {
+        global $wpdb;
+        
+        $restock_logs_table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        if (!$this->table_exists($restock_logs_table)) {
+            return $this->get_demo_today_restocks_details();
+        }
+        
+        // Get today's restocks
+        $today_restocks = $wpdb->get_results("
+            SELECT product_id, method, timestamp, quantity
+            FROM {$restock_logs_table}
+            WHERE DATE(timestamp) = CURDATE()
+            ORDER BY timestamp DESC
+        ");
+        
+        $restocks_today = count($today_restocks);
+        $total_stock_added = array_sum(array_column($today_restocks, 'quantity'));
+        
+        return array(
+            'summary' => array(
+                'restocks_today' => $restocks_today,
+                'total_stock_added' => $total_stock_added
+            ),
+            'recent_activity' => $today_restocks
+        );
+    }
+    
+    /**
+     * Get pending notifications details
+     */
+    private function get_pending_notifications_details() {
+        // This would integrate with your notification system
+        // For now, return demo data
+        return $this->get_demo_pending_notifications_details();
+    }
+    
+    /**
+     * Get low stock products details
+     */
+    private function get_low_stock_products_details() {
+        // This would integrate with WooCommerce stock levels
+        // For now, return demo data
+        return $this->get_demo_low_stock_products_details();
+    }
+    
+    /**
+     * Demo data methods for when real data is not available
+     */
+    private function get_demo_waitlist_customers_details() {
+        return array(
+            'summary' => array(
+                'total_customers' => 1247,
+                'active_waitlists' => 892,
+                'avg_wait_time' => '3.2 days',
+                'conversion_rate' => '68%'
+            ),
+            'recent_activity' => array(
+                array('email' => 'john.doe@email.com', 'product_id' => 123, 'date_added' => '2024-01-15', 'notified' => 0),
+                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'date_added' => '2024-01-15', 'notified' => 1),
+                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'date_added' => '2024-01-14', 'notified' => 0)
+            )
+        );
+    }
+    
+    private function get_demo_waitlist_products_details() {
+        return array(
+            'summary' => array(
+                'total_products' => 24,
+                'high_demand' => 8,
+                'out_of_stock' => 3,
+                'low_stock' => 5
+            ),
+            'top_products' => array(
+                array('product_id' => 123, 'waitlist_count' => 156, 'active_count' => 89),
+                array('product_id' => 456, 'waitlist_count' => 89, 'active_count' => 45),
+                array('product_id' => 789, 'waitlist_count' => 67, 'active_count' => 23)
+            )
+        );
+    }
+    
+    private function get_demo_restock_time_details() {
+        return array(
+            'summary' => array(
+                'total_restocks' => 156,
+                'methods' => array('Manual' => 89, 'CSV Upload' => 45, 'Quick Restock' => 22)
+            ),
+            'recent_activity' => array(
+                array('product_id' => 123, 'method' => 'Manual', 'timestamp' => '2024-01-15 16:00:00', 'quantity' => 250),
+                array('product_id' => 456, 'method' => 'CSV Upload', 'timestamp' => '2024-01-14 15:30:00', 'quantity' => 180),
+                array('product_id' => 789, 'method' => 'Quick Restock', 'timestamp' => '2024-01-13 14:15:00', 'quantity' => 95)
+            )
+        );
+    }
+    
+    private function get_demo_today_waitlists_details() {
+        return array(
+            'summary' => array(
+                'new_today' => 23,
+                'hourly_breakdown' => array('14' => 8, '15' => 6, '16' => 9)
+            ),
+            'recent_activity' => array(
+                array('email' => 'john.doe@email.com', 'product_id' => 123, 'date_added' => '2024-01-15 14:30:00'),
+                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'date_added' => '2024-01-15 14:15:00'),
+                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'date_added' => '2024-01-15 13:45:00')
+            )
+        );
+    }
+    
+    private function get_demo_today_restocks_details() {
+        return array(
+            'summary' => array(
+                'restocks_today' => 8,
+                'total_stock_added' => 1247
+            ),
+            'recent_activity' => array(
+                array('product_id' => 123, 'method' => 'Manual', 'timestamp' => '2024-01-15 16:00:00', 'quantity' => 250),
+                array('product_id' => 456, 'method' => 'CSV Upload', 'timestamp' => '2024-01-15 15:30:00', 'quantity' => 180),
+                array('product_id' => 789, 'method' => 'Quick Restock', 'timestamp' => '2024-01-15 14:15:00', 'quantity' => 95)
+            )
+        );
+    }
+    
+    private function get_demo_pending_notifications_details() {
+        return array(
+            'summary' => array(
+                'pending' => 12,
+                'email' => 8,
+                'sms' => 3,
+                'whatsapp' => 1
+            ),
+            'recent_activity' => array(
+                array('email' => 'john.doe@email.com', 'product_id' => 123, 'type' => 'Email', 'status' => 'Pending'),
+                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'type' => 'SMS', 'status' => 'Pending'),
+                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'type' => 'WhatsApp', 'status' => 'Pending')
+            )
+        );
+    }
+    
+    private function get_demo_low_stock_products_details() {
+        return array(
+            'summary' => array(
+                'low_stock' => 7,
+                'out_of_stock' => 3,
+                'critical_level' => 2,
+                'total_value' => '$12,450'
+            ),
+            'recent_activity' => array(
+                array('product_id' => 123, 'current_stock' => 0, 'threshold' => 10, 'status' => 'Out of Stock'),
+                array('product_id' => 456, 'current_stock' => 3, 'threshold' => 15, 'status' => 'Low Stock'),
+                array('product_id' => 789, 'current_stock' => 1, 'threshold' => 20, 'status' => 'Critical')
+            )
+        );
+    }
+    
+    /**
      * Export analytics data to CSV
      */
     public function export_analytics_csv() {
