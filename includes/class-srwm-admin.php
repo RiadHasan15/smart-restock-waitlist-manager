@@ -828,28 +828,43 @@ class SRWM_Admin {
     private function enqueue_modern_styles() {
         ?>
         <style>
-        /* Modern Dashboard Styles */
+        /* Optimized Modern Dashboard Styles */
         .srwm-dashboard {
             margin: 20px 0;
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
             min-height: 100vh;
+            padding: 0;
         }
         
-        /* Header Section */
+        /* Enhanced Header Section */
         .srwm-dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 25%, #8b5cf6 50%, #a855f7 75%, #c084fc 100%);
+            border-radius: 20px;
+            margin-bottom: 40px;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 20px 60px rgba(79, 70, 229, 0.25), 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .srwm-dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
         }
         
         .srwm-header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 32px;
+            padding: 40px;
             color: white;
+            position: relative;
+            z-index: 2;
         }
         
         .srwm-header-left {
@@ -857,131 +872,175 @@ class SRWM_Admin {
         }
         
         .srwm-page-title {
-            margin: 0 0 8px 0;
-            font-size: 32px;
-            font-weight: 700;
+            margin: 0 0 12px 0;
+            font-size: 36px;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: -0.5px;
         }
         
         .srwm-page-title .dashicons {
-            font-size: 32px;
-            width: 32px;
-            height: 32px;
+            font-size: 36px;
+            width: 36px;
+            height: 36px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
         }
         
         .srwm-page-subtitle {
             margin: 0;
-            font-size: 16px;
-            opacity: 0.9;
+            font-size: 18px;
+            opacity: 0.95;
             font-weight: 400;
+            line-height: 1.4;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-header-actions {
             display: flex;
-            gap: 12px;
+            gap: 16px;
         }
         
-        /* Welcome Section */
+        /* Enhanced Welcome Section */
         .srwm-welcome-section {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         
         .srwm-welcome-card {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 24px;
+            padding: 48px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e1e5e9;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-welcome-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6, #a855f7);
         }
         
         .srwm-welcome-icon {
-            font-size: 64px;
-            color: #667eea;
-            margin-bottom: 24px;
+            font-size: 72px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 28px;
+            filter: drop-shadow(0 4px 8px rgba(79, 70, 229, 0.2));
         }
         
         .srwm-welcome-content h3 {
-            margin: 0 0 16px 0;
-            font-size: 28px;
-            color: #2c3e50;
-            font-weight: 600;
+            margin: 0 0 20px 0;
+            font-size: 32px;
+            color: #1e293b;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         .srwm-welcome-content p {
-            margin: 0 0 32px 0;
-            font-size: 16px;
-            color: #6c757d;
-            line-height: 1.6;
-            max-width: 600px;
+            margin: 0 0 36px 0;
+            font-size: 18px;
+            color: #64748b;
+            line-height: 1.7;
+            max-width: 700px;
             margin-left: auto;
             margin-right: auto;
         }
         
         .srwm-welcome-actions {
             display: flex;
-            gap: 16px;
+            gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
         }
         
-        /* Dashboard Content */
+        /* Enhanced Dashboard Content */
         .srwm-dashboard-content {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 40px;
+            padding: 0 20px;
         }
         
-        /* Section Styles */
+        /* Enhanced Section Styles */
         .srwm-section {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e1e5e9;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6);
         }
         
         .srwm-section-header {
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
         
         .srwm-section-title {
-            margin: 0 0 8px 0;
-            font-size: 24px;
-            color: #2c3e50;
-            font-weight: 600;
+            margin: 0 0 12px 0;
+            font-size: 28px;
+            color: #1e293b;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            letter-spacing: -0.5px;
         }
         
         .srwm-section-title .dashicons {
-            color: #667eea;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;
+            width: 28px;
+            height: 28px;
         }
         
         .srwm-section-description {
             margin: 0;
-            color: #6c757d;
-            font-size: 14px;
+            color: #64748b;
+            font-size: 16px;
+            line-height: 1.5;
         }
         
-        /* Stats Grid */
+        /* Enhanced Stats Grid */
         .srwm-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
         }
         
         .srwm-stat-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid #e1e5e9;
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         }
         
         .srwm-stat-card::before {
@@ -991,31 +1050,32 @@ class SRWM_Admin {
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6, #a855f7);
         }
         
         .srwm-stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08);
         }
         
         .srwm-stat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .srwm-stat-icon {
-            font-size: 32px;
-            color: #667eea;
-            width: 48px;
-            height: 48px;
+            font-size: 36px;
+            width: 56px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+            border-radius: 16px;
+            color: #4f46e5;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
         
         .srwm-stat-trend {
@@ -1027,20 +1087,21 @@ class SRWM_Admin {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-trend-up {
-            background: rgba(40, 167, 69, 0.1);
-            color: #28a745;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            color: #10b981;
         }
         
         .srwm-trend-down {
-            background: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+            color: #dc2626;
         }
         
         .srwm-stat-content {
@@ -1048,18 +1109,22 @@ class SRWM_Admin {
         }
         
         .srwm-stat-number {
-            font-size: 36px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 8px;
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
             line-height: 1;
+            letter-spacing: -1px;
         }
         
         .srwm-stat-label {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            color: #6c757d;
-            font-weight: 500;
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 600;
         }
         
         .srwm-stat-meta {
@@ -1068,254 +1133,335 @@ class SRWM_Admin {
         }
         
         .srwm-stat-period {
-            font-size: 12px;
-            color: #adb5bd;
-            background: rgba(173, 181, 189, 0.1);
-            padding: 4px 8px;
-            border-radius: 6px;
+            font-size: 13px;
+            color: #94a3b8;
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(203, 213, 225, 0.1));
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 500;
         }
         
-        /* Charts Grid */
+        /* Enhanced Charts Grid */
         .srwm-charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 32px;
         }
         
         .srwm-chart-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid #e1e5e9;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6);
         }
         
         .srwm-chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .srwm-chart-title {
             margin: 0;
-            font-size: 18px;
-            color: #2c3e50;
-            font-weight: 600;
+            font-size: 20px;
+            color: #1e293b;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            letter-spacing: -0.5px;
         }
         
         .srwm-chart-title .dashicons {
-            color: #667eea;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
         }
         
         .srwm-chart-actions {
             display: flex;
-            gap: 8px;
+            gap: 12px;
         }
         
         .srwm-chart-period {
-            padding: 6px 12px;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            background: white;
+            padding: 8px 16px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
             font-size: 14px;
-            color: #495057;
+            color: #4f46e5;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-chart-period:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
         .srwm-chart-container {
-            height: 300px;
+            height: 320px;
             position: relative;
+            border-radius: 12px;
+            overflow: hidden;
         }
         
-        /* Actions Grid */
+        /* Enhanced Actions Grid */
         .srwm-actions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
         }
         
         .srwm-action-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid #e1e5e9;
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        
+        .srwm-action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #8b5cf6);
         }
         
         .srwm-action-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08);
         }
         
         .srwm-action-icon {
-            font-size: 32px;
-            color: #667eea;
-            width: 48px;
-            height: 48px;
+            font-size: 36px;
+            color: #4f46e5;
+            width: 56px;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 12px;
-            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
         
         .srwm-action-content {
             flex: 1;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .srwm-action-content h3 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-            color: #2c3e50;
-            font-weight: 600;
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            color: #1e293b;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         .srwm-action-content p {
             margin: 0;
-            color: #6c757d;
-            line-height: 1.5;
-            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 15px;
         }
         
         .srwm-action-footer {
             margin-top: auto;
         }
         
-        /* Button Styles */
+        /* Enhanced Button Styles */
         .srwm-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
+            gap: 10px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             line-height: 1;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: -0.2px;
+        }
+        
+        .srwm-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .srwm-btn:hover::before {
+            left: 100%;
         }
         
         .srwm-btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
         
         .srwm-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.4), 0 4px 15px rgba(79, 70, 229, 0.3);
             color: white;
         }
         
         .srwm-btn-secondary {
-            background: #f8f9fa;
-            color: #495057;
-            border: 1px solid #e1e5e9;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #4f46e5;
+            border: 2px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-btn-secondary:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
-            color: #495057;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: translateY(-3px) scale(1.02);
+            color: #4f46e5;
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 10px;
         }
         
-        /* Table Styles */
+        /* Enhanced Table Styles */
         .srwm-table-container {
             overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid #e1e5e9;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         }
         
         .srwm-modern-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: transparent;
         }
         
         .srwm-modern-table th {
-            background: #f8f9fa;
-            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px 16px;
             text-align: left;
-            font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #e1e5e9;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+            font-size: 14px;
+            letter-spacing: -0.2px;
         }
         
         .srwm-modern-table td {
-            padding: 16px;
-            border-bottom: 1px solid #e1e5e9;
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
             vertical-align: middle;
+            transition: all 0.3s ease;
         }
         
         .srwm-modern-table tr:hover {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.02), rgba(124, 58, 237, 0.02));
+            transform: scale(1.001);
         }
         
         .srwm-product-info strong {
             display: block;
-            color: #2c3e50;
-            font-weight: 600;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
         }
         
         .srwm-product-info small {
-            color: #6c757d;
-            font-size: 12px;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .srwm-stock-badge {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-stock-ok {
-            background: rgba(40, 167, 69, 0.1);
-            color: #28a745;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            color: #10b981;
         }
         
         .srwm-stock-low {
-            background: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+            color: #f59e0b;
         }
         
         .srwm-waitlist-count {
-            font-weight: 600;
-            color: #667eea;
+            font-weight: 700;
+            color: #4f46e5;
+            font-size: 16px;
         }
         
         .srwm-status {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-status-ok {
-            background: rgba(40, 167, 69, 0.1);
-            color: #28a745;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            color: #10b981;
         }
         
         .srwm-status-low {
-            background: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+            color: #f59e0b;
         }
         
         .srwm-status-out {
-            background: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+            color: #dc2626;
         }
             font-size: 16px;
             font-weight: 600;
