@@ -219,6 +219,39 @@ class SRWM_Admin {
             )
         ));
         
+        // Add dashboard-specific scripts for the main dashboard page
+        if (strpos($hook, 'toplevel_page_smart-restock-waitlist') !== false) {
+            // Enqueue Chart.js for analytics
+            wp_enqueue_script(
+                'chart-js',
+                'https://cdn.jsdelivr.net/npm/chart.js',
+                array(),
+                '3.9.1',
+                true
+            );
+            
+            // Enqueue dashboard JavaScript
+            wp_enqueue_script(
+                'srwm-dashboard',
+                SRWM_PLUGIN_URL . 'admin/js/dashboard.js',
+                array('jquery', 'wp-util', 'chart-js'),
+                SRWM_VERSION,
+                true
+            );
+            
+            wp_localize_script('srwm-dashboard', 'srwm_dashboard', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('srwm_dashboard_nonce'),
+                'is_pro' => $this->license_manager->is_pro_active(),
+                'messages' => array(
+                    'loading' => __('Loading...', 'smart-restock-waitlist'),
+                    'error' => __('Error loading data.', 'smart-restock-waitlist'),
+                    'export_success' => __('Report exported successfully!', 'smart-restock-waitlist'),
+                    'export_error' => __('Failed to export report.', 'smart-restock-waitlist')
+                )
+            ));
+        }
+        
         // Add notification-specific scripts
         if (strpos($hook, 'smart-restock-waitlist-notifications') !== false) {
             wp_add_inline_script('srwm-admin', '
