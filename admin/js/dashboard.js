@@ -497,19 +497,11 @@
                     updateStatCard('waitlist_products', data.waitlist_products || 0);
                     updateStatCard('avg_restock_time', data.avg_restock_time || 0);
                     
-                    // Update additional stats if available
-                    if (data.today_waitlists !== undefined) {
-                        updateStatCard('today_waitlists', data.today_waitlists);
-                    }
-                    if (data.today_restocks !== undefined) {
-                        updateStatCard('today_restocks', data.today_restocks);
-                    }
-                    if (data.pending_notifications !== undefined) {
-                        updateStatCard('pending_notifications', data.pending_notifications);
-                    }
-                    if (data.low_stock_products !== undefined) {
-                        updateStatCard('low_stock_products', data.low_stock_products);
-                    }
+                    // Update additional stats
+                    updateStatCard('today_waitlists', data.today_waitlists || 0);
+                    updateStatCard('today_restocks', data.today_restocks || 0);
+                    updateStatCard('pending_notifications', data.pending_notifications || 0);
+                    updateStatCard('low_stock_products', data.low_stock_products || 0);
                     
                     console.log('SRWM Dashboard: Statistics updated successfully');
                 } else {

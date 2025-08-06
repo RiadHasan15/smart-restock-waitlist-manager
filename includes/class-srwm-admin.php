@@ -522,6 +522,87 @@ class SRWM_Admin {
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Additional Statistics Cards -->
+                        <div class="srwm-stat-card" data-stat="today_waitlists">
+                            <div class="srwm-stat-header">
+                                <div class="srwm-stat-icon">
+                                    <span class="dashicons dashicons-plus-alt"></span>
+                                </div>
+                                <div class="srwm-stat-trend">
+                                    <span class="srwm-trend-indicator srwm-trend-up">
+                                        <span class="dashicons dashicons-arrow-up-alt"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="srwm-stat-content">
+                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['today_waitlists'] ?? 0); ?></h3>
+                                <p class="srwm-stat-label"><?php _e('Today\'s Waitlists', 'smart-restock-waitlist'); ?></p>
+                                <div class="srwm-stat-meta">
+                                    <span class="srwm-stat-period"><?php _e('Today', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-stat-card" data-stat="today_restocks">
+                            <div class="srwm-stat-header">
+                                <div class="srwm-stat-icon">
+                                    <span class="dashicons dashicons-update"></span>
+                                </div>
+                                <div class="srwm-stat-trend">
+                                    <span class="srwm-trend-indicator srwm-trend-up">
+                                        <span class="dashicons dashicons-arrow-up-alt"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="srwm-stat-content">
+                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['today_restocks'] ?? 0); ?></h3>
+                                <p class="srwm-stat-label"><?php _e('Today\'s Restocks', 'smart-restock-waitlist'); ?></p>
+                                <div class="srwm-stat-meta">
+                                    <span class="srwm-stat-period"><?php _e('Today', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-stat-card" data-stat="pending_notifications">
+                            <div class="srwm-stat-header">
+                                <div class="srwm-stat-icon">
+                                    <span class="dashicons dashicons-bell"></span>
+                                </div>
+                                <div class="srwm-stat-trend">
+                                    <span class="srwm-trend-indicator srwm-trend-up">
+                                        <span class="dashicons dashicons-arrow-up-alt"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="srwm-stat-content">
+                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['pending_notifications'] ?? 0); ?></h3>
+                                <p class="srwm-stat-label"><?php _e('Pending Notifications', 'smart-restock-waitlist'); ?></p>
+                                <div class="srwm-stat-meta">
+                                    <span class="srwm-stat-period"><?php _e('Awaiting', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-stat-card" data-stat="low_stock_products">
+                            <div class="srwm-stat-header">
+                                <div class="srwm-stat-icon">
+                                    <span class="dashicons dashicons-warning"></span>
+                                </div>
+                                <div class="srwm-stat-trend">
+                                    <span class="srwm-trend-indicator srwm-trend-down">
+                                        <span class="dashicons dashicons-arrow-down-alt"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="srwm-stat-content">
+                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['low_stock_products'] ?? 0); ?></h3>
+                                <p class="srwm-stat-label"><?php _e('Low Stock Products', 'smart-restock-waitlist'); ?></p>
+                                <div class="srwm-stat-meta">
+                                    <span class="srwm-stat-period"><?php _e('Needs attention', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
