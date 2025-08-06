@@ -1204,11 +1204,39 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
         
+        // Rate limiting: max 10 requests per minute per user
+        $user_id = get_current_user_id();
+        $rate_limit_key = 'srwm_stat_card_rate_limit_' . $user_id;
+        $request_count = get_transient($rate_limit_key);
+        
+        if ($request_count === false) {
+            set_transient($rate_limit_key, 1, 60); // 1 minute
+        } elseif ($request_count >= 10) {
+            wp_send_json_error(__('Rate limit exceeded. Please wait before making another request.', 'smart-restock-waitlist'));
+        } else {
+            set_transient($rate_limit_key, $request_count + 1, 60);
+        }
+        
         try {
-            $stat_type = sanitize_text_field($_POST['stat_type']);
+            $stat_type = sanitize_text_field($_POST['stat_type'] ?? '');
             
             if (empty($stat_type)) {
                 wp_send_json_error(__('Invalid stat type.', 'smart-restock-waitlist'));
+            }
+            
+            // Validate stat type against allowed values
+            $allowed_stat_types = array(
+                'total_waitlist_customers',
+                'waitlist_products', 
+                'avg_restock_time',
+                'today_waitlists',
+                'today_restocks',
+                'pending_notifications',
+                'low_stock_products'
+            );
+            
+            if (!in_array($stat_type, $allowed_stat_types)) {
+                wp_send_json_error(__('Invalid stat type provided.', 'smart-restock-waitlist'));
             }
             
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
