@@ -356,9 +356,6 @@ class SRWM_Admin {
                 'low_stock_products' => 0,
                 'avg_restock_time' => 0
             );
-            
-            // Log the error for debugging
-            error_log('Dashboard data loading error: ' . $e->getMessage());
         }
         
         ?>

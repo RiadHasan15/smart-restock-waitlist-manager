@@ -1124,12 +1124,8 @@ class SmartRestockWaitlistManager {
         }
         
         try {
-            error_log('Dashboard AJAX called successfully');
-            error_log('POST data: ' . print_r($_POST, true));
-            
             // Check if Analytics class exists
             if (!class_exists('SRWM_Analytics')) {
-                error_log('SRWM_Analytics class not found');
                 wp_die(json_encode(array('success' => false, 'message' => __('Analytics class not available.', 'smart-restock-waitlist'))));
             }
             
@@ -1171,13 +1167,9 @@ class SmartRestockWaitlistManager {
             // Combine all data
             $data = array_merge($dashboard_data, $chart_data);
             
-            error_log('Dashboard data: ' . print_r($data, true));
-            error_log('Sending response...');
-            
             wp_die(json_encode(array('success' => true, 'data' => $data)));
         } catch (Exception $e) {
-            error_log('Dashboard AJAX error: ' . $e->getMessage());
-            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data: ' . $e->getMessage(), 'smart-restock-waitlist'))));
+            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data.', 'smart-restock-waitlist'))));
         }
     }
     

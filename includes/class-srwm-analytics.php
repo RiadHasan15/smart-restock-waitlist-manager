@@ -66,7 +66,6 @@ class SRWM_Analytics {
             );
             
         } catch (Exception $e) {
-            error_log('Analytics get_dashboard_data error: ' . $e->getMessage());
             return array(
                 'total_waitlist_customers' => 0,
                 'today_waitlists' => 0,
@@ -113,7 +112,6 @@ class SRWM_Analytics {
             return $data;
             
         } catch (Exception $e) {
-            error_log('Analytics get_waitlist_growth_trend error: ' . $e->getMessage());
             return array();
         }
     }
@@ -162,7 +160,6 @@ class SRWM_Analytics {
             return $data;
             
         } catch (Exception $e) {
-            error_log('Analytics get_restock_method_breakdown error: ' . $e->getMessage());
             return array(
                 array('method' => 'manual', 'count' => 0),
                 array('method' => 'csv_upload', 'count' => 0),
@@ -188,7 +185,6 @@ class SRWM_Analytics {
             return intval($count);
             
         } catch (Exception $e) {
-            error_log('Analytics get_total_waitlist_customers error: ' . $e->getMessage());
             return 0;
         }
     }
@@ -214,7 +210,6 @@ class SRWM_Analytics {
             return intval($count);
             
         } catch (Exception $e) {
-            error_log('Analytics get_today_waitlist_additions error: ' . $e->getMessage());
             return 0;
         }
     }
@@ -240,7 +235,6 @@ class SRWM_Analytics {
             return intval($count);
             
         } catch (Exception $e) {
-            error_log('Analytics get_today_restocks error: ' . $e->getMessage());
             return 0;
         }
     }
@@ -291,7 +285,6 @@ class SRWM_Analytics {
             return count($low_stock_products);
             
         } catch (Exception $e) {
-            error_log('Analytics get_low_stock_products error: ' . $e->getMessage());
             return 0;
         }
     }
@@ -322,7 +315,6 @@ class SRWM_Analytics {
             return round(floatval($avg_time), 1);
             
         } catch (Exception $e) {
-            error_log('Analytics get_average_restock_time error: ' . $e->getMessage());
             return 0;
         }
     }
@@ -344,7 +336,6 @@ class SRWM_Analytics {
             return $result > 0;
             
         } catch (Exception $e) {
-            error_log('Analytics table_exists error: ' . $e->getMessage());
             return false;
         }
     }
