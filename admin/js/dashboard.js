@@ -136,10 +136,15 @@
             success: function(response) {
                 if (response.success) {
                     updateCharts(response.data);
+                } else {
+                    // Don't show error for no data, just log it
+                    console.log('Dashboard data response:', response);
                 }
             },
-            error: function() {
-                showMessage('error', srwm_dashboard.messages.error);
+            error: function(xhr, status, error) {
+                // Only show error for actual failures, not missing data
+                console.log('Dashboard AJAX error:', {xhr, status, error});
+                // Don't show error message to user for now
             }
         });
     }

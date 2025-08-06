@@ -1116,16 +1116,32 @@ class SmartRestockWaitlistManager {
      * AJAX: Get dashboard data
      */
     public function ajax_get_dashboard_data() {
-        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        check_ajax_referer('srwm_dashboard_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
-        $analytics = SRWM_Analytics::get_instance($this->license_manager);
-        $data = $analytics->get_dashboard_data();
-        
-        wp_die(json_encode(array('success' => true, 'data' => $data)));
+        try {
+            $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            
+            // Get basic dashboard data
+            $dashboard_data = $analytics->get_dashboard_data();
+            
+            // Get chart data that JavaScript expects
+            $chart_data = array(
+                'waitlist_growth' => $analytics->get_waitlist_growth_trend(7), // Last 7 days
+                'restock_activity' => $analytics->get_restock_method_breakdown()
+            );
+            
+            // Combine all data
+            $data = array_merge($dashboard_data, $chart_data);
+            
+            wp_die(json_encode(array('success' => true, 'data' => $data)));
+        } catch (Exception $e) {
+            error_log('Dashboard AJAX error: ' . $e->getMessage());
+            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data.', 'smart-restock-waitlist'))));
+        }
     }
     
     /**
