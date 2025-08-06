@@ -567,12 +567,20 @@
     function initInteractiveTables() {
         console.log('SRWM Dashboard: Initializing interactive tables...');
         
-        // Initialize waitlist table
-        initTableSorting('#srwm-waitlist-table');
-        initTableFiltering('#srwm-waitlist-table');
-        initTableSearch('#srwm-waitlist-table');
-        
-        console.log('SRWM Dashboard: Interactive tables initialized');
+        // Check if table exists
+        const $table = $('#srwm-waitlist-table');
+        if ($table.length) {
+            console.log('SRWM Dashboard: Found waitlist table, initializing features...');
+            
+            // Initialize waitlist table
+            initTableSorting('#srwm-waitlist-table');
+            initTableFiltering('#srwm-waitlist-table');
+            initTableSearch('#srwm-waitlist-table');
+            
+            console.log('SRWM Dashboard: Interactive tables initialized successfully');
+        } else {
+            console.log('SRWM Dashboard: Waitlist table not found');
+        }
     }
     
     /**
