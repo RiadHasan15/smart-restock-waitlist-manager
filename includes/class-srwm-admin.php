@@ -1327,28 +1327,7 @@ class SRWM_Admin {
             50% { opacity: 0.5; }
         }
         
-        /* Floating Action Button */
-        .srwm-fab {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .srwm-fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6);
-        }
+        /* Floating Action Button temporarily disabled */
         
         /* Smart Notifications */
         .srwm-notification-badge {
