@@ -356,6 +356,29 @@
                 $(this).hide();
             }
         });
+
+        // Table action buttons
+        $(document).on('click', '.view-waitlist', function() {
+            const productId = $(this).data('product-id');
+            if (productId && productId > 0) {
+                // Show waitlist details for this product
+                showMessage('info', 'Loading waitlist details...');
+                // TODO: Implement waitlist details modal
+            } else {
+                showMessage('error', 'Invalid product ID');
+            }
+        });
+
+        $(document).on('click', '.restock-product', function() {
+            const productId = $(this).data('product-id');
+            if (productId && productId > 0) {
+                // Show restock form for this product
+                showMessage('info', 'Opening restock form...');
+                // TODO: Implement restock form modal
+            } else {
+                showMessage('error', 'Invalid product ID');
+            }
+        });
     }
 
     /**
