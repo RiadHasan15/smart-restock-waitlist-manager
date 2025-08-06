@@ -919,7 +919,15 @@ class SRWM_Analytics {
         
         // Check if table exists
         if (!$this->table_exists($waitlist_table)) {
-            return $this->get_demo_waitlist_customers_details();
+            return array(
+                'summary' => array(
+                    'total_customers' => 0,
+                    'active_waitlists' => 0,
+                    'avg_wait_time' => 'N/A',
+                    'conversion_rate' => '0%'
+                ),
+                'recent_activity' => array()
+            );
         }
         
         // Get total customers
@@ -968,7 +976,15 @@ class SRWM_Analytics {
         $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
         
         if (!$this->table_exists($waitlist_table)) {
-            return $this->get_demo_waitlist_products_details();
+            return array(
+                'summary' => array(
+                    'total_products' => 0,
+                    'high_demand' => 0,
+                    'out_of_stock' => 0,
+                    'low_stock' => 0
+                ),
+                'top_products' => array()
+            );
         }
         
         // Get product statistics with product names
@@ -1012,7 +1028,13 @@ class SRWM_Analytics {
         $restock_logs_table = $wpdb->prefix . 'srwm_restock_logs';
         
         if (!$this->table_exists($restock_logs_table)) {
-            return $this->get_demo_restock_time_details();
+            return array(
+                'summary' => array(
+                    'total_restocks' => 0,
+                    'methods' => array()
+                ),
+                'recent_activity' => array()
+            );
         }
         
         // Get restock statistics with product names
@@ -1053,7 +1075,13 @@ class SRWM_Analytics {
         $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
         
         if (!$this->table_exists($waitlist_table)) {
-            return $this->get_demo_today_waitlists_details();
+            return array(
+                'summary' => array(
+                    'new_today' => 0,
+                    'hourly_breakdown' => array()
+                ),
+                'recent_activity' => array()
+            );
         }
         
         // Get today's waitlists with product names
@@ -1091,7 +1119,13 @@ class SRWM_Analytics {
         $restock_logs_table = $wpdb->prefix . 'srwm_restock_logs';
         
         if (!$this->table_exists($restock_logs_table)) {
-            return $this->get_demo_today_restocks_details();
+            return array(
+                'summary' => array(
+                    'restocks_today' => 0,
+                    'total_stock_added' => 0
+                ),
+                'recent_activity' => array()
+            );
         }
         
         // Get today's restocks with product names
@@ -1121,9 +1155,23 @@ class SRWM_Analytics {
     private function get_pending_notifications_details() {
         global $wpdb;
         
-        // For now, return demo data since notification system is not fully integrated
+        // Return real data - count actual pending notifications
+        $pending_count = 0;
+        $email_count = 0;
+        $sms_count = 0;
+        $whatsapp_count = 0;
+        
+        // For now, return zero since notification system is not fully integrated
         // In a real implementation, this would query notification queue tables
-        return $this->get_demo_pending_notifications_details();
+        return array(
+            'summary' => array(
+                'pending' => $pending_count,
+                'email' => $email_count,
+                'sms' => $sms_count,
+                'whatsapp' => $whatsapp_count
+            ),
+            'recent_activity' => array()
+        );
     }
     
     /**
@@ -1191,9 +1239,17 @@ class SRWM_Analytics {
             }
         }
         
-        // If no real data, return demo data
+        // If no real data, return empty data
         if (empty($low_stock_products)) {
-            return $this->get_demo_low_stock_products_details();
+            return array(
+                'summary' => array(
+                    'low_stock' => 0,
+                    'out_of_stock' => 0,
+                    'critical_level' => 0,
+                    'total_value' => '$0'
+                ),
+                'recent_activity' => array()
+            );
         }
         
         return array(
@@ -1207,114 +1263,7 @@ class SRWM_Analytics {
         );
     }
     
-    /**
-     * Demo data methods for when real data is not available
-     */
-    private function get_demo_waitlist_customers_details() {
-        return array(
-            'summary' => array(
-                'total_customers' => 1247,
-                'active_waitlists' => 892,
-                'avg_wait_time' => '3.2 days',
-                'conversion_rate' => '68%'
-            ),
-            'recent_activity' => array(
-                array('email' => 'john.doe@email.com', 'product_id' => 123, 'date_added' => '2024-01-15', 'notified' => 0),
-                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'date_added' => '2024-01-15', 'notified' => 1),
-                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'date_added' => '2024-01-14', 'notified' => 0)
-            )
-        );
-    }
-    
-    private function get_demo_waitlist_products_details() {
-        return array(
-            'summary' => array(
-                'total_products' => 24,
-                'high_demand' => 8,
-                'out_of_stock' => 3,
-                'low_stock' => 5
-            ),
-            'top_products' => array(
-                array('product_id' => 123, 'waitlist_count' => 156, 'active_count' => 89),
-                array('product_id' => 456, 'waitlist_count' => 89, 'active_count' => 45),
-                array('product_id' => 789, 'waitlist_count' => 67, 'active_count' => 23)
-            )
-        );
-    }
-    
-    private function get_demo_restock_time_details() {
-        return array(
-            'summary' => array(
-                'total_restocks' => 156,
-                'methods' => array('Manual' => 89, 'CSV Upload' => 45, 'Quick Restock' => 22)
-            ),
-            'recent_activity' => array(
-                array('product_id' => 123, 'method' => 'Manual', 'timestamp' => '2024-01-15 16:00:00', 'quantity' => 250),
-                array('product_id' => 456, 'method' => 'CSV Upload', 'timestamp' => '2024-01-14 15:30:00', 'quantity' => 180),
-                array('product_id' => 789, 'method' => 'Quick Restock', 'timestamp' => '2024-01-13 14:15:00', 'quantity' => 95)
-            )
-        );
-    }
-    
-    private function get_demo_today_waitlists_details() {
-        return array(
-            'summary' => array(
-                'new_today' => 23,
-                'hourly_breakdown' => array('14' => 8, '15' => 6, '16' => 9)
-            ),
-            'recent_activity' => array(
-                array('email' => 'john.doe@email.com', 'product_id' => 123, 'date_added' => '2024-01-15 14:30:00'),
-                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'date_added' => '2024-01-15 14:15:00'),
-                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'date_added' => '2024-01-15 13:45:00')
-            )
-        );
-    }
-    
-    private function get_demo_today_restocks_details() {
-        return array(
-            'summary' => array(
-                'restocks_today' => 8,
-                'total_stock_added' => 1247
-            ),
-            'recent_activity' => array(
-                array('product_id' => 123, 'method' => 'Manual', 'timestamp' => '2024-01-15 16:00:00', 'quantity' => 250),
-                array('product_id' => 456, 'method' => 'CSV Upload', 'timestamp' => '2024-01-15 15:30:00', 'quantity' => 180),
-                array('product_id' => 789, 'method' => 'Quick Restock', 'timestamp' => '2024-01-15 14:15:00', 'quantity' => 95)
-            )
-        );
-    }
-    
-    private function get_demo_pending_notifications_details() {
-        return array(
-            'summary' => array(
-                'pending' => 12,
-                'email' => 8,
-                'sms' => 3,
-                'whatsapp' => 1
-            ),
-            'recent_activity' => array(
-                array('email' => 'john.doe@email.com', 'product_id' => 123, 'type' => 'Email', 'status' => 'Pending'),
-                array('email' => 'jane.smith@email.com', 'product_id' => 456, 'type' => 'SMS', 'status' => 'Pending'),
-                array('email' => 'mike.wilson@email.com', 'product_id' => 789, 'type' => 'WhatsApp', 'status' => 'Pending')
-            )
-        );
-    }
-    
-    private function get_demo_low_stock_products_details() {
-        return array(
-            'summary' => array(
-                'low_stock' => 7,
-                'out_of_stock' => 3,
-                'critical_level' => 2,
-                'total_value' => '$12,450'
-            ),
-            'recent_activity' => array(
-                array('product_id' => 123, 'current_stock' => 0, 'threshold' => 10, 'status' => 'Out of Stock'),
-                array('product_id' => 456, 'current_stock' => 3, 'threshold' => 15, 'status' => 'Low Stock'),
-                array('product_id' => 789, 'current_stock' => 1, 'threshold' => 20, 'status' => 'Critical')
-            )
-        );
-    }
+
     
     /**
      * Export analytics data to CSV

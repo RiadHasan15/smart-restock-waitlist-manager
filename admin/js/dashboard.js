@@ -313,16 +313,7 @@
             handleStatCardClick(statType);
         });
         
-        // Demo button interactions
-        $(document).on('click', '.view-waitlist[data-product-id^="demo"]', function() {
-            const productId = $(this).data('product-id');
-            showMessage('info', 'Demo: View waitlist for ' + productId + ' (This would show actual waitlist data)');
-        });
-        
-        $(document).on('click', '.restock-product[data-product-id^="demo"]', function() {
-            const productId = $(this).data('product-id');
-            showMessage('info', 'Demo: Restock product ' + productId + ' (This would trigger restock process)');
-        });
+
 
         // Activity item interactions
         $(document).on('click', '.srwm-activity-item', function() {
