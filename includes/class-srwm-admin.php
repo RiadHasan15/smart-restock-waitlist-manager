@@ -538,7 +538,7 @@ class SRWM_Admin {
                                     <?php _e('Restock Activity Breakdown', 'smart-restock-waitlist'); ?>
                                 </h3>
                                 <div class="srwm-chart-actions">
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary">
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary srwm-btn-refresh-chart">
                                         <span class="dashicons dashicons-update"></span>
                                         <?php _e('Refresh', 'smart-restock-waitlist'); ?>
                                     </button>
@@ -1462,6 +1462,27 @@ class SRWM_Admin {
         .srwm-status-out {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
             color: #dc2626;
+        }
+        
+        /* Chart animations */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .srwm-btn-refresh-chart:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Chart empty state */
+        .srwm-chart-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #94a3b8;
+            font-style: italic;
         }
             font-size: 16px;
             font-weight: 600;
