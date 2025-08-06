@@ -239,20 +239,7 @@ class SRWM_Admin {
                 true
             );
             
-            // Add inline script to ensure proper initialization
-            wp_add_inline_script('srwm-dashboard', '
-                console.log("Dashboard script loaded and ready");
-                if (typeof srwm_dashboard !== "undefined") {
-                    console.log("srwm_dashboard variables available");
-                } else {
-                    console.error("srwm_dashboard variables NOT available");
-                }
-                if (typeof Chart !== "undefined") {
-                    console.log("Chart.js available");
-                } else {
-                    console.error("Chart.js NOT available");
-                }
-            ');
+
             
             wp_localize_script('srwm-dashboard', 'srwm_dashboard', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
@@ -557,21 +544,9 @@ class SRWM_Admin {
                                         <span class="dashicons dashicons-update"></span>
                                         <?php _e('Refresh', 'smart-restock-waitlist'); ?>
                                     </button>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testAjax()">
-                                        <span class="dashicons dashicons-admin-tools"></span>
-                                        Test AJAX
-                                    </button>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testChart()">
-                                        <span class="dashicons dashicons-chart-line"></span>
-                                        Test Chart
-                                    </button>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testUpdateCharts()">
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary srwm-btn-refresh-chart">
                                         <span class="dashicons dashicons-update"></span>
-                                        Test Update
-                                    </button>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testAjaxCallback()">
-                                        <span class="dashicons dashicons-admin-tools"></span>
-                                        Test Callback
+                                        <?php _e('Refresh', 'smart-restock-waitlist'); ?>
                                     </button>
                                 </div>
                             </div>
