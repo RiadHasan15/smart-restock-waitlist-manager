@@ -569,6 +569,10 @@ class SRWM_Admin {
                                         <span class="dashicons dashicons-update"></span>
                                         Test Update
                                     </button>
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testAjaxCallback()">
+                                        <span class="dashicons dashicons-admin-tools"></span>
+                                        Test Callback
+                                    </button>
                                 </div>
                             </div>
                             <div class="srwm-chart-container">

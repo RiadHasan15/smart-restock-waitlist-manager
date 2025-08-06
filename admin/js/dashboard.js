@@ -165,6 +165,20 @@
             },
             success: function(response) {
                 console.log('Dashboard AJAX success:', response);
+                console.log('Response type:', typeof response);
+                
+                // Ensure response is an object
+                if (typeof response === 'string') {
+                    try {
+                        response = JSON.parse(response);
+                        console.log('Parsed response:', response);
+                    } catch (e) {
+                        console.error('Failed to parse response:', e);
+                        showMessage('error', 'Invalid response format');
+                        return;
+                    }
+                }
+                
                 if (response.success) {
                     console.log('Calling updateCharts with data:', response.data);
                     updateCharts(response.data);
@@ -687,6 +701,33 @@
             ]
         };
         updateCharts(testData);
+    };
+    
+    // Test AJAX success callback directly
+    window.testAjaxCallback = function() {
+        console.log('Testing AJAX success callback directly...');
+        const mockResponse = {
+            success: true,
+            data: {
+                waitlist_growth: [
+                    {date: '2024-01-15', count: 5},
+                    {date: '2024-01-16', count: 8},
+                    {date: '2024-01-17', count: 3}
+                ],
+                restock_activity: [
+                    {method: 'manual', count: 10},
+                    {method: 'csv_upload', count: 5},
+                    {method: 'quick_restock', count: 3}
+                ]
+            }
+        };
+        
+        // Simulate the success callback
+        console.log('Mock response:', mockResponse);
+        if (mockResponse.success) {
+            console.log('Calling updateCharts with mock data:', mockResponse.data);
+            updateCharts(mockResponse.data);
+        }
     };
 
 })(jQuery);
