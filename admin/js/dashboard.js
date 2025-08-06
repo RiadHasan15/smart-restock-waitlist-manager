@@ -14,6 +14,7 @@
      * Initialize dashboard functionality
      */
     $(document).ready(function() {
+        console.log('Dashboard JS loaded, srwm_dashboard:', typeof srwm_dashboard !== 'undefined' ? 'defined' : 'undefined');
         initDashboard();
     });
 
@@ -21,11 +22,15 @@
      * Initialize dashboard
      */
     function initDashboard() {
+        console.log('Initializing dashboard...');
+        
         // Only initialize if we're on the dashboard page
         if (!$('.srwm-dashboard').length) {
+            console.log('Dashboard container not found');
             return;
         }
         
+        console.log('Dashboard container found, initializing components...');
         initCharts();
         initEventHandlers();
         initRealtimeUpdates();
@@ -36,8 +41,11 @@
      * Initialize charts
      */
     function initCharts() {
+        console.log('Initializing charts...');
+        
         // Waitlist Growth Chart
         const waitlistCtx = document.getElementById('waitlistChart');
+        console.log('Waitlist chart canvas:', waitlistCtx ? 'found' : 'not found');
         if (waitlistCtx) {
             waitlistChart = new Chart(waitlistCtx, {
                 type: 'line',
@@ -80,6 +88,7 @@
 
         // Restock Activity Chart
         const restockCtx = document.getElementById('restockChart');
+        console.log('Restock chart canvas:', restockCtx ? 'found' : 'not found');
         if (restockCtx) {
             restockChart = new Chart(restockCtx, {
                 type: 'bar',
@@ -119,6 +128,7 @@
         }
 
         // Load initial chart data
+        console.log('Loading initial chart data...');
         loadChartData();
     }
 
@@ -126,6 +136,17 @@
      * Load chart data via AJAX
      */
     function loadChartData(days = 7) {
+        // Check if srwm_dashboard is available
+        if (typeof srwm_dashboard === 'undefined') {
+            console.error('srwm_dashboard variables not available');
+            showMessage('error', 'Dashboard configuration not loaded');
+            return $.Deferred().reject('srwm_dashboard not available');
+        }
+        
+        console.log('Making AJAX request to:', srwm_dashboard.ajax_url);
+        console.log('Action:', 'srwm_test_dashboard');
+        console.log('Nonce:', srwm_dashboard.nonce);
+        
         return $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
@@ -555,5 +576,31 @@
     // Global functions for external use
     window.srwm_init_charts = initCharts;
     window.srwm_init_realtime_updates = initRealtimeUpdates;
+    
+    // Test function for debugging
+    window.testAjax = function() {
+        console.log('Testing AJAX manually...');
+        if (typeof srwm_dashboard === 'undefined') {
+            alert('srwm_dashboard not available');
+            return;
+        }
+        
+        $.ajax({
+            url: srwm_dashboard.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'srwm_test_dashboard',
+                nonce: srwm_dashboard.nonce
+            },
+            success: function(response) {
+                console.log('Manual AJAX test success:', response);
+                alert('AJAX Test Success: ' + JSON.stringify(response));
+            },
+            error: function(xhr, status, error) {
+                console.log('Manual AJAX test error:', {xhr, status, error});
+                alert('AJAX Test Error: ' + error + '\nStatus: ' + status);
+            }
+        });
+    };
 
 })(jQuery);
