@@ -213,7 +213,6 @@
                 waitlistChart.update();
                 console.log('Waitlist chart updated');
             } else {
-            } else {
                 // Show empty state with last 7 days
                 const labels = [];
                 const values = [];
@@ -250,7 +249,6 @@
                 restockChart.data.datasets[0].data = values;
                 restockChart.update();
                 console.log('Restock chart updated');
-            } else {
             } else {
                 // Show empty state
                 restockChart.data.labels = ['Manual', 'CSV Upload', 'Quick Restock'];
