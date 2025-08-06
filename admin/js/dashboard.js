@@ -158,16 +158,20 @@
         return $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
+            timeout: 10000, // 10 second timeout
             data: {
                 action: 'srwm_get_dashboard_data', // Use real dashboard endpoint
                 nonce: srwm_dashboard.nonce,
                 days: days
             },
             success: function(response) {
+                console.log('AJAX success response received:', response);
+                
                 // Ensure response is an object
                 if (typeof response === 'string') {
                     try {
                         response = JSON.parse(response);
+                        console.log('Parsed response:', response);
                     } catch (e) {
                         console.error('Failed to parse response:', e);
                         showMessage('error', 'Invalid response format');
@@ -176,15 +180,24 @@
                 }
                 
                 if (response.success) {
+                    console.log('Updating charts with data:', response.data);
                     updateCharts(response.data);
                 } else {
+                    console.error('AJAX returned error:', response.message);
                     showMessage('error', response.message || 'Failed to load chart data');
                 }
             },
             error: function(xhr, status, error) {
-                console.log('Dashboard AJAX error:', {xhr, status, error});
-                console.log('Response text:', xhr.responseText);
-                showMessage('error', 'Failed to load chart data. Please try again.');
+                console.error('Dashboard AJAX error:', {xhr, status, error});
+                console.error('Response text:', xhr.responseText);
+                console.error('Status:', status);
+                console.error('Error:', error);
+                
+                if (status === 'timeout') {
+                    showMessage('error', 'Request timed out. Please try again.');
+                } else {
+                    showMessage('error', 'Failed to load chart data. Please try again.');
+                }
             }
         });
     }
