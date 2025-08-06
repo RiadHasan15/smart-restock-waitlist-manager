@@ -251,7 +251,7 @@
         });
 
         $('#srwm-manage-suppliers').on('click', function() {
-            window.location.href = 'admin.php?page=smart-restock-waitlist-settings';
+            window.location.href = 'admin.php?page=smart-restock-waitlist-suppliers';
         });
 
         $('#srwm-pro-features').on('click', function() {

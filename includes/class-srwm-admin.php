@@ -63,14 +63,17 @@ class SRWM_Admin {
             array($this, 'render_analytics_page')
         );
         
-        add_submenu_page(
-            'smart-restock-waitlist',
-            __('Supplier Management', 'smart-restock-waitlist'),
-            __('Supplier Management', 'smart-restock-waitlist'),
-            'manage_woocommerce',
-            'smart-restock-waitlist-suppliers',
-            array($this, 'render_suppliers_page')
-        );
+        // Pro features menu items - always check current license status
+        if ($this->license_manager->is_pro_active()) {
+            add_submenu_page(
+                'smart-restock-waitlist',
+                __('Supplier Management', 'smart-restock-waitlist'),
+                __('Supplier Management', 'smart-restock-waitlist'),
+                'manage_woocommerce',
+                'smart-restock-waitlist-suppliers',
+                array($this, 'render_suppliers_page')
+            );
+        }
         
         // Pro features menu items - always check current license status
         if ($this->license_manager->is_pro_active()) {
@@ -459,6 +462,7 @@ class SRWM_Admin {
                             </div>
                         </div>
                         
+                        <?php if ($this->license_manager->is_pro_active()): ?>
                         <div class="srwm-stat-card">
                             <div class="srwm-stat-header">
                                 <div class="srwm-stat-icon">
@@ -478,6 +482,27 @@ class SRWM_Admin {
                                 </div>
                             </div>
                         </div>
+                        <?php else: ?>
+                        <div class="srwm-stat-card srwm-pro-locked">
+                            <div class="srwm-stat-header">
+                                <div class="srwm-stat-icon">
+                                    <span class="dashicons dashicons-lock"></span>
+                                </div>
+                                <div class="srwm-stat-trend">
+                                    <span class="srwm-trend-indicator srwm-trend-up">
+                                        <span class="dashicons dashicons-star-filled"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="srwm-stat-content">
+                                <h3 class="srwm-stat-number"><?php _e('Pro', 'smart-restock-waitlist'); ?></h3>
+                                <p class="srwm-stat-label"><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></p>
+                                <div class="srwm-stat-meta">
+                                    <span class="srwm-stat-period"><?php _e('Upgrade required', 'smart-restock-waitlist'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                         
                         <div class="srwm-stat-card">
                             <div class="srwm-stat-header">
@@ -581,6 +606,7 @@ class SRWM_Admin {
                             </div>
                         </div>
                         
+                        <?php if ($this->license_manager->is_pro_active()): ?>
                         <div class="srwm-action-card">
                             <div class="srwm-action-icon">
                                 <span class="dashicons dashicons-businessman"></span>
@@ -595,6 +621,22 @@ class SRWM_Admin {
                                 </button>
                             </div>
                         </div>
+                        <?php else: ?>
+                        <div class="srwm-action-card srwm-pro-locked">
+                            <div class="srwm-action-icon">
+                                <span class="dashicons dashicons-lock"></span>
+                            </div>
+                            <div class="srwm-action-content">
+                                <h3><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Advanced supplier management with categories, analytics, and bulk operations', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            <div class="srwm-action-footer">
+                                <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="srwm-btn srwm-btn-secondary">
+                                    <?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?>
+                                </a>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                         
                         <div class="srwm-action-card">
                             <div class="srwm-action-icon">
@@ -706,7 +748,7 @@ class SRWM_Admin {
                     <?php endif; ?>
                 </div>
                 
-                <?php if (!empty($supplier_products)): ?>
+                <?php if ($this->license_manager->is_pro_active() && !empty($supplier_products)): ?>
                 <div class="srwm-pro-card">
                     <div class="srwm-pro-card-header">
                         <h2><?php _e('Products with Suppliers', 'smart-restock-waitlist'); ?></h2>
@@ -761,26 +803,58 @@ class SRWM_Admin {
                                         </td>
                                         <td>
                                             <div class="srwm-action-buttons">
-                                                <?php if ($this->license_manager->is_pro_active()): ?>
                                                 <button class="button button-small generate-restock-link" data-product-id="<?php echo $product_data['product_id']; ?>">
                                                     <span class="dashicons dashicons-admin-links"></span>
                                                     <?php _e('Restock Link', 'smart-restock-waitlist'); ?>
                                                 </button>
-                                                <?php endif; ?>
                                                 <button class="button button-primary button-small restock-product" data-product-id="<?php echo $product_data['product_id']; ?>">
                                                     <span class="dashicons dashicons-update"></span>
                                                     <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                                 </button>
-                                                                                    </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                     <?php endif; ?>
                 </div>
                 </div>
+                <?php elseif (!$this->license_manager->is_pro_active()): ?>
+                <div class="srwm-pro-card">
+                    <div class="srwm-pro-card-header">
+                        <h2><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h2>
+                        <div class="srwm-pro-actions">
+                            <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="button button-primary">
+                                <span class="dashicons dashicons-star-filled"></span>
+                                <?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="srwm-pro-card-content">
+                        <div class="srwm-pro-feature-preview">
+                            <div class="srwm-pro-feature-icon">
+                                <span class="dashicons dashicons-businessman"></span>
+                            </div>
+                            <div class="srwm-pro-feature-content">
+                                <h3><?php _e('Advanced Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Upgrade to Pro to unlock advanced supplier management features:', 'smart-restock-waitlist'); ?></p>
+                                <ul>
+                                    <li><?php _e('• Supplier profiles with company information', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('• Supplier categories and trust scores', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('• Bulk CSV upload operations', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('• Secure restock link generation', 'smart-restock-waitlist'); ?></li>
+                                    <li><?php _e('• Supplier analytics and performance tracking', 'smart-restock-waitlist'); ?></li>
+                                </ul>
+                                <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="srwm-btn srwm-btn-primary">
+                                    <?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -836,6 +910,66 @@ class SRWM_Admin {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
             min-height: 100vh;
             padding: 0;
+        }
+        
+        /* Pro Locked Elements */
+        .srwm-pro-locked {
+            opacity: 0.7;
+            position: relative;
+        }
+        
+        .srwm-pro-locked::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        
+        .srwm-pro-locked .srwm-stat-icon .dashicons,
+        .srwm-pro-locked .srwm-action-icon .dashicons {
+            color: #ff6b35;
+        }
+        
+        .srwm-pro-feature-preview {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        
+        .srwm-pro-feature-icon {
+            font-size: 48px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .srwm-pro-feature-content h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .srwm-pro-feature-content p {
+            margin: 0 0 15px 0;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .srwm-pro-feature-content ul {
+            margin: 0 0 20px 0;
+            padding-left: 20px;
+        }
+        
+        .srwm-pro-feature-content li {
+            margin-bottom: 5px;
+            opacity: 0.9;
         }
         
         /* Enhanced Header Section */
@@ -4732,6 +4866,7 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     
+                    <?php if ($this->license_manager->is_pro_active()): ?>
                     <tr>
                         <th scope="row"><?php _e('Supplier Notifications', 'smart-restock-waitlist'); ?></th>
                         <td>
@@ -4742,6 +4877,7 @@ class SRWM_Admin {
                             </label>
                         </td>
                     </tr>
+                    <?php endif; ?>
                     
                     <tr>
                         <th scope="row"><?php _e('Low Stock Threshold', 'smart-restock-waitlist'); ?></th>
@@ -4873,6 +5009,7 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     
+                    <?php if ($this->license_manager->is_pro_active()): ?>
                     <tr>
                         <th scope="row"><?php _e('Supplier Notification Email', 'smart-restock-waitlist'); ?></th>
                         <td>
@@ -4881,12 +5018,11 @@ class SRWM_Admin {
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {supplier_name}, {product_name}, {sku}, {current_stock}, {waitlist_count}, {site_name}', 'smart-restock-waitlist'); ?>
-                                <?php if ($this->license_manager->is_pro_active()): ?>
-                                    <br><?php _e('Pro placeholders: {restock_link}, {po_number}', 'smart-restock-waitlist'); ?>
-                                <?php endif; ?>
+                                <br><?php _e('Pro placeholders: {restock_link}, {po_number}', 'smart-restock-waitlist'); ?>
                             </p>
                         </td>
                     </tr>
+                    <?php endif; ?>
                 </table>
                 
                 <?php submit_button(); ?>
@@ -9152,6 +9288,14 @@ class SRWM_Admin {
             <h1><?php _e('Pro Features', 'smart-restock-waitlist'); ?></h1>
             
             <div class="srwm-pro-features">
+                <div class="srwm-feature-card">
+                    <h3><?php _e('Advanced Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                    <p><?php _e('Complete supplier relationship management with profiles, categories, and analytics.', 'smart-restock-waitlist'); ?></p>
+                    <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-suppliers'); ?>" class="button button-primary">
+                        <?php _e('Manage Suppliers', 'smart-restock-waitlist'); ?>
+                    </a>
+                </div>
+                
                 <div class="srwm-feature-card">
                     <h3><?php _e('One-Click Supplier Restock', 'smart-restock-waitlist'); ?></h3>
                     <p><?php _e('Generate secure restock links for suppliers to update stock without logging in.', 'smart-restock-waitlist'); ?></p>
