@@ -5777,6 +5777,58 @@ class SRWM_Admin {
             border-radius: 0;
             border: none;
             background: #f8fafc;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .srwm-pagination-btn,
+        .srwm-page-number {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .srwm-pagination-btn:hover,
+        .srwm-page-number:hover {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+            color: #1f2937;
+        }
+        
+        .srwm-page-number.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .srwm-page-numbers {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .srwm-page-ellipsis {
+            padding: 8px 4px;
+            color: #6b7280;
+        }
+        
+        .srwm-page-info {
+            color: #6b7280;
+            font-size: 14px;
+            margin-left: 16px;
         }
         
         /* Selected Products Display */
@@ -7100,6 +7152,15 @@ class SRWM_Admin {
                 clearProductSelection();
             });
             
+            // Pagination event delegation for upload links
+            $(document).on('click', '.srwm-pagination-btn, .srwm-page-number', function() {
+                const page = $(this).data('page');
+                if (page) {
+                    console.log('Pagination clicked, loading page:', page);
+                    loadUploadLinks(page);
+                }
+            });
+            
             // Quick restock modal events
             $('#cancel-quick-restock').on('click', function() {
                 closeAllModals();
@@ -7537,38 +7598,22 @@ class SRWM_Admin {
                 });
                 
                 // Add pagination row if needed
-                console.log('Pagination data:', pagination);
                 if (pagination && pagination.total_count > 0) {
                     html += generateUploadLinksPaginationControls(pagination);
-                } else {
-                    console.log('No pagination data or no links found');
                 }
                 
-                // Force pagination to show for testing (remove this later)
-                if (links.length > 0 && (!pagination || pagination.total_count === 0)) {
-                    console.log('Forcing pagination display for testing');
-                    const testPagination = {
-                        current_page: 1,
-                        per_page: 10,
-                        total_count: links.length,
-                        total_pages: 1,
-                        has_next: false,
-                        has_prev: false
-                    };
-                    html += generateUploadLinksPaginationControls(testPagination);
-                }
+
                 
                 $('#upload-links-tbody').html(html);
             }
             
             function generateUploadLinksPaginationControls(pagination) {
-                console.log('Generating pagination controls for:', pagination);
                 let html = '<tr><td colspan="6" class="srwm-pagination-cell">';
                 html += '<div class="srwm-pagination">';
                 
                 // Previous button
                 if (pagination.has_prev) {
-                    html += `<button class="srwm-pagination-btn" onclick="loadUploadLinks(${pagination.current_page - 1})">
+                    html += `<button class="srwm-pagination-btn" data-page="${pagination.current_page - 1}">
                                 <i class="fas fa-chevron-left"></i> Previous
                             </button>`;
                 }
@@ -7580,7 +7625,7 @@ class SRWM_Admin {
                         html += `<span class="srwm-page-number active">${i}</span>`;
                     } else if (i === 1 || i === pagination.total_pages || 
                               (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
-                        html += `<button class="srwm-page-number" onclick="loadUploadLinks(${i})">${i}</button>`;
+                        html += `<button class="srwm-page-number" data-page="${i}">${i}</button>`;
                     } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
                         html += '<span class="srwm-page-ellipsis">...</span>';
                     }
@@ -7589,7 +7634,7 @@ class SRWM_Admin {
                 
                 // Next button
                 if (pagination.has_next) {
-                    html += `<button class="srwm-pagination-btn" onclick="loadUploadLinks(${pagination.current_page + 1})">
+                    html += `<button class="srwm-pagination-btn" data-page="${pagination.current_page + 1}">
                                 Next <i class="fas fa-chevron-right"></i>
                             </button>`;
                 }
@@ -7602,7 +7647,6 @@ class SRWM_Admin {
                         </div>`;
                 
                 html += '</div></td></tr>';
-                console.log('Generated pagination HTML:', html);
                 return html;
             }
             
