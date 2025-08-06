@@ -51,46 +51,117 @@ class SRWM_Waitlist {
         
         $waitlist_count = self::get_waitlist_count($product->get_id());
         $is_on_waitlist = self::is_customer_on_waitlist($product->get_id(), $this->get_current_customer_email());
+        $customer_position = $this->get_customer_queue_position($product->get_id(), $this->get_current_customer_email());
         
         ?>
         <div class="srwm-waitlist-container">
-            <h3><?php _e('Join the Waitlist', 'smart-restock-waitlist'); ?></h3>
+            <div class="srwm-waitlist-header">
+                <h3><?php _e('Join the Waitlist', 'smart-restock-waitlist'); ?></h3>
+                <div class="srwm-waitlist-subtitle">
+                    <?php _e('Be the first to know when this product is back in stock!', 'smart-restock-waitlist'); ?>
+                </div>
+            </div>
             
             <?php if ($is_on_waitlist): ?>
-                <div class="srwm-waitlist-message success">
-                    <?php _e('You are already on the waitlist for this product!', 'smart-restock-waitlist'); ?>
+                <div class="srwm-waitlist-status">
+                    <div class="srwm-status-card active">
+                        <div class="srwm-status-icon">
+                            <span class="dashicons dashicons-yes-alt"></span>
+                        </div>
+                        <div class="srwm-status-content">
+                            <h4><?php _e('You\'re on the waitlist!', 'smart-restock-waitlist'); ?></h4>
+                            <p><?php _e('We\'ll notify you as soon as this product is back in stock.', 'smart-restock-waitlist'); ?></p>
+                            
+                            <?php if ($customer_position > 0): ?>
+                            <div class="srwm-queue-position">
+                                <div class="srwm-queue-info">
+                                    <span class="srwm-queue-label"><?php _e('Your position:', 'smart-restock-waitlist'); ?></span>
+                                    <span class="srwm-queue-number">#<?php echo $customer_position; ?></span>
+                                </div>
+                                <div class="srwm-queue-progress">
+                                    <div class="srwm-progress-bar">
+                                        <div class="srwm-progress-fill" style="width: <?php echo min(100, ($customer_position / max(1, $waitlist_count)) * 100); ?>%"></div>
+                                    </div>
+                                    <small><?php printf(__('%d people ahead of you', 'smart-restock-waitlist'), $customer_position - 1); ?></small>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             <?php else: ?>
-                <form class="srwm-waitlist-form" method="post">
-                    <?php wp_nonce_field('srwm_waitlist_nonce', 'srwm_waitlist_nonce'); ?>
-                    <input type="hidden" name="product_id" value="<?php echo $product->get_id(); ?>">
+                <div class="srwm-waitlist-form-container">
+                    <?php if ($waitlist_count > 0): ?>
+                    <div class="srwm-waitlist-preview">
+                        <div class="srwm-preview-header">
+                            <div class="srwm-preview-icon">
+                                <span class="dashicons dashicons-groups"></span>
+                            </div>
+                            <div class="srwm-preview-content">
+                                <div class="srwm-preview-count">
+                                    <span class="srwm-count-number" data-count="<?php echo $waitlist_count; ?>">0</span>
+                                    <span class="srwm-count-label">
+                                        <?php printf(
+                                            _n('%s person is waiting', '%s people are waiting', $waitlist_count, 'smart-restock-waitlist'),
+                                            number_format($waitlist_count)
+                                        ); ?>
+                                    </span>
+                                </div>
+                                <div class="srwm-preview-subtitle">
+                                    <?php _e('Join them and get notified first!', 'smart-restock-waitlist'); ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-queue-visualization">
+                            <div class="srwm-queue-bar">
+                                <div class="srwm-queue-fill" style="width: <?php echo min(100, ($waitlist_count / 100) * 100); ?>%"></div>
+                            </div>
+                            <div class="srwm-queue-stats">
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">⚡</span>
+                                    <?php _e('Fast notifications', 'smart-restock-waitlist'); ?>
+                                </span>
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">🎯</span>
+                                    <?php _e('Priority access', 'smart-restock-waitlist'); ?>
+                                </span>
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">🔒</span>
+                                    <?php _e('Secure & private', 'smart-restock-waitlist'); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     
-                    <p>
-                        <label for="srwm_customer_name"><?php _e('Name:', 'smart-restock-waitlist'); ?></label>
-                        <input type="text" id="srwm_customer_name" name="name" 
-                               value="<?php echo esc_attr($this->get_current_customer_name()); ?>" required>
-                    </p>
-                    
-                    <p>
-                        <label for="srwm_customer_email"><?php _e('Email:', 'smart-restock-waitlist'); ?></label>
-                        <input type="email" id="srwm_customer_email" name="email" 
-                               value="<?php echo esc_attr($this->get_current_customer_email()); ?>" required>
-                    </p>
-                    
-                    <button type="submit" class="srwm-waitlist-submit button">
-                        <?php _e('Join Waitlist', 'smart-restock-waitlist'); ?>
-                    </button>
-                </form>
-            <?php endif; ?>
-            
-            <?php if ($waitlist_count > 0): ?>
-                <div class="srwm-waitlist-count">
-                    <small>
-                        <?php printf(
-                            _n('%d person is waiting for this product', '%d people are waiting for this product', $waitlist_count, 'smart-restock-waitlist'),
-                            $waitlist_count
-                        ); ?>
-                    </small>
+                    <form class="srwm-waitlist-form" method="post">
+                        <?php wp_nonce_field('srwm_waitlist_nonce', 'srwm_waitlist_nonce'); ?>
+                        <input type="hidden" name="product_id" value="<?php echo $product->get_id(); ?>">
+                        
+                        <div class="srwm-form-fields">
+                            <div class="srwm-field-group">
+                                <label for="srwm_customer_name"><?php _e('Your Name', 'smart-restock-waitlist'); ?></label>
+                                <input type="text" id="srwm_customer_name" name="name" 
+                                       value="<?php echo esc_attr($this->get_current_customer_name()); ?>" 
+                                       placeholder="<?php _e('Enter your full name', 'smart-restock-waitlist'); ?>" required>
+                            </div>
+                            
+                            <div class="srwm-field-group">
+                                <label for="srwm_customer_email"><?php _e('Email Address', 'smart-restock-waitlist'); ?></label>
+                                <input type="email" id="srwm_customer_email" name="email" 
+                                       value="<?php echo esc_attr($this->get_current_customer_email()); ?>" 
+                                       placeholder="<?php _e('your@email.com', 'smart-restock-waitlist'); ?>" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="srwm-waitlist-submit">
+                            <span class="srwm-submit-icon">
+                                <span class="dashicons dashicons-bell"></span>
+                            </span>
+                            <span class="srwm-submit-text"><?php _e('Join Waitlist', 'smart-restock-waitlist'); ?></span>
+                        </button>
+                    </form>
                 </div>
             <?php endif; ?>
             
@@ -425,5 +496,31 @@ class SRWM_Waitlist {
         );
         
         return $stats;
+    }
+
+    /**
+     * Get customer's position in the waitlist queue
+     */
+    private function get_customer_queue_position($product_id, $email) {
+        global $wpdb;
+        
+        if (!$email) {
+            return 0;
+        }
+        
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        $position = $wpdb->get_var($wpdb->prepare(
+            "SELECT position FROM (
+                SELECT customer_email, ROW_NUMBER() OVER (ORDER BY date_added ASC) as position 
+                FROM $table 
+                WHERE product_id = %d
+            ) ranked 
+            WHERE customer_email = %s",
+            $product_id,
+            $email
+        ));
+        
+        return intval($position);
     }
 }

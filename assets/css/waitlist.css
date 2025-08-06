@@ -1,257 +1,468 @@
-/**
- * Smart Restock & Waitlist Manager - Frontend Styles
- */
+/* Smart Restock & Waitlist Manager - Enhanced Visual Waitlist Styles */
 
-.srwm-waitlist-form {
+.srwm-waitlist-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 24px;
     margin: 20px 0;
-    padding: 20px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    font-family: inherit;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    overflow: hidden;
 }
 
-.srwm-waitlist-form-container {
+.srwm-waitlist-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.srwm-waitlist-container > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* Header Styles */
+.srwm-waitlist-header {
     text-align: center;
+    margin-bottom: 24px;
 }
 
-.srwm-waitlist-form h4 {
-    margin: 0 0 10px 0;
-    color: #2c3e50;
+.srwm-waitlist-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.srwm-waitlist-subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Status Card for Active Waitlist */
+.srwm-waitlist-status {
+    margin-bottom: 20px;
+}
+
+.srwm-status-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.srwm-status-card.active {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.srwm-status-icon {
+    font-size: 24px;
+    color: #22c55e;
+    flex-shrink: 0;
+}
+
+.srwm-status-content h4 {
+    margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-}
-
-.srwm-waitlist-form p {
-    margin: 0 0 20px 0;
-    color: #6c757d;
-    font-size: 14px;
-}
-
-.srwm-waitlist-form .form-row {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.srwm-waitlist-form label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #495057;
-    font-size: 14px;
-}
-
-.srwm-waitlist-form input[type="text"],
-.srwm-waitlist-form input[type="email"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-    box-sizing: border-box;
-}
-
-.srwm-waitlist-form input[type="text"]:focus,
-.srwm-waitlist-form input[type="email"]:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.srwm-waitlist-form input.error {
-    border-color: #e74c3c;
-}
-
-.srwm-waitlist-form .field-error {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 5px;
-    display: none;
-}
-
-.srwm-waitlist-submit {
-    background: #27ae60;
     color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    margin-top: 10px;
 }
 
-.srwm-waitlist-submit:hover {
-    background: #219a52;
-}
-
-.srwm-waitlist-submit:disabled {
-    background: #95a5a6;
-    cursor: not-allowed;
-}
-
-.srwm-waitlist-message {
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
+.srwm-status-content p {
+    margin: 0 0 16px 0;
+    opacity: 0.9;
     font-size: 14px;
 }
 
-.srwm-waitlist-message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+/* Queue Position Display */
+.srwm-queue-position {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
 }
 
-.srwm-waitlist-message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+.srwm-queue-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
-.srwm-waitlist-message small {
-    display: block;
-    margin-top: 5px;
+.srwm-queue-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.srwm-queue-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.srwm-queue-progress {
+    margin-top: 8px;
+}
+
+.srwm-progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.srwm-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+    animation: progressPulse 2s ease-in-out infinite;
+}
+
+@keyframes progressPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.srwm-queue-progress small {
     font-size: 12px;
     opacity: 0.8;
 }
 
-/* Waitlist count display */
-.srwm-waitlist-count {
-    display: inline-block;
-    background: #3498db;
-    color: white;
-    padding: 4px 8px;
+/* Waitlist Preview */
+.srwm-waitlist-preview {
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-left: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .srwm-waitlist-form {
-        padding: 15px;
-        margin: 15px 0;
-    }
-    
-    .srwm-waitlist-form h4 {
-        font-size: 16px;
-    }
-    
-    .srwm-waitlist-form input[type="text"],
-    .srwm-waitlist-form input[type="email"] {
-        padding: 10px 12px;
-        font-size: 16px; /* Prevents zoom on iOS */
-    }
-    
-    .srwm-waitlist-submit {
-        padding: 12px 20px;
-        font-size: 16px;
-    }
+.srwm-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
-/* Product loop specific styles */
-.woocommerce-loop-product__title + .srwm-waitlist-form {
-    margin-top: 10px;
-    padding: 15px;
+.srwm-preview-icon {
+    font-size: 24px;
+    color: #fbbf24;
+    flex-shrink: 0;
 }
 
-.woocommerce-loop-product__title + .srwm-waitlist-form h4 {
+.srwm-preview-content {
+    flex: 1;
+}
+
+.srwm-preview-count {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.srwm-count-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: countUp 1s ease-out;
+}
+
+@keyframes countUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.srwm-count-label {
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.srwm-preview-subtitle {
     font-size: 14px;
-    margin-bottom: 8px;
+    opacity: 0.8;
+    font-style: italic;
 }
 
-.woocommerce-loop-product__title + .srwm-waitlist-form p {
-    font-size: 12px;
-    margin-bottom: 15px;
+/* Queue Visualization */
+.srwm-queue-visualization {
+    margin-top: 16px;
 }
 
-/* Animation for form submission */
-.srwm-waitlist-form.submitting {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.srwm-waitlist-form.submitting .srwm-waitlist-submit {
+.srwm-queue-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
     position: relative;
 }
 
-.srwm-waitlist-form.submitting .srwm-waitlist-submit::after {
+.srwm-queue-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 4px;
+    transition: width 1s ease;
+    animation: queueFill 2s ease-in-out infinite;
+}
+
+@keyframes queueFill {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.02); }
+}
+
+.srwm-queue-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+}
+
+.srwm-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    opacity: 0.9;
+    text-align: center;
+    flex: 1;
+}
+
+.srwm-stat-icon {
+    font-size: 14px;
+}
+
+/* Form Styles */
+.srwm-waitlist-form-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.srwm-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.srwm-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.srwm-field-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    opacity: 0.9;
+}
+
+.srwm-field-group input {
+    padding: 12px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.srwm-field-group input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.srwm-field-group input:focus {
+    outline: none;
+    border-color: #fbbf24;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+}
+
+.srwm-field-group input:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Submit Button */
+.srwm-waitlist-submit {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: none;
+    border-radius: 8px;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.srwm-waitlist-submit::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin: -8px 0 0 -8px;
-    border: 2px solid transparent;
-    border-top: 2px solid white;
-    border-radius: 50%;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.srwm-waitlist-submit:hover::before {
+    left: 100%;
+}
+
+.srwm-waitlist-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+}
+
+.srwm-waitlist-submit:active {
+    transform: translateY(0);
+}
+
+.srwm-submit-icon {
+    font-size: 18px;
+}
+
+.srwm-submit-text {
+    font-weight: 600;
+}
+
+/* Message Styles */
+.srwm-waitlist-message {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    animation: messageSlideIn 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.srwm-waitlist-message.success {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+}
+
+.srwm-waitlist-message.error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .srwm-waitlist-container {
+        padding: 20px;
+        margin: 16px 0;
+    }
+    
+    .srwm-waitlist-header h3 {
+        font-size: 20px;
+    }
+    
+    .srwm-preview-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .srwm-queue-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .srwm-stat-item {
+        justify-content: center;
+    }
+    
+    .srwm-status-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+}
+
+/* Loading States */
+.srwm-waitlist-submit.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.srwm-waitlist-submit.loading .srwm-submit-icon {
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-/* Success state styling */
-.srwm-waitlist-form.success .srwm-waitlist-form-container {
-    display: none;
-}
-
-.srwm-waitlist-form.success .srwm-waitlist-message {
-    text-align: center;
-}
-
-/* Error state styling */
-.srwm-waitlist-form.error input {
-    border-color: #e74c3c;
-}
-
-.srwm-waitlist-form.error .field-error {
-    display: block;
-}
-
-/* Accessibility improvements */
-.srwm-waitlist-form input:focus {
-    outline: 2px solid #3498db;
+/* Accessibility */
+.srwm-waitlist-container:focus-within {
+    outline: 2px solid #fbbf24;
     outline-offset: 2px;
 }
 
-.srwm-waitlist-submit:focus {
-    outline: 2px solid #27ae60;
-    outline-offset: 2px;
-}
-
-/* High contrast mode support */
+/* High Contrast Mode */
 @media (prefers-contrast: high) {
-    .srwm-waitlist-form {
-        border: 2px solid #000;
+    .srwm-waitlist-container {
+        border: 2px solid white;
     }
     
-    .srwm-waitlist-form input[type="text"],
-    .srwm-waitlist-form input[type="email"] {
-        border: 2px solid #000;
-    }
-    
-    .srwm-waitlist-submit {
-        border: 2px solid #000;
+    .srwm-field-group input {
+        border: 2px solid white;
     }
 }
 
-/* Reduced motion support */
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-    .srwm-waitlist-form input,
-    .srwm-waitlist-submit {
-        transition: none;
+    .srwm-count-number,
+    .srwm-progress-fill,
+    .srwm-queue-fill,
+    .srwm-waitlist-submit::before {
+        animation: none;
     }
     
-    .srwm-waitlist-form.submitting .srwm-waitlist-submit::after {
-        animation: none;
+    .srwm-waitlist-submit:hover {
+        transform: none;
     }
 }

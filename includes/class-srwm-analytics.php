@@ -169,6 +169,430 @@ class SRWM_Analytics {
     }
     
     /**
+     * Get comprehensive analytics data for dashboard
+     */
+    public function get_analytics_data() {
+        global $wpdb;
+        
+        try {
+            $data = array(
+                'total_restocks' => $this->get_total_restocks(),
+                'avg_waitlist_size' => $this->get_average_waitlist_size(),
+                'avg_restock_time' => $this->get_average_restock_time(),
+                'conversion_rate' => $this->get_conversion_rate(),
+                'top_products' => $this->get_top_products(),
+                'recent_activity' => $this->get_recent_activity(),
+                'waitlist_trends' => $this->get_waitlist_trends(),
+                'restock_efficiency' => $this->get_restock_efficiency(),
+                'customer_engagement' => $this->get_customer_engagement(),
+                'real_time_stats' => $this->get_real_time_stats()
+            );
+            
+            return $data;
+            
+        } catch (Exception $e) {
+            return array(
+                'total_restocks' => 0,
+                'avg_waitlist_size' => 0,
+                'avg_restock_time' => 0,
+                'conversion_rate' => 0,
+                'top_products' => array(),
+                'recent_activity' => array(),
+                'waitlist_trends' => array(),
+                'restock_efficiency' => 0,
+                'customer_engagement' => 0,
+                'real_time_stats' => array()
+            );
+        }
+    }
+    
+    /**
+     * Get real-time statistics
+     */
+    public function get_real_time_stats() {
+        global $wpdb;
+        
+        try {
+            $stats = array();
+            
+            // Current active waitlists
+            $stats['active_waitlists'] = $this->get_active_waitlists_count();
+            
+            // Today's new waitlist additions
+            $stats['today_new_waitlists'] = $this->get_today_waitlist_additions();
+            
+            // Today's restocks
+            $stats['today_restocks'] = $this->get_today_restocks();
+            
+            // Average waitlist size today
+            $stats['avg_waitlist_size_today'] = $this->get_average_waitlist_size_today();
+            
+            // Products with highest demand
+            $stats['high_demand_products'] = $this->get_high_demand_products();
+            
+            // Recent customer activity
+            $stats['recent_customers'] = $this->get_recent_customer_activity();
+            
+            // Waitlist growth rate
+            $stats['growth_rate'] = $this->get_waitlist_growth_rate();
+            
+            // Restock frequency
+            $stats['restock_frequency'] = $this->get_restock_frequency();
+            
+            return $stats;
+            
+        } catch (Exception $e) {
+            return array(
+                'active_waitlists' => 0,
+                'today_new_waitlists' => 0,
+                'today_restocks' => 0,
+                'avg_waitlist_size_today' => 0,
+                'high_demand_products' => array(),
+                'recent_customers' => array(),
+                'growth_rate' => 0,
+                'restock_frequency' => 0
+            );
+        }
+    }
+    
+    /**
+     * Get active waitlists count
+     */
+    private function get_active_waitlists_count() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        return $wpdb->get_var("
+            SELECT COUNT(DISTINCT product_id) 
+            FROM {$table_name} 
+            WHERE notified = 0
+        ");
+    }
+    
+    /**
+     * Get average waitlist size today
+     */
+    private function get_average_waitlist_size_today() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var("
+            SELECT AVG(waitlist_count) as avg_size
+            FROM (
+                SELECT product_id, COUNT(*) as waitlist_count
+                FROM {$table_name}
+                WHERE DATE(date_added) = CURDATE()
+                GROUP BY product_id
+            ) as daily_waitlists
+        ");
+        
+        return round($result, 1);
+    }
+    
+    /**
+     * Get high demand products
+     */
+    private function get_high_demand_products() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("
+            SELECT 
+                w.product_id,
+                p.post_title as product_name,
+                COUNT(w.id) as waitlist_count,
+                MAX(w.date_added) as last_addition
+            FROM {$table_name} w
+            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+            WHERE w.notified = 0
+            GROUP BY w.product_id
+            ORDER BY waitlist_count DESC
+            LIMIT 5
+        ");
+        
+        return $results;
+    }
+    
+    /**
+     * Get recent customer activity
+     */
+    private function get_recent_customer_activity() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("
+            SELECT 
+                customer_name,
+                customer_email,
+                product_id,
+                date_added,
+                TIMESTAMPDIFF(MINUTE, date_added, NOW()) as minutes_ago
+            FROM {$table_name}
+            WHERE date_added >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            ORDER BY date_added DESC
+            LIMIT 10
+        ");
+        
+        return $results;
+    }
+    
+    /**
+     * Get waitlist growth rate
+     */
+    private function get_waitlist_growth_rate() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        // Get today's count
+        $today_count = $wpdb->get_var("
+            SELECT COUNT(*) 
+            FROM {$table_name} 
+            WHERE DATE(date_added) = CURDATE()
+        ");
+        
+        // Get yesterday's count
+        $yesterday_count = $wpdb->get_var("
+            SELECT COUNT(*) 
+            FROM {$table_name} 
+            WHERE DATE(date_added) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+        ");
+        
+        if ($yesterday_count == 0) {
+            return $today_count > 0 ? 100 : 0;
+        }
+        
+        $growth_rate = (($today_count - $yesterday_count) / $yesterday_count) * 100;
+        return round($growth_rate, 1);
+    }
+    
+    /**
+     * Get restock frequency
+     */
+    private function get_restock_frequency() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_restock_logs';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        // Get average restocks per day in the last 7 days
+        $result = $wpdb->get_var("
+            SELECT AVG(daily_restocks) as avg_frequency
+            FROM (
+                SELECT DATE(timestamp) as restock_date, COUNT(*) as daily_restocks
+                FROM {$table_name}
+                WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                GROUP BY DATE(timestamp)
+            ) as daily_stats
+        ");
+        
+        return round($result, 1);
+    }
+    
+    /**
+     * Get recent activity feed
+     */
+    public function get_recent_activity() {
+        global $wpdb;
+        
+        try {
+            $activities = array();
+            
+            // Get recent waitlist additions
+            $waitlist_activities = $this->get_recent_waitlist_activities();
+            $activities = array_merge($activities, $waitlist_activities);
+            
+            // Get recent restocks
+            $restock_activities = $this->get_recent_restock_activities();
+            $activities = array_merge($activities, $restock_activities);
+            
+            // Sort by timestamp
+            usort($activities, function($a, $b) {
+                return strtotime($b['timestamp']) - strtotime($a['timestamp']);
+            });
+            
+            return array_slice($activities, 0, 20);
+            
+        } catch (Exception $e) {
+            return array();
+        }
+    }
+    
+    /**
+     * Get recent waitlist activities
+     */
+    private function get_recent_waitlist_activities() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("
+            SELECT 
+                'waitlist' as type,
+                customer_name,
+                customer_email,
+                product_id,
+                date_added as timestamp,
+                'joined waitlist' as action
+            FROM {$table_name}
+            WHERE date_added >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ORDER BY date_added DESC
+            LIMIT 10
+        ");
+        
+        return $results;
+    }
+    
+    /**
+     * Get recent restock activities
+     */
+    private function get_recent_restock_activities() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_restock_logs';
+        
+        if (!$this->table_exists($table_name)) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("
+            SELECT 
+                'restock' as type,
+                '' as customer_name,
+                '' as customer_email,
+                product_id,
+                timestamp,
+                CONCAT('restocked ', quantity, ' units') as action
+            FROM {$table_name}
+            WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ORDER BY timestamp DESC
+            LIMIT 10
+        ");
+        
+        return $results;
+    }
+    
+    /**
+     * Get waitlist trends
+     */
+    public function get_waitlist_trends() {
+        global $wpdb;
+        
+        try {
+            $table_name = $wpdb->prefix . 'srwm_waitlist';
+            
+            if (!$this->table_exists($table_name)) {
+                return array();
+            }
+            
+            $results = $wpdb->get_results("
+                SELECT 
+                    DATE(date_added) as date,
+                    COUNT(*) as count,
+                    COUNT(DISTINCT product_id) as products
+                FROM {$table_name}
+                WHERE date_added >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                GROUP BY DATE(date_added)
+                ORDER BY date_added DESC
+            ");
+            
+            return $results;
+            
+        } catch (Exception $e) {
+            return array();
+        }
+    }
+    
+    /**
+     * Get restock efficiency
+     */
+    public function get_restock_efficiency() {
+        global $wpdb;
+        
+        try {
+            $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+            $restock_table = $wpdb->prefix . 'srwm_restock_logs';
+            
+            if (!$this->table_exists($waitlist_table) || !$this->table_exists($restock_table)) {
+                return 0;
+            }
+            
+            // Calculate efficiency based on time between waitlist and restock
+            $result = $wpdb->get_var("
+                SELECT AVG(TIMESTAMPDIFF(HOUR, w.date_added, r.timestamp)) as avg_hours
+                FROM {$waitlist_table} w
+                JOIN {$restock_table} r ON w.product_id = r.product_id
+                WHERE w.notified = 1
+                AND r.timestamp > w.date_added
+            ");
+            
+            return round($result, 1);
+            
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Get customer engagement
+     */
+    public function get_customer_engagement() {
+        global $wpdb;
+        
+        try {
+            $table_name = $wpdb->prefix . 'srwm_waitlist';
+            
+            if (!$this->table_exists($table_name)) {
+                return 0;
+            }
+            
+            // Calculate engagement based on multiple waitlist joins
+            $result = $wpdb->get_var("
+                SELECT 
+                    (COUNT(DISTINCT customer_email) * 100.0 / COUNT(*)) as engagement_rate
+                FROM {$table_name}
+                WHERE date_added >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            ");
+            
+            return round($result, 1);
+            
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
+    /**
      * Get total waitlist customers
      */
     private function get_total_waitlist_customers() {
@@ -317,6 +741,100 @@ class SRWM_Analytics {
         } catch (Exception $e) {
             return 0;
         }
+    }
+    
+    /**
+     * Get total restocks
+     */
+    private function get_total_restocks() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_restock_logs';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        return $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
+    }
+    
+    /**
+     * Get average waitlist size
+     */
+    private function get_average_waitlist_size() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var("
+            SELECT AVG(waitlist_count) as avg_size
+            FROM (
+                SELECT product_id, COUNT(*) as waitlist_count
+                FROM {$table_name}
+                GROUP BY product_id
+            ) as product_waitlists
+        ");
+        
+        return round($result, 1);
+    }
+    
+    /**
+     * Get conversion rate
+     */
+    private function get_conversion_rate() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return 0;
+        }
+        
+        $total = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
+        $notified = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name} WHERE notified = 1");
+        
+        if ($total == 0) {
+            return 0;
+        }
+        
+        return round(($notified / $total) * 100, 1);
+    }
+    
+    /**
+     * Get top products
+     */
+    private function get_top_products() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'srwm_waitlist';
+        
+        if (!$this->table_exists($table_name)) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("
+            SELECT 
+                w.product_id,
+                p.post_title as product_name,
+                COUNT(w.id) as waitlist_count,
+                COUNT(CASE WHEN w.notified = 1 THEN 1 END) as restocks,
+                AVG(TIMESTAMPDIFF(DAY, w.date_added, 
+                    CASE WHEN w.notified = 1 THEN 
+                        (SELECT MIN(timestamp) FROM {$wpdb->prefix}srwm_restock_logs WHERE product_id = w.product_id AND timestamp > w.date_added)
+                    ELSE NOW() END
+                )) as avg_wait_time
+            FROM {$table_name} w
+            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+            GROUP BY w.product_id
+            ORDER BY waitlist_count DESC
+            LIMIT 10
+        ");
+        
+        return $results;
     }
     
     /**

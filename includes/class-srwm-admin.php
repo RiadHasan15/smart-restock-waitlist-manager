@@ -912,6 +912,145 @@ class SRWM_Admin {
             padding: 0;
         }
         
+        /* Enhanced Analytics Styles */
+        .srwm-analytics-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .srwm-header-content h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .srwm-header-content p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .srwm-header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        /* Real-time Section */
+        .srwm-realtime-section {
+            margin-bottom: 32px;
+        }
+        
+        .srwm-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .srwm-section-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .srwm-live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #22c55e;
+            font-weight: 500;
+        }
+        
+        .srwm-live-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .srwm-realtime-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .srwm-realtime-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .srwm-realtime-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .srwm-realtime-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+        
+        .srwm-realtime-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .srwm-realtime-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-realtime-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .srwm-analytics-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .srwm-realtime-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+        
         /* Pro Locked Elements */
         .srwm-pro-locked {
             opacity: 0.7;
@@ -5037,6 +5176,7 @@ class SRWM_Admin {
     public function render_analytics_page() {
         $analytics = SRWM_Analytics::get_instance($this->license_manager);
         $analytics_data = $analytics->get_analytics_data();
+        $real_time_stats = $analytics_data['real_time_stats'];
         ?>
         <div class="wrap">
             <div class="srwm-analytics-header">
@@ -5045,11 +5185,92 @@ class SRWM_Admin {
                     <p><?php _e('Comprehensive insights into your waitlist and restock performance', 'smart-restock-waitlist'); ?></p>
                 </div>
                 <div class="srwm-header-actions">
+                    <button id="srwm-refresh-analytics" class="srwm-btn srwm-btn-primary">
+                        <span class="dashicons dashicons-update"></span>
+                        <?php _e('Refresh Data', 'smart-restock-waitlist'); ?>
+                    </button>
                     <a href="<?php echo admin_url('admin-ajax.php?action=srwm_export_waitlist&nonce=' . wp_create_nonce('srwm_export_nonce')); ?>" 
-                       class="srwm-btn srwm-btn-primary">
-                        <span class="srwm-btn-icon">📊</span>
+                       class="srwm-btn srwm-btn-secondary">
+                        <span class="dashicons dashicons-download"></span>
                         <?php _e('Export Data', 'smart-restock-waitlist'); ?>
                     </a>
+                </div>
+            </div>
+            
+            <!-- Real-time Statistics -->
+            <div class="srwm-realtime-section">
+                <div class="srwm-section-header">
+                    <h2><?php _e('Real-time Statistics', 'smart-restock-waitlist'); ?></h2>
+                    <div class="srwm-live-indicator">
+                        <span class="srwm-live-dot"></span>
+                        <?php _e('Live', 'smart-restock-waitlist'); ?>
+                    </div>
+                </div>
+                
+                <div class="srwm-realtime-grid">
+                    <div class="srwm-realtime-card">
+                        <div class="srwm-realtime-icon">📊</div>
+                        <div class="srwm-realtime-content">
+                            <h3><?php _e('Active Waitlists', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-realtime-number" id="active-waitlists">
+                                <?php echo number_format($real_time_stats['active_waitlists']); ?>
+                            </div>
+                            <div class="srwm-realtime-trend">
+                                <span class="srwm-trend-icon">📈</span>
+                                <span class="srwm-trend-text"><?php _e('Currently active', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="srwm-realtime-card">
+                        <div class="srwm-realtime-icon">⚡</div>
+                        <div class="srwm-realtime-content">
+                            <h3><?php _e('Today\'s Growth', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-realtime-number" id="today-growth">
+                                <?php echo number_format($real_time_stats['today_new_waitlists']); ?>
+                            </div>
+                            <div class="srwm-realtime-trend">
+                                <span class="srwm-trend-icon"><?php echo $real_time_stats['growth_rate'] >= 0 ? '↗' : '↘'; ?></span>
+                                <span class="srwm-trend-text">
+                                    <?php 
+                                    if ($real_time_stats['growth_rate'] >= 0) {
+                                        printf(__('+%s%% from yesterday', 'smart-restock-waitlist'), $real_time_stats['growth_rate']);
+                                    } else {
+                                        printf(__('%s%% from yesterday', 'smart-restock-waitlist'), $real_time_stats['growth_rate']);
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="srwm-realtime-card">
+                        <div class="srwm-realtime-icon">🔄</div>
+                        <div class="srwm-realtime-content">
+                            <h3><?php _e('Today\'s Restocks', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-realtime-number" id="today-restocks">
+                                <?php echo number_format($real_time_stats['today_restocks']); ?>
+                            </div>
+                            <div class="srwm-realtime-trend">
+                                <span class="srwm-trend-icon">📦</span>
+                                <span class="srwm-trend-text"><?php _e('Products restocked', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="srwm-realtime-card">
+                        <div class="srwm-realtime-icon">🎯</div>
+                        <div class="srwm-realtime-content">
+                            <h3><?php _e('Avg. Waitlist Size', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-realtime-number" id="avg-waitlist-size">
+                                <?php echo number_format($real_time_stats['avg_waitlist_size_today'], 1); ?>
+                            </div>
+                            <div class="srwm-realtime-trend">
+                                <span class="srwm-trend-icon">👥</span>
+                                <span class="srwm-trend-text"><?php _e('Customers per product', 'smart-restock-waitlist'); ?></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
