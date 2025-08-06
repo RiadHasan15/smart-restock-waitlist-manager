@@ -342,16 +342,19 @@ class SRWM_Admin {
             
             // Get analytics data for charts
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
-            $analytics_data = $analytics->get_analytics_data();
+            $analytics_data = $analytics->get_dashboard_data();
         } catch (Exception $e) {
             // Fallback values if there's an error
             $total_waitlist_customers = 0;
             $waitlist_products = array();
             $supplier_products = array();
             $analytics_data = array(
-                'avg_restock_time' => 0,
-                'total_restocks' => 0,
-                'avg_waitlist_size' => 0
+                'total_waitlist_customers' => 0,
+                'today_waitlists' => 0,
+                'today_restocks' => 0,
+                'pending_notifications' => 0,
+                'low_stock_products' => 0,
+                'avg_restock_time' => 0
             );
             
             // Log the error for debugging
