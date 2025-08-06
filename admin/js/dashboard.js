@@ -34,6 +34,7 @@
         initEventHandlers();
         initRealtimeUpdates();
         initDashboardTabs();
+        initInteractiveTables();
         initTooltips();
         
         // Load initial chart data
@@ -558,6 +559,143 @@
             $refreshBtn.find('.dashicons').removeClass('dashicons-update-alt');
             $refreshBtn.find('.dashicons').css('animation', '');
         }
+    }
+    
+    /**
+     * Initialize interactive tables
+     */
+    function initInteractiveTables() {
+        console.log('SRWM Dashboard: Initializing interactive tables...');
+        
+        // Initialize waitlist table
+        initTableSorting('#srwm-waitlist-table');
+        initTableFiltering('#srwm-waitlist-table');
+        initTableSearch('#srwm-waitlist-table');
+        
+        console.log('SRWM Dashboard: Interactive tables initialized');
+    }
+    
+    /**
+     * Initialize table sorting
+     */
+    function initTableSorting(tableSelector) {
+        const $table = $(tableSelector);
+        if (!$table.length) return;
+        
+        $table.find('.srwm-sortable').on('click', function() {
+            const $header = $(this);
+            const sortType = $header.data('sort');
+            const currentOrder = $header.hasClass('sorted-asc') ? 'desc' : 'asc';
+            
+            console.log('SRWM Dashboard: Sorting table by', sortType, 'in', currentOrder, 'order');
+            
+            // Remove sort classes from all headers
+            $table.find('.srwm-sortable').removeClass('sorted-asc sorted-desc');
+            
+            // Add sort class to clicked header
+            $header.addClass('sorted-' + currentOrder);
+            
+            // Sort table rows
+            sortTableRows($table, sortType, currentOrder);
+        });
+    }
+    
+    /**
+     * Sort table rows
+     */
+    function sortTableRows($table, sortType, order) {
+        const $tbody = $table.find('tbody');
+        const $rows = $tbody.find('tr').toArray();
+        
+        $rows.sort(function(a, b) {
+            let aValue, bValue;
+            
+            switch(sortType) {
+                case 'product':
+                    aValue = $(a).find('.srwm-product-info strong').text().toLowerCase();
+                    bValue = $(b).find('.srwm-product-info strong').text().toLowerCase();
+                    break;
+                case 'stock':
+                    aValue = parseInt($(a).find('.srwm-stock-badge').text()) || 0;
+                    bValue = parseInt($(b).find('.srwm-stock-badge').text()) || 0;
+                    break;
+                case 'waitlist':
+                    aValue = parseInt($(a).find('.srwm-waitlist-count').text()) || 0;
+                    bValue = parseInt($(b).find('.srwm-waitlist-count').text()) || 0;
+                    break;
+                case 'status':
+                    aValue = $(a).find('.srwm-status').text().toLowerCase();
+                    bValue = $(b).find('.srwm-status').text().toLowerCase();
+                    break;
+                default:
+                    return 0;
+            }
+            
+            if (order === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+        
+        // Re-append sorted rows
+        $tbody.empty().append($rows);
+    }
+    
+    /**
+     * Initialize table filtering
+     */
+    function initTableFiltering(tableSelector) {
+        const $table = $(tableSelector);
+        if (!$table.length) return;
+        
+        // Status filter
+        $('#srwm-status-filter').on('change', function() {
+            const filterValue = $(this).val();
+            console.log('SRWM Dashboard: Filtering table by status:', filterValue);
+            
+            $table.find('tbody tr').each(function() {
+                const $row = $(this);
+                const statusText = $row.find('.srwm-status').text().toLowerCase();
+                
+                if (!filterValue || statusText.includes(filterValue)) {
+                    $row.removeClass('srwm-table-row-hidden');
+                } else {
+                    $row.addClass('srwm-table-row-hidden');
+                }
+            });
+        });
+    }
+    
+    /**
+     * Initialize table search
+     */
+    function initTableSearch(tableSelector) {
+        const $table = $(tableSelector);
+        if (!$table.length) return;
+        
+        $('#srwm-waitlist-search').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            console.log('SRWM Dashboard: Searching table for:', searchTerm);
+            
+            $table.find('tbody tr').each(function() {
+                const $row = $(this);
+                const productName = $row.find('.srwm-product-info strong').text().toLowerCase();
+                const sku = $row.find('.srwm-product-info small').text().toLowerCase();
+                
+                if (productName.includes(searchTerm) || sku.includes(searchTerm)) {
+                    $row.removeClass('srwm-table-row-hidden');
+                    if (searchTerm) {
+                        $row.addClass('srwm-table-row-highlight');
+                    } else {
+                        $row.removeClass('srwm-table-row-highlight');
+                    }
+                } else {
+                    $row.addClass('srwm-table-row-hidden');
+                    $row.removeClass('srwm-table-row-highlight');
+                }
+            });
+        });
     }
 
     /**
