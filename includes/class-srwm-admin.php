@@ -450,7 +450,7 @@ class SRWM_Admin {
                             <?php _e('Real-time statistics and performance indicators', 'smart-restock-waitlist'); ?>
                         </p>
                         <div class="srwm-section-actions">
-                            <button id="srwm-refresh-dashboard" class="srwm-btn srwm-btn-outline srwm-btn-sm">
+                            <button id="srwm-refresh-dashboard" class="srwm-btn srwm-btn-primary srwm-btn-sm">
                                 <span class="dashicons dashicons-update"></span>
                                 <?php _e('Refresh Data', 'smart-restock-waitlist'); ?>
                             </button>
@@ -668,10 +668,6 @@ class SRWM_Admin {
                                         <option value="30"><?php _e('Last 30 Days', 'smart-restock-waitlist'); ?></option>
                                         <option value="90"><?php _e('Last 90 Days', 'smart-restock-waitlist'); ?></option>
                                     </select>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-primary srwm-btn-refresh-chart" data-chart="waitlist">
-                                        <span class="dashicons dashicons-update"></span>
-                                        <?php _e('Refresh', 'smart-restock-waitlist'); ?>
-                                    </button>
                                 </div>
                             </div>
                             <div class="srwm-chart-container">

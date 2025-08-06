@@ -291,29 +291,7 @@
             loadChartData(days);
         });
 
-        // Chart refresh buttons
-        $('.srwm-btn-refresh-chart').on('click', function() {
-            const chartType = $(this).data('chart');
-            const $button = $(this);
-            const $icon = $button.find('.dashicons');
-            
-            // Disable button and show loading
-            $button.prop('disabled', true);
-            $icon.addClass('srwm-spinning');
-            
-            // Get current period
-            const currentPeriod = $('#srwm-global-period').val() || 7;
-            
-            // Refresh specific chart
-            loadChartData(currentPeriod).always(function() {
-                // Re-enable button and hide loading
-                $button.prop('disabled', false);
-                $icon.removeClass('srwm-spinning');
-                
-                // Show success message
-                showMessage('success', chartType === 'waitlist' ? 'Waitlist chart refreshed!' : 'Restock chart refreshed!');
-            });
-        });
+
 
         // Dashboard refresh button
         $('#srwm-refresh-dashboard').on('click', function() {
