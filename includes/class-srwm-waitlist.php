@@ -39,19 +39,32 @@ class SRWM_Waitlist {
             return;
         }
         
-        // Only show on out-of-stock products
-        if ($product->is_in_stock()) {
+        // Check if waitlist is enabled
+        if (get_option('srwm_waitlist_enabled') !== 'yes') {
             return;
         }
         
-        // Check if waitlist is enabled
-        if (get_option('srwm_waitlist_enabled') !== 'yes') {
+        // Get waitlist display threshold
+        $waitlist_threshold = get_option('srwm_waitlist_display_threshold', 5);
+        
+        // Get current stock quantity
+        $current_stock = $product->get_stock_quantity();
+        
+        // Show waitlist if:
+        // 1. Product is out of stock, OR
+        // 2. Stock is at or below the threshold
+        if ($product->is_in_stock() && $current_stock > $waitlist_threshold) {
             return;
         }
         
         $waitlist_count = self::get_waitlist_count($product->get_id());
         $is_on_waitlist = self::is_customer_on_waitlist($product->get_id(), $this->get_current_customer_email());
         $customer_position = $this->get_customer_queue_position($product->get_id(), $this->get_current_customer_email());
+        
+        // Debug info (remove in production)
+        if (current_user_can('manage_woocommerce')) {
+            echo '<!-- SRWM Debug: Stock=' . $current_stock . ', Threshold=' . $waitlist_threshold . ', Show=' . ($current_stock <= $waitlist_threshold ? 'Yes' : 'No') . ' -->';
+        }
         
         ?>
         <div class="srwm-waitlist-container">
