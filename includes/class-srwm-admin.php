@@ -9248,8 +9248,6 @@ class SRWM_Admin {
             $supplier = SRWM_Supplier::get_instance();
             return $supplier->get_products_with_suppliers();
         } catch (Exception $e) {
-            // Log error and return empty array
-            error_log('Supplier products error: ' . $e->getMessage());
             return array();
         }
     }

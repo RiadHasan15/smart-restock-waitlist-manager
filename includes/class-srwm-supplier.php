@@ -323,13 +323,7 @@ class SRWM_Supplier {
         }
         
         // This would integrate with WhatsApp Business API
-        // For now, we'll just log the action
-        error_log(sprintf(
-            'WhatsApp notification would be sent to %s for product %s (SKU: %s)',
-            $supplier_data['email'],
-            $product->get_name(),
-            $product->get_sku()
-        ));
+        // For now, we'll just log the action silently
     }
     
     /**
@@ -341,13 +335,7 @@ class SRWM_Supplier {
         }
         
         // This would integrate with Twilio or similar SMS service
-        // For now, we'll just log the action
-        error_log(sprintf(
-            'SMS notification would be sent to %s for product %s (SKU: %s)',
-            $supplier_data['email'],
-            $product->get_name(),
-            $product->get_sku()
-        ));
+        // For now, we'll just log the action silently
     }
     
     /**

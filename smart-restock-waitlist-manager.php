@@ -1139,7 +1139,6 @@ class SmartRestockWaitlistManager {
             try {
                 $dashboard_data = $analytics->get_dashboard_data();
             } catch (Exception $e) {
-                error_log('Dashboard data error: ' . $e->getMessage());
                 $dashboard_data = array(
                     'total_waitlist_customers' => 0,
                     'today_waitlists' => 0,
@@ -1157,7 +1156,6 @@ class SmartRestockWaitlistManager {
                     'restock_activity' => $analytics->get_restock_method_breakdown()
                 );
             } catch (Exception $e) {
-                error_log('Chart data error: ' . $e->getMessage());
                 $chart_data = array(
                     'waitlist_growth' => array(),
                     'restock_activity' => array()
@@ -1173,48 +1171,7 @@ class SmartRestockWaitlistManager {
         }
     }
     
-    /**
-     * AJAX: Test dashboard (for debugging)
-     */
-    public function ajax_test_dashboard() {
-        // Log the request
-        error_log('Test dashboard AJAX called');
-        
-        // Check nonce
-        if (!check_ajax_referer('srwm_dashboard_nonce', 'nonce', false)) {
-            error_log('Test dashboard nonce check failed');
-            wp_die(json_encode(array('success' => false, 'message' => __('Security check failed.', 'smart-restock-waitlist'))));
-        }
-        
-        // Check permissions
-        if (!current_user_can('manage_woocommerce')) {
-            error_log('Test dashboard permission check failed');
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
-        }
-        
-        error_log('Test dashboard AJAX successful');
-        
-        // Get real dashboard data
-        try {
-            $analytics = SRWM_Analytics::get_instance($this->license_manager);
-            
-            // Get waitlist growth trend
-            $waitlist_growth = $analytics->get_waitlist_growth_trend($days);
-            
-            // Get restock activity breakdown
-            $restock_activity = $analytics->get_restock_method_breakdown();
-            
-            $dashboard_data = array(
-                'waitlist_growth' => $waitlist_growth,
-                'restock_activity' => $restock_activity
-            );
-            
-            wp_die(json_encode(array('success' => true, 'data' => $dashboard_data)));
-        } catch (Exception $e) {
-            error_log('Dashboard data error: ' . $e->getMessage());
-            wp_die(json_encode(array('success' => false, 'message' => 'Error loading dashboard data: ' . $e->getMessage())));
-        }
-    }
+
     
     /**
      * AJAX: Export dashboard report
