@@ -1,13 +1,20 @@
-/* Smart Restock & Waitlist Manager - Enhanced Visual Waitlist Styles */
+/* Smart Restock & Waitlist Manager - Modern Professional UI */
 
+/* Base Container */
 .srwm-waitlist-container {
     /* Background and colors will be set dynamically via PHP */
-    border-radius: 16px;
-    padding: 24px;
-    margin: 20px 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    border-radius: 20px;
+    padding: 32px;
+    margin: 24px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.srwm-waitlist-container:hover {
+    transform: translateY(-2px);
 }
 
 /* Remove gradient overlay */
@@ -20,296 +27,405 @@
     z-index: 2;
 }
 
-/* Header Styles */
+/* Modern Header */
 .srwm-waitlist-header {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+.srwm-waitlist-header::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #007cba, #005a87);
+    border-radius: 2px;
 }
 
 .srwm-waitlist-header h3 {
-    margin: 0 0 8px 0;
-    font-size: 24px;
+    margin: 0 0 12px 0;
+    font-size: 28px;
     font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
     /* Color will be set dynamically */
 }
 
 .srwm-waitlist-subtitle {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
+    line-height: 1.5;
+    opacity: 0.8;
     /* Color will be set dynamically */
 }
 
-/* Status Card for Active Waitlist */
+/* Enhanced Status Card */
 .srwm-waitlist-status {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .srwm-status-card {
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
     /* Background and border will be set dynamically */
+}
+
+.srwm-status-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 16px 16px 0 0;
 }
 
 .srwm-status-card.active {
     /* Background and border will be set dynamically */
+    box-shadow: 0 8px 32px rgba(34, 197, 94, 0.15);
 }
 
 .srwm-status-icon {
-    font-size: 24px;
+    font-size: 32px;
     color: #22c55e;
     flex-shrink: 0;
+    background: rgba(34, 197, 94, 0.1);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .srwm-status-content h4 {
     margin: 0 0 8px 0;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
+    line-height: 1.3;
     /* Color will be set dynamically */
 }
 
 .srwm-status-content p {
     margin: 0 0 16px 0;
-    font-size: 14px;
+    font-size: 15px;
+    line-height: 1.5;
     /* Color will be set dynamically */
 }
 
-/* Queue Position Display */
+/* Modern Queue Position */
 .srwm-queue-position {
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 12px;
-    /* Background will be set dynamically */
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .srwm-queue-info {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    margin-bottom: 16px;
 }
 
 .srwm-queue-label {
     font-size: 14px;
-    opacity: 0.9;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
 }
 
 .srwm-queue-number {
-    font-size: 20px;
+    font-size: 32px;
     font-weight: 700;
-    color: #fbbf24;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: #007cba;
+    text-shadow: 0 2px 4px rgba(0, 124, 186, 0.2);
 }
 
 .srwm-queue-progress {
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 .srwm-progress-bar {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+    height: 8px;
+    border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+    /* Background will be set dynamically */
 }
 
 .srwm-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-    border-radius: 3px;
-    transition: width 0.6s ease;
-    animation: progressPulse 2s ease-in-out infinite;
-}
-
-@keyframes progressPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+    border-radius: 4px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #007cba, #005a87);
+    /* Background will be set dynamically */
 }
 
 .srwm-queue-progress small {
     font-size: 12px;
-    opacity: 0.8;
+    opacity: 0.7;
+    font-weight: 500;
 }
 
-/* Waitlist Preview */
+/* Enhanced Preview Section */
 .srwm-waitlist-preview {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    margin-bottom: 24px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
 }
 
 .srwm-preview-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 24px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    /* Background and border will be set dynamically */
+}
+
+.srwm-preview-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    pointer-events: none;
 }
 
 .srwm-preview-icon {
-    font-size: 24px;
+    font-size: 28px;
     color: #fbbf24;
     flex-shrink: 0;
+    background: rgba(251, 191, 36, 0.1);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .srwm-preview-content {
     flex: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .srwm-preview-count {
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: 12px;
+    margin-bottom: 8px;
 }
 
 .srwm-count-number {
-    font-size: 28px;
-    font-weight: 700;
-    animation: countUp 1s ease-out;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    animation: countUp 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     /* Color will be set dynamically */
 }
 
 @keyframes countUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from { 
+        transform: scale(0.8) translateY(10px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: scale(1) translateY(0); 
+        opacity: 1; 
+    }
 }
 
 .srwm-count-label {
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
     /* Color will be set dynamically */
 }
 
 .srwm-preview-subtitle {
-    font-size: 14px;
-    font-style: italic;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.4;
+    opacity: 0.8;
     /* Color will be set dynamically */
 }
 
-/* Queue Visualization */
+/* Modern Queue Visualization */
 .srwm-queue-visualization {
-    margin-top: 16px;
+    margin-top: 20px;
 }
 
 .srwm-queue-bar {
-    height: 8px;
-    border-radius: 4px;
+    height: 12px;
+    border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     position: relative;
+    background: rgba(0, 0, 0, 0.1);
     /* Background will be set dynamically */
 }
 
 .srwm-queue-fill {
     height: 100%;
-    border-radius: 4px;
-    transition: width 1s ease;
-    animation: queueFill 2s ease-in-out infinite;
+    border-radius: 6px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #007cba, #005a87);
+    position: relative;
     /* Background will be set dynamically */
 }
 
-@keyframes queueFill {
-    0%, 100% { transform: scaleX(1); }
-    50% { transform: scaleX(1.02); }
+.srwm-queue-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .srwm-queue-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
 }
 
 .srwm-stat-item {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    opacity: 0.9;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
     text-align: center;
-    flex: 1;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
 }
 
 .srwm-stat-icon {
-    font-size: 14px;
+    font-size: 16px;
+    opacity: 0.7;
 }
 
-/* Form Styles */
+/* Modern Form Container */
 .srwm-waitlist-form-container {
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
     /* Background and border will be set dynamically */
 }
 
+.srwm-waitlist-form-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    pointer-events: none;
+}
+
 .srwm-form-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .srwm-field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    margin-bottom: 20px;
 }
 
 .srwm-field-group label {
+    display: block;
     font-size: 14px;
-    font-weight: 500;
-    color: white;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: inherit;
     opacity: 0.9;
 }
 
 .srwm-field-group input {
-    padding: 12px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 400;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
+    /* Background and border will be set dynamically */
 }
 
 .srwm-field-group input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 400;
 }
 
 .srwm-field-group input:focus {
     outline: none;
-    border-color: #fbbf24;
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 124, 186, 0.15);
+    /* Border color will be set dynamically */
 }
 
 .srwm-field-group input:hover {
-    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* Submit Button */
+/* Enhanced Submit Button */
 .srwm-waitlist-submit {
     width: 100%;
-    padding: 14px 24px;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    padding: 18px 32px;
     border: none;
-    border-radius: 8px;
-    color: #1f2937;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-    position: relative;
-    overflow: hidden;
+    gap: 12px;
+    text-transform: none;
+    letter-spacing: 0.3px;
+    /* Background and color will be set dynamically */
 }
 
 .srwm-waitlist-submit::before {
@@ -320,7 +436,7 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.5s;
 }
 
 .srwm-waitlist-submit:hover::before {
@@ -329,7 +445,8 @@
 
 .srwm-waitlist-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 124, 186, 0.3);
+    /* Background will be set dynamically */
 }
 
 .srwm-waitlist-submit:active {
@@ -338,77 +455,21 @@
 
 .srwm-submit-icon {
     font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.srwm-waitlist-submit:hover .srwm-submit-icon {
+    transform: scale(1.1);
 }
 
 .srwm-submit-text {
     font-weight: 600;
 }
 
-/* Message Styles */
-.srwm-waitlist-message {
-    margin-top: 16px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
-    animation: messageSlideIn 0.3s ease;
-}
-
-@keyframes messageSlideIn {
-    from { transform: translateY(-10px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.srwm-waitlist-message.success {
-    background: rgba(34, 197, 94, 0.2);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-}
-
-.srwm-waitlist-message.error {
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .srwm-waitlist-container {
-        padding: 20px;
-        margin: 16px 0;
-    }
-    
-    .srwm-waitlist-header h3 {
-        font-size: 20px;
-    }
-    
-    .srwm-preview-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-    }
-    
-    .srwm-queue-stats {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .srwm-stat-item {
-        justify-content: center;
-    }
-    
-    .srwm-status-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-    }
-}
-
-/* Loading States */
+/* Loading State */
 .srwm-waitlist-submit.loading {
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 .srwm-waitlist-submit.loading .srwm-submit-icon {
@@ -420,33 +481,138 @@
     to { transform: rotate(360deg); }
 }
 
-/* Accessibility */
+/* Enhanced Messages */
+.srwm-waitlist-message {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+@keyframes messageSlideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.srwm-waitlist-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #16a34a;
+}
+
+.srwm-waitlist-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .srwm-waitlist-container {
+        padding: 24px 20px;
+        margin: 16px 0;
+        border-radius: 16px;
+    }
+    
+    .srwm-waitlist-header h3 {
+        font-size: 24px;
+    }
+    
+    .srwm-preview-header {
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .srwm-queue-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .srwm-stat-item {
+        justify-content: center;
+    }
+    
+    .srwm-status-card {
+        padding: 20px;
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .srwm-waitlist-form-container {
+        padding: 24px 20px;
+    }
+    
+    .srwm-field-group input {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .srwm-waitlist-submit {
+        padding: 16px 24px;
+    }
+}
+
+/* Focus States for Accessibility */
 .srwm-waitlist-container:focus-within {
-    outline: 2px solid #fbbf24;
+    outline: 2px solid #007cba;
     outline-offset: 2px;
 }
 
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
     .srwm-waitlist-container {
-        border: 2px solid white;
+        border: 2px solid currentColor;
     }
     
     .srwm-field-group input {
-        border: 2px solid white;
+        border: 2px solid currentColor;
     }
 }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
     .srwm-count-number,
-    .srwm-progress-fill,
     .srwm-queue-fill,
-    .srwm-waitlist-submit::before {
+    .srwm-progress-fill {
         animation: none;
     }
     
     .srwm-waitlist-submit:hover {
         transform: none;
+    }
+    
+    .srwm-field-group input:hover,
+    .srwm-field-group input:focus {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .srwm-waitlist-container {
+        background: rgba(0, 0, 0, 0.8);
+        color: #ffffff;
+    }
+    
+    .srwm-field-group input {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+    
+    .srwm-field-group input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
     }
 }
