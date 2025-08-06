@@ -1143,8 +1143,6 @@
      * Load dashboard data (charts + statistics) for a specific period
      */
     function loadDashboardData(days = 7) {
-        console.log('SRWM Dashboard: Loading dashboard data for', days, 'days');
-        
         // Show loading state
         showDashboardLoading();
         
@@ -1155,7 +1153,6 @@
         ).always(function() {
             // Hide loading state
             hideDashboardLoading();
-            console.log('SRWM Dashboard: Dashboard data loading completed');
         });
     }
     
@@ -1163,8 +1160,6 @@
      * Load statistics data for a specific period
      */
     function loadStatisticsData(days = 7) {
-        console.log('SRWM Dashboard: Loading statistics data for', days, 'days');
-        
         return $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
@@ -1174,8 +1169,6 @@
                 days: days
             },
             success: function(response) {
-                console.log('SRWM Dashboard: Statistics response:', response);
-                
                 if (response.success && response.data) {
                     const data = response.data;
                     
@@ -1187,14 +1180,12 @@
                     updateStatCard('today_restocks', data.today_restocks || 0);
                     updateStatCard('pending_notifications', data.pending_notifications || 0);
                     updateStatCard('low_stock_products', data.low_stock_products || 0);
-                    
-                    console.log('SRWM Dashboard: Statistics updated successfully');
                 } else {
-                    console.error('SRWM Dashboard: Failed to load statistics:', response.data);
+                    showMessage('error', 'Failed to load statistics data');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('SRWM Dashboard: Error loading statistics:', error);
+                showMessage('error', 'Error loading statistics data');
             }
         });
     }
@@ -1235,21 +1226,13 @@
      * Initialize interactive tables
      */
     function initInteractiveTables() {
-        console.log('SRWM Dashboard: Initializing interactive tables...');
-        
         // Check if table exists
         const $table = $('#srwm-waitlist-table');
         if ($table.length) {
-            console.log('SRWM Dashboard: Found waitlist table, initializing features...');
-            
             // Initialize waitlist table
             initTableSorting('#srwm-waitlist-table');
             initTableFiltering('#srwm-waitlist-table');
             initTableSearch('#srwm-waitlist-table');
-            
-            console.log('SRWM Dashboard: Interactive tables initialized successfully');
-        } else {
-            console.log('SRWM Dashboard: Waitlist table not found');
         }
     }
     
@@ -1264,8 +1247,6 @@
             const $header = $(this);
             const sortType = $header.data('sort');
             const currentOrder = $header.hasClass('sorted-asc') ? 'desc' : 'asc';
-            
-            console.log('SRWM Dashboard: Sorting table by', sortType, 'in', currentOrder, 'order');
             
             // Remove sort classes from all headers
             $table.find('.srwm-sortable').removeClass('sorted-asc sorted-desc');
@@ -1330,7 +1311,6 @@
         // Status filter
         $('#srwm-status-filter').on('change', function() {
             const filterValue = $(this).val();
-            console.log('SRWM Dashboard: Filtering table by status:', filterValue);
             
             $table.find('tbody tr').each(function() {
                 const $row = $(this);
@@ -1541,10 +1521,8 @@
             $statNumber.fadeOut(200, function() {
                 $(this).text(formattedValue).fadeIn(200);
             });
-            
-            console.log(`SRWM Dashboard: Updated ${statType} to ${formattedValue}`);
         } else {
-            console.warn(`SRWM Dashboard: Stat card not found for ${statType}`);
+            // Stat card not found - this is normal for some cards
         }
     }
 

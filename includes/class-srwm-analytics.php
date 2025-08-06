@@ -58,6 +58,7 @@ class SRWM_Analytics {
             
             return array(
                 'total_waitlist_customers' => $total_waitlist_customers,
+                'waitlist_products' => $this->get_waitlist_products_count(),
                 'today_waitlists' => $today_waitlists,
                 'today_restocks' => $today_restocks,
                 'pending_notifications' => $pending_notifications,
@@ -606,6 +607,27 @@ class SRWM_Analytics {
         ");
         
         return round($result ?? 0, 1);
+            
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Get count of products with waitlists
+     */
+    private function get_waitlist_products_count() {
+        global $wpdb;
+        
+        try {
+            $table_name = $wpdb->prefix . 'srwm_waitlist';
+            
+            if (!$this->table_exists($table_name)) {
+                return 0;
+            }
+            
+            $count = $wpdb->get_var("SELECT COUNT(DISTINCT product_id) FROM {$table_name}");
+            return intval($count ?? 0);
             
         } catch (Exception $e) {
             return 0;
