@@ -166,6 +166,94 @@ class SRWM_Admin {
     }
     
     /**
+     * Save settings with validation
+     */
+    private function save_settings() {
+        // Validate and sanitize general settings
+        $waitlist_enabled = isset($_POST['srwm_waitlist_enabled']) ? 'yes' : 'no';
+        $auto_disable_at_zero = isset($_POST['srwm_auto_disable_at_zero']) ? 'yes' : 'no';
+        
+        // Validate low stock threshold
+        $low_stock_threshold = isset($_POST['srwm_low_stock_threshold']) ? 
+            intval($_POST['srwm_low_stock_threshold']) : 5;
+        $low_stock_threshold = max(0, min(1000, $low_stock_threshold)); // Limit between 0 and 1000
+        
+        // Validate and sanitize email templates
+        $waitlist_email_template = isset($_POST['srwm_email_template_waitlist']) ? 
+            wp_kses_post($_POST['srwm_email_template_waitlist']) : '';
+        
+        // Set default email template if empty
+        if (empty($waitlist_email_template)) {
+            $waitlist_email_template = $this->get_default_waitlist_email_template();
+        }
+        
+        // Save settings
+        update_option('srwm_waitlist_enabled', $waitlist_enabled);
+        update_option('srwm_auto_disable_at_zero', $auto_disable_at_zero);
+        update_option('srwm_low_stock_threshold', $low_stock_threshold);
+        update_option('srwm_email_template_waitlist', $waitlist_email_template);
+        
+        // Save Pro settings if license is active
+        if ($this->license_manager->is_pro_active()) {
+            $supplier_notifications = isset($_POST['srwm_supplier_notifications']) ? 'yes' : 'no';
+            $supplier_email_template = isset($_POST['srwm_email_template_supplier']) ? 
+                wp_kses_post($_POST['srwm_email_template_supplier']) : '';
+            
+            // Set default supplier email template if empty
+            if (empty($supplier_email_template)) {
+                $supplier_email_template = $this->get_default_supplier_email_template();
+            }
+            
+            update_option('srwm_supplier_notifications', $supplier_notifications);
+            update_option('srwm_email_template_supplier', $supplier_email_template);
+            
+            // Save company information
+            $company_name = isset($_POST['srwm_company_name']) ? 
+                sanitize_text_field($_POST['srwm_company_name']) : '';
+            $company_address = isset($_POST['srwm_company_address']) ? 
+                sanitize_textarea_field($_POST['srwm_company_address']) : '';
+            $company_phone = isset($_POST['srwm_company_phone']) ? 
+                sanitize_text_field($_POST['srwm_company_phone']) : '';
+            $company_email = isset($_POST['srwm_company_email']) ? 
+                sanitize_email($_POST['srwm_company_email']) : '';
+            
+            update_option('srwm_company_name', $company_name);
+            update_option('srwm_company_address', $company_address);
+            update_option('srwm_company_phone', $company_phone);
+            update_option('srwm_company_email', $company_email);
+        }
+        
+        // Redirect to show success message
+        wp_redirect(add_query_arg('settings-updated', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
+        exit;
+    }
+    
+    /**
+     * Reset settings to defaults
+     */
+    private function reset_settings_to_defaults() {
+        // Reset general settings
+        update_option('srwm_waitlist_enabled', 'yes');
+        update_option('srwm_auto_disable_at_zero', 'no');
+        update_option('srwm_low_stock_threshold', 5);
+        update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
+        
+        // Reset Pro settings if license is active
+        if ($this->license_manager->is_pro_active()) {
+            update_option('srwm_supplier_notifications', 'yes');
+            update_option('srwm_email_template_supplier', $this->get_default_supplier_email_template());
+            update_option('srwm_company_name', get_bloginfo('name'));
+            update_option('srwm_company_address', '');
+            update_option('srwm_company_phone', '');
+            update_option('srwm_company_email', get_option('admin_email'));
+        }
+        
+        // Redirect to show success message
+        wp_redirect(add_query_arg('settings-reset', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
+        exit;
+    }
+    
+    /**
      * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts($hook) {
@@ -6413,15 +6501,82 @@ class SRWM_Admin {
      * Render settings page
      */
     public function render_settings_page() {
+        // Check user capabilities
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have sufficient permissions to access this page.', 'smart-restock-waitlist'));
+        }
+        
+        // Handle form submission with validation
+        if (isset($_POST['submit']) && wp_verify_nonce($_POST['_wpnonce'], 'srwm_settings-options')) {
+            $this->save_settings();
+        }
+        
+        // Handle reset to defaults
+        if (isset($_GET['action']) && $_GET['action'] === 'reset-defaults' && 
+            wp_verify_nonce($_GET['_wpnonce'], 'srwm_reset_defaults')) {
+            $this->reset_settings_to_defaults();
+        }
+        
         ?>
         <div class="wrap">
+            <style>
+                .srwm-settings-section {
+                    background: #fff;
+                    border: 1px solid #ccd0d4;
+                    border-radius: 4px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                }
+                .srwm-settings-section h2 {
+                    margin-top: 0;
+                    color: #23282d;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 10px;
+                }
+                .srwm-settings-section .form-table th {
+                    width: 200px;
+                    padding: 15px 10px 15px 0;
+                }
+                .srwm-settings-section .form-table td {
+                    padding: 15px 10px;
+                }
+                .srwm-settings-section .description {
+                    color: #666;
+                    font-style: italic;
+                    margin-top: 5px;
+                }
+                .srwm-submit-actions {
+                    background: #f9f9f9;
+                    border: 1px solid #ccd0d4;
+                    border-radius: 4px;
+                    padding: 15px;
+                    margin-top: 20px;
+                }
+                .srwm-submit-actions .button {
+                    margin-right: 10px;
+                }
+            </style>
+            
             <h1><?php _e('Smart Restock & Waitlist Settings', 'smart-restock-waitlist'); ?></h1>
             
-            <form method="post" action="options.php">
-                <?php settings_fields('srwm_settings'); ?>
+            <?php if (isset($_GET['settings-updated'])): ?>
+                <div class="notice notice-success is-dismissible">
+                    <p><?php _e('Settings saved successfully!', 'smart-restock-waitlist'); ?></p>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['settings-reset'])): ?>
+                <div class="notice notice-success is-dismissible">
+                    <p><?php _e('Settings reset to defaults successfully!', 'smart-restock-waitlist'); ?></p>
+                </div>
+            <?php endif; ?>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('srwm_settings-options'); ?>
                 
-                <h2><?php _e('General Settings', 'smart-restock-waitlist'); ?></h2>
-                <table class="form-table">
+                <div class="srwm-settings-section">
+                    <h2><?php _e('General Settings', 'smart-restock-waitlist'); ?></h2>
+                    <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('Enable Waitlist', 'smart-restock-waitlist'); ?></th>
                         <td>
@@ -6451,9 +6606,9 @@ class SRWM_Admin {
                         <td>
                             <input type="number" name="srwm_low_stock_threshold" 
                                    value="<?php echo esc_attr(get_option('srwm_low_stock_threshold', 5)); ?>" 
-                                   min="0" class="regular-text">
+                                   min="0" max="1000" class="regular-text">
                             <p class="description">
-                                <?php _e('Stock level at which to notify suppliers (global default)', 'smart-restock-waitlist'); ?>
+                                <?php _e('Stock level at which to notify suppliers (global default). Must be between 0 and 1000.', 'smart-restock-waitlist'); ?>
                             </p>
                         </td>
                     </tr>
@@ -6468,9 +6623,11 @@ class SRWM_Admin {
                             </label>
                         </td>
                     </tr>
-                </table>
+                    </table>
+                </div>
                 
                 <?php if ($this->license_manager->is_pro_active()): ?>
+                <div class="srwm-settings-section">
                 <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
                 <table class="form-table">
                     <tr>
@@ -6519,9 +6676,11 @@ class SRWM_Admin {
                             </p>
                         </td>
                     </tr>
-                </table>
+                    </table>
+                </div>
                 
-                <h2><?php _e('Company Information (for Purchase Orders)', 'smart-restock-waitlist'); ?></h2>
+                <div class="srwm-settings-section">
+                    <h2><?php _e('Company Information (for Purchase Orders)', 'smart-restock-waitlist'); ?></h2>
                 <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('Company Name', 'smart-restock-waitlist'); ?></th>
@@ -6558,17 +6717,22 @@ class SRWM_Admin {
                                    class="regular-text">
                         </td>
                     </tr>
-                </table>
+                    </table>
+                </div>
                 <?php endif; ?>
                 
-                <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
-                
-                <table class="form-table">
+                <div class="srwm-settings-section">
+                    <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
+                    <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('Customer Waitlist Email', 'smart-restock-waitlist'); ?></th>
                         <td>
                             <textarea name="srwm_email_template_waitlist" rows="8" cols="50" class="large-text"><?php 
-                                echo esc_textarea(get_option('srwm_email_template_waitlist')); 
+                                $template = get_option('srwm_email_template_waitlist');
+                                if (empty($template)) {
+                                    $template = $this->get_default_waitlist_email_template();
+                                }
+                                echo esc_textarea($template); 
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
@@ -6581,7 +6745,11 @@ class SRWM_Admin {
                         <th scope="row"><?php _e('Supplier Notification Email', 'smart-restock-waitlist'); ?></th>
                         <td>
                             <textarea name="srwm_email_template_supplier" rows="8" cols="50" class="large-text"><?php 
-                                echo esc_textarea(get_option('srwm_email_template_supplier')); 
+                                $template = get_option('srwm_email_template_supplier');
+                                if (empty($template)) {
+                                    $template = $this->get_default_supplier_email_template();
+                                }
+                                echo esc_textarea($template); 
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {supplier_name}, {product_name}, {sku}, {current_stock}, {waitlist_count}, {site_name}', 'smart-restock-waitlist'); ?>
@@ -6590,9 +6758,19 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     <?php endif; ?>
-                </table>
+                    </table>
+                </div>
                 
-                <?php submit_button(); ?>
+                <div class="srwm-submit-actions">
+                    <p class="submit">
+                    <?php submit_button(__('Save Settings', 'smart-restock-waitlist'), 'primary', 'submit', false); ?>
+                    <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=smart-restock-waitlist-settings&action=reset-defaults'), 'srwm_reset_defaults'); ?>" 
+                       class="button button-secondary" 
+                       onclick="return confirm('<?php esc_attr_e('Are you sure you want to reset all settings to defaults?', 'smart-restock-waitlist'); ?>')">
+                        <?php _e('Reset to Defaults', 'smart-restock-waitlist'); ?>
+                    </a>
+                    </p>
+                </div>
             </form>
         </div>
         <?php
