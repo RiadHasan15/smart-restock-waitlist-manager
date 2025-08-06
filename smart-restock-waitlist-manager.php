@@ -937,10 +937,7 @@ class SmartRestockWaitlistManager {
      */
     private function init_admin() {
         require_once SRWM_PLUGIN_DIR . 'includes/class-srwm-admin.php';
-        require_once SRWM_PLUGIN_DIR . 'admin/class-srwm-admin-dashboard.php';
-        
         new SRWM_Admin($this->license_manager);
-        new SRWM_Admin_Dashboard($this->license_manager);
         
 
     }

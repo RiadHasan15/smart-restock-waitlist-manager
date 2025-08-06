@@ -410,12 +410,22 @@ class SRWM_Analytics {
      * Get real-time dashboard data
      */
     public function get_dashboard_data() {
-        return array(
-            'today_waitlists' => $this->get_today_waitlists(),
-            'today_restocks' => $this->get_today_restocks(),
-            'pending_notifications' => $this->get_pending_notifications(),
-            'low_stock_products' => $this->get_low_stock_products()
-        );
+        try {
+            return array(
+                'today_waitlists' => $this->get_today_waitlists(),
+                'today_restocks' => $this->get_today_restocks(),
+                'pending_notifications' => $this->get_pending_notifications(),
+                'low_stock_products' => $this->get_low_stock_products()
+            );
+        } catch (Exception $e) {
+            error_log('Dashboard data error: ' . $e->getMessage());
+            return array(
+                'today_waitlists' => 0,
+                'today_restocks' => 0,
+                'pending_notifications' => 0,
+                'low_stock_products' => 0
+            );
+        }
     }
     
     /**
@@ -426,10 +436,17 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_var($wpdb->prepare(
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table WHERE DATE(date_added) = %s",
             date('Y-m-d')
         ));
+        
+        return $result ?: 0;
     }
     
     /**
@@ -440,10 +457,17 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_restock_logs';
         
-        return $wpdb->get_var($wpdb->prepare(
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table WHERE DATE(timestamp) = %s",
             date('Y-m-d')
         ));
+        
+        return $result ?: 0;
     }
     
     /**
@@ -454,9 +478,16 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_var(
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var(
             "SELECT COUNT(*) FROM $table WHERE notified = 0"
         );
+        
+        return $result ?: 0;
     }
     
     /**
@@ -467,10 +498,18 @@ class SRWM_Analytics {
         
         $threshold = get_option('srwm_low_stock_threshold', 5);
         
-        return $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$wpdb->prefix}wc_product_meta_lookup 
+        // Check if WooCommerce table exists
+        $wc_table = $wpdb->prefix . 'wc_product_meta_lookup';
+        if ($wpdb->get_var("SHOW TABLES LIKE '$wc_table'") != $wc_table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $wc_table 
              WHERE stock_quantity <= %d AND stock_quantity > 0",
             $threshold
         ));
+        
+        return $result ?: 0;
     }
 }
