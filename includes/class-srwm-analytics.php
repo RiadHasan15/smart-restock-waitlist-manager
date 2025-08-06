@@ -66,6 +66,7 @@ class SRWM_Analytics {
             );
             
         } catch (Exception $e) {
+            error_log('SRWM Analytics: Exception in get_dashboard_data: ' . $e->getMessage());
             return array(
                 'total_waitlist_customers' => 0,
                 'today_waitlists' => 0,
@@ -101,6 +102,11 @@ class SRWM_Analytics {
                 ORDER BY date ASC
             ", $days));
             
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Database error in get_waitlist_growth_trend: ' . $wpdb->last_error);
+                return array();
+            }
+            
             $data = array();
             foreach ($results as $row) {
                 $data[] = array(
@@ -112,6 +118,7 @@ class SRWM_Analytics {
             return $data;
             
         } catch (Exception $e) {
+            error_log('SRWM Analytics: Exception in get_waitlist_growth_trend: ' . $e->getMessage());
             return array();
         }
     }
@@ -139,6 +146,15 @@ class SRWM_Analytics {
                 GROUP BY method
                 ORDER BY count DESC
             ");
+            
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Database error in get_restock_method_breakdown: ' . $wpdb->last_error);
+                return array(
+                    array('method' => 'manual', 'count' => 0),
+                    array('method' => 'csv_upload', 'count' => 0),
+                    array('method' => 'quick_restock', 'count' => 0)
+                );
+            }
             
             $data = array();
             foreach ($results as $row) {

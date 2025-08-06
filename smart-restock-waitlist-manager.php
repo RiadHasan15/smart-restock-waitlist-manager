@@ -1165,9 +1165,9 @@ class SmartRestockWaitlistManager {
             // Combine all data
             $data = array_merge($dashboard_data, $chart_data);
             
-            wp_die(json_encode(array('success' => true, 'data' => $data)));
+            wp_send_json_success($data);
         } catch (Exception $e) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data.', 'smart-restock-waitlist'))));
+            wp_send_json_error(__('Error loading dashboard data.', 'smart-restock-waitlist'));
         }
     }
     

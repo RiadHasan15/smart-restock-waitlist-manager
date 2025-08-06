@@ -26,11 +26,17 @@
             return;
         }
         
+        console.log('SRWM Dashboard: Initializing dashboard...');
+        
         initCharts();
         initEventHandlers();
         initRealtimeUpdates();
         initTooltips();
-        // Enhanced UX features temporarily disabled to fix conflicts
+        
+        // Load initial chart data
+        loadChartData();
+        
+        console.log('SRWM Dashboard: Dashboard initialized successfully');
     }
 
     /**
@@ -133,8 +139,11 @@
      * Load chart data via AJAX
      */
     function loadChartData(days = 7) {
+        console.log('SRWM Dashboard: Loading chart data for', days, 'days');
+        
         // Check if srwm_dashboard is available
         if (typeof srwm_dashboard === 'undefined') {
+            console.error('SRWM Dashboard: srwm_dashboard not available');
             showMessage('error', 'Dashboard configuration not loaded');
             return $.Deferred().reject('srwm_dashboard not available');
         }
@@ -149,20 +158,13 @@
                 days: days
             },
             success: function(response) {
-                // Ensure response is an object
-                if (typeof response === 'string') {
-                    try {
-                        response = JSON.parse(response);
-                    } catch (e) {
-                        showMessage('error', 'Invalid response format');
-                        return;
-                    }
-                }
+                console.log('SRWM Dashboard: Chart data response:', response);
                 
                 if (response.success) {
                     updateCharts(response.data);
                 } else {
-                    showMessage('error', response.message || 'Failed to load chart data');
+                    console.error('SRWM Dashboard: Chart data error:', response.data);
+                    showMessage('error', response.data || 'Failed to load chart data');
                 }
             },
             error: function(xhr, status, error) {
@@ -179,9 +181,11 @@
      * Update charts with new data
      */
     function updateCharts(data) {
+        console.log('SRWM Dashboard: Updating charts with data:', data);
+        
         // Check if Chart.js is available
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not available for chart updates');
+            console.error('SRWM Dashboard: Chart.js not available for chart updates');
             return;
         }
         
