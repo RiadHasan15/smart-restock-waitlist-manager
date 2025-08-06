@@ -420,11 +420,47 @@
     }
 
     /**
-     * Initialize real-time updates (disabled for now)
+     * Initialize real-time updates
      */
     function initRealtimeUpdates() {
-        // Real-time updates disabled - will be implemented in future version
-        // This prevents unnecessary AJAX calls and improves performance
+        console.log('SRWM Dashboard: Initializing real-time updates...');
+        
+        // Start auto-refresh every 30 seconds
+        setInterval(function() {
+            refreshDashboardData();
+        }, 30000); // 30 seconds
+        
+        console.log('SRWM Dashboard: Real-time updates initialized (30s interval)');
+    }
+    
+    /**
+     * Refresh dashboard data (real-time update)
+     */
+    function refreshDashboardData() {
+        console.log('SRWM Dashboard: Auto-refreshing dashboard data...');
+        
+        // Show subtle refresh indicator
+        showRefreshIndicator();
+        
+        // Refresh statistics
+        refreshStatistics();
+        
+        // Refresh charts
+        loadChartData();
+    }
+    
+    /**
+     * Show subtle refresh indicator
+     */
+    function showRefreshIndicator() {
+        // Add a subtle pulse animation to the refresh button
+        const $refreshBtn = $('#srwm-refresh-dashboard');
+        if ($refreshBtn.length) {
+            $refreshBtn.addClass('srwm-auto-refresh');
+            setTimeout(function() {
+                $refreshBtn.removeClass('srwm-auto-refresh');
+            }, 2000);
+        }
     }
 
     /**
