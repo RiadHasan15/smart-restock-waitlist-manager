@@ -125,26 +125,26 @@
     /**
      * Load chart data via AJAX
      */
-    function loadChartData() {
-        $.ajax({
+    function loadChartData(days = 7) {
+        return $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
             data: {
                 action: 'srwm_get_dashboard_data',
-                nonce: srwm_dashboard.nonce
+                nonce: srwm_dashboard.nonce,
+                days: days
             },
             success: function(response) {
                 if (response.success) {
                     updateCharts(response.data);
                 } else {
-                    // Don't show error for no data, just log it
                     console.log('Dashboard data response:', response);
+                    showMessage('error', response.message || 'Failed to load chart data');
                 }
             },
             error: function(xhr, status, error) {
-                // Only show error for actual failures, not missing data
                 console.log('Dashboard AJAX error:', {xhr, status, error});
-                // Don't show error message to user for now
+                showMessage('error', 'Failed to load chart data. Please try again.');
             }
         });
     }
@@ -154,23 +154,55 @@
      */
     function updateCharts(data) {
         // Update waitlist chart
-        if (waitlistChart && data.waitlist_growth) {
-            const labels = data.waitlist_growth.map(item => item.date);
-            const values = data.waitlist_growth.map(item => item.count);
-            
-            waitlistChart.data.labels = labels;
-            waitlistChart.data.datasets[0].data = values;
-            waitlistChart.update();
+        if (waitlistChart) {
+            if (data.waitlist_growth && data.waitlist_growth.length > 0) {
+                const labels = data.waitlist_growth.map(item => {
+                    const date = new Date(item.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                const values = data.waitlist_growth.map(item => parseInt(item.count));
+                
+                waitlistChart.data.labels = labels;
+                waitlistChart.data.datasets[0].data = values;
+                waitlistChart.update();
+            } else {
+                // Show empty state with last 7 days
+                const labels = [];
+                const values = [];
+                const today = new Date();
+                
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                    values.push(0);
+                }
+                
+                waitlistChart.data.labels = labels;
+                waitlistChart.data.datasets[0].data = values;
+                waitlistChart.update();
+            }
         }
 
         // Update restock chart
-        if (restockChart && data.restock_activity) {
-            const labels = data.restock_activity.map(item => item.method);
-            const values = data.restock_activity.map(item => item.count);
-            
-            restockChart.data.labels = labels;
-            restockChart.data.datasets[0].data = values;
-            restockChart.update();
+        if (restockChart) {
+            if (data.restock_activity && data.restock_activity.length > 0) {
+                const labels = data.restock_activity.map(item => {
+                    // Format method names for better display
+                    const method = item.method || 'Unknown';
+                    return method.charAt(0).toUpperCase() + method.slice(1).replace('_', ' ');
+                });
+                const values = data.restock_activity.map(item => parseInt(item.count));
+                
+                restockChart.data.labels = labels;
+                restockChart.data.datasets[0].data = values;
+                restockChart.update();
+            } else {
+                // Show empty state
+                restockChart.data.labels = ['Manual', 'CSV Upload', 'Quick Restock'];
+                restockChart.data.datasets[0].data = [0, 0, 0];
+                restockChart.update();
+            }
         }
     }
 
@@ -193,6 +225,31 @@
 
         $('#srwm-pro-features').on('click', function() {
             window.location.href = 'admin.php?page=smart-restock-waitlist-pro';
+        });
+
+        // Chart period selector
+        $('.srwm-chart-period').on('change', function() {
+            const days = $(this).val();
+            loadChartData(days);
+        });
+
+        // Chart refresh button
+        $('.srwm-btn-refresh-chart').on('click', function() {
+            const $button = $(this);
+            const $icon = $button.find('.dashicons');
+            
+            // Add loading state
+            $button.prop('disabled', true);
+            $icon.removeClass('dashicons-update').addClass('dashicons-update-alt');
+            $icon.css('animation', 'spin 1s linear infinite');
+            
+            // Reload chart data
+            loadChartData().always(function() {
+                // Remove loading state
+                $button.prop('disabled', false);
+                $icon.removeClass('dashicons-update-alt').addClass('dashicons-update');
+                $icon.css('animation', '');
+            });
         });
 
         // Stat card interactions

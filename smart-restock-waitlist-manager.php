@@ -1125,12 +1125,16 @@ class SmartRestockWaitlistManager {
         try {
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
             
+            // Get days parameter (default to 7)
+            $days = isset($_POST['days']) ? intval($_POST['days']) : 7;
+            $days = max(1, min(90, $days)); // Limit between 1 and 90 days
+            
             // Get basic dashboard data
             $dashboard_data = $analytics->get_dashboard_data();
             
             // Get chart data that JavaScript expects
             $chart_data = array(
-                'waitlist_growth' => $analytics->get_waitlist_growth_trend(7), // Last 7 days
+                'waitlist_growth' => $analytics->get_waitlist_growth_trend($days),
                 'restock_activity' => $analytics->get_restock_method_breakdown()
             );
             

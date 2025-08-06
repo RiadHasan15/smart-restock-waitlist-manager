@@ -311,12 +311,29 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_restock_logs';
         
-        return $wpdb->get_results(
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results(
             "SELECT method, COUNT(*) as count
              FROM $table
+             WHERE method IS NOT NULL AND method != ''
              GROUP BY method
              ORDER BY count DESC"
         , ARRAY_A);
+        
+        // If no results, return default structure
+        if (empty($results)) {
+            return array(
+                array('method' => 'manual', 'count' => 0),
+                array('method' => 'csv_upload', 'count' => 0),
+                array('method' => 'quick_restock', 'count' => 0)
+            );
+        }
+        
+        return $results;
     }
     
     /**
@@ -327,7 +344,12 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_results($wpdb->prepare(
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results($wpdb->prepare(
             "SELECT DATE(date_added) as date, COUNT(*) as count
              FROM $table
              WHERE date_added >= DATE_SUB(NOW(), INTERVAL %d DAY)
@@ -335,6 +357,9 @@ class SRWM_Analytics {
              ORDER BY date",
             $days
         ), ARRAY_A);
+        
+        // If no results, return empty array (JavaScript will handle empty state)
+        return $results ?: array();
     }
     
     /**
