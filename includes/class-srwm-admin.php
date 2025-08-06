@@ -711,7 +711,7 @@ class SRWM_Admin {
                     <!-- Table Controls - Always Visible -->
                     <div class="srwm-table-controls">
                         <div class="srwm-table-info">
-                            <span class="srwm-demo-notice"><?php _e('Interactive Features Demo', 'smart-restock-waitlist'); ?></span>
+    
                         </div>
                         <div class="srwm-table-search">
                             <input type="text" id="srwm-waitlist-search" class="srwm-search-input" placeholder="<?php _e('Search products...', 'smart-restock-waitlist'); ?>">
@@ -818,94 +818,55 @@ class SRWM_Admin {
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Demo data to show interactive features -->
-                                <tr>
-                                    <td>
-                                        <div class="srwm-product-info">
-                                            <strong>Demo Product 1</strong>
-                                            <small>DEMO-001</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-stock-badge srwm-stock-low">3</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-waitlist-count">15</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-status srwm-status-low"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-action-buttons">
-                                            <button class="button button-small view-waitlist" data-product-id="demo-1">
+                                <?php if (!empty($waitlist_products)): ?>
+                                    <?php foreach ($waitlist_products as $product): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="srwm-product-info">
+                                                    <strong><?php echo esc_html($product->product_name); ?></strong>
+                                                    <small><?php echo esc_html($product->sku); ?></small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="srwm-stock-badge <?php echo $product->stock_quantity <= 0 ? 'srwm-stock-out' : ($product->stock_quantity <= 10 ? 'srwm-stock-low' : 'srwm-stock-ok'); ?>"><?php echo esc_html($product->stock_quantity); ?></span>
+                                            </td>
+                                            <td>
+                                                <span class="srwm-waitlist-count"><?php echo esc_html($product->waitlist_count); ?></span>
+                                            </td>
+                                            <td>
+                                                <?php if ($product->stock_quantity <= 0): ?>
+                                                    <span class="srwm-status srwm-status-out"><?php _e('Out of Stock', 'smart-restock-waitlist'); ?></span>
+                                                <?php elseif ($product->stock_quantity <= 10): ?>
+                                                    <span class="srwm-status srwm-status-low"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></span>
+                                                <?php else: ?>
+                                                    <span class="srwm-status srwm-status-ok"><?php _e('In Stock', 'smart-restock-waitlist'); ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <div class="srwm-action-buttons">
+                                                    <button class="button button-small view-waitlist" data-product-id="<?php echo esc_attr($product->product_id); ?>">
+                                                        <span class="dashicons dashicons-groups"></span>
+                                                        <?php _e('View', 'smart-restock-waitlist'); ?>
+                                                    </button>
+                                                    <button class="button button-primary button-small restock-product" data-product-id="<?php echo esc_attr($product->product_id); ?>">
+                                                        <span class="dashicons dashicons-update"></span>
+                                                        <?php _e('Restock', 'smart-restock-waitlist'); ?>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="5" class="srwm-empty-state">
+                                            <div class="srwm-empty-icon">
                                                 <span class="dashicons dashicons-groups"></span>
-                                                <?php _e('View', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                            <button class="button button-primary button-small restock-product" data-product-id="demo-1">
-                                                <span class="dashicons dashicons-update"></span>
-                                                <?php _e('Restock', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="srwm-product-info">
-                                            <strong>Demo Product 2</strong>
-                                            <small>DEMO-002</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-stock-badge srwm-stock-ok">25</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-waitlist-count">8</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-status srwm-status-ok"><?php _e('In Stock', 'smart-restock-waitlist'); ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-action-buttons">
-                                            <button class="button button-small view-waitlist" data-product-id="demo-2">
-                                                <span class="dashicons dashicons-groups"></span>
-                                                <?php _e('View', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                            <button class="button button-primary button-small restock-product" data-product-id="demo-2">
-                                                <span class="dashicons dashicons-update"></span>
-                                                <?php _e('Restock', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="srwm-product-info">
-                                            <strong>Demo Product 3</strong>
-                                            <small>DEMO-003</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-stock-badge srwm-stock-low">0</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-waitlist-count">32</span>
-                                    </td>
-                                    <td>
-                                        <span class="srwm-status srwm-status-out"><?php _e('Out of Stock', 'smart-restock-waitlist'); ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="srwm-action-buttons">
-                                            <button class="button button-small view-waitlist" data-product-id="demo-3">
-                                                <span class="dashicons dashicons-groups"></span>
-                                                <?php _e('View', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                            <button class="button button-primary button-small restock-product" data-product-id="demo-3">
-                                                <span class="dashicons dashicons-update"></span>
-                                                <?php _e('Restock', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                            </div>
+                                            <h3><?php _e('No Products with Waitlists', 'smart-restock-waitlist'); ?></h3>
+                                            <p><?php _e('When customers join waitlists for products, they will appear here.', 'smart-restock-waitlist'); ?></p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -1890,17 +1851,7 @@ class SRWM_Admin {
             align-items: center;
         }
         
-        .srwm-demo-notice {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
+
         
         .srwm-table-search {
             position: relative;
