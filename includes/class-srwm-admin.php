@@ -1171,6 +1171,19 @@ class SRWM_Admin {
             </div>
         </div>
         
+        <!-- Stat Card Detail Modals -->
+        <div id="srwm-stat-detail-modal" class="srwm-modal" style="display: none;">
+            <div class="srwm-modal-content srwm-stat-modal">
+                <div class="srwm-modal-header">
+                    <h2 id="srwm-stat-modal-title"><?php _e('Statistics Details', 'smart-restock-waitlist'); ?></h2>
+                    <span class="srwm-modal-close">&times;</span>
+                </div>
+                <div class="srwm-modal-body">
+                    <div id="srwm-stat-modal-content"></div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Modals -->
         <div id="srwm-waitlist-modal" class="srwm-modal" style="display: none;">
             <div class="srwm-modal-content">
@@ -1986,6 +1999,160 @@ class SRWM_Admin {
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
             transform: scale(1.01);
             transition: all 0.3s ease;
+        }
+        
+        /* Enhanced Stat Cards - Clickable */
+        .srwm-stat-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .srwm-stat-card:hover::before {
+            left: 100%;
+        }
+        
+        .srwm-stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .srwm-stat-card:active {
+            transform: translateY(-2px);
+        }
+        
+        /* Stat Card Click Indicator */
+        .srwm-stat-card::after {
+            content: 'Click for details';
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 10px;
+            color: #6b7280;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .srwm-stat-card:hover::after {
+            opacity: 1;
+        }
+        
+        /* Stat Detail Modal */
+        .srwm-stat-modal {
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        .srwm-stat-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .srwm-stat-detail-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-stat-detail-card h4 {
+            margin: 0 0 8px 0;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .srwm-stat-detail-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .srwm-stat-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        
+        .srwm-stat-detail-table th,
+        .srwm-stat-detail-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .srwm-stat-detail-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .srwm-stat-detail-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        /* Loading Spinner */
+        .srwm-loading-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .srwm-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Status Badges for Modal */
+        .srwm-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .srwm-status-waiting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .srwm-status-notified {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .srwm-status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .srwm-status-critical {
+            background: #fee2e2;
+            color: #991b1b;
         }
         
         /* Responsive Enhancements */
