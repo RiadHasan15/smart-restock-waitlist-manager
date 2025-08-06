@@ -2624,8 +2624,7 @@ class SmartRestockWaitlistManager {
             )
         );
         
-        // Debug logging
-        error_log('CSV Upload Links Response: ' . print_r($response_data, true));
+
         
         wp_send_json_success($response_data);
     }
