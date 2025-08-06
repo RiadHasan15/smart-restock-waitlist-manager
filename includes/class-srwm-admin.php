@@ -668,6 +668,10 @@ class SRWM_Admin {
                                         <option value="30"><?php _e('Last 30 Days', 'smart-restock-waitlist'); ?></option>
                                         <option value="90"><?php _e('Last 90 Days', 'smart-restock-waitlist'); ?></option>
                                     </select>
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-primary srwm-btn-refresh-chart" data-chart="waitlist">
+                                        <span class="dashicons dashicons-update"></span>
+                                        <?php _e('Refresh', 'smart-restock-waitlist'); ?>
+                                    </button>
                                 </div>
                             </div>
                             <div class="srwm-chart-container">
@@ -682,7 +686,7 @@ class SRWM_Admin {
                                     <?php _e('Restock Activity Breakdown', 'smart-restock-waitlist'); ?>
                                 </h3>
                                 <div class="srwm-chart-actions">
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary srwm-btn-refresh-chart">
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-primary srwm-btn-refresh-chart" data-chart="restock">
                                         <span class="dashicons dashicons-update"></span>
                                         <?php _e('Refresh', 'smart-restock-waitlist'); ?>
                                     </button>
@@ -2824,6 +2828,23 @@ class SRWM_Admin {
         .srwm-chart-actions {
             display: flex;
             gap: 12px;
+            align-items: center;
+        }
+        
+        .srwm-chart-actions .srwm-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-chart-actions .srwm-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-chart-period {
@@ -3093,6 +3114,10 @@ class SRWM_Admin {
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+        
+        .srwm-spinning {
+            animation: spin 1s linear infinite;
         }
         
         .srwm-btn-refresh-chart:disabled {
