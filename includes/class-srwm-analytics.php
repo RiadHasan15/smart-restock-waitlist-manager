@@ -267,11 +267,11 @@ class SRWM_Analytics {
             return 0;
         }
         
-        return $wpdb->get_var("
+        return intval($wpdb->get_var("
             SELECT COUNT(DISTINCT product_id) 
             FROM {$table_name} 
             WHERE notified = 0
-        ");
+        ") ?? 0);
     }
     
     /**
@@ -296,7 +296,7 @@ class SRWM_Analytics {
             ) as daily_waitlists
         ");
         
-        return round($result, 1);
+        return round($result ?? 0, 1);
     }
     
     /**
@@ -382,6 +382,10 @@ class SRWM_Analytics {
             WHERE DATE(date_added) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
         ");
         
+        // Handle null values
+        $today_count = $today_count ?? 0;
+        $yesterday_count = $yesterday_count ?? 0;
+        
         if ($yesterday_count == 0) {
             return $today_count > 0 ? 100 : 0;
         }
@@ -413,7 +417,7 @@ class SRWM_Analytics {
             ) as daily_stats
         ");
         
-        return round($result, 1);
+        return round($result ?? 0, 1);
     }
     
     /**
@@ -549,15 +553,15 @@ class SRWM_Analytics {
             }
             
             // Calculate efficiency based on time between waitlist and restock
-            $result = $wpdb->get_var("
-                SELECT AVG(TIMESTAMPDIFF(HOUR, w.date_added, r.timestamp)) as avg_hours
-                FROM {$waitlist_table} w
-                JOIN {$restock_table} r ON w.product_id = r.product_id
-                WHERE w.notified = 1
-                AND r.timestamp > w.date_added
-            ");
-            
-            return round($result, 1);
+                    $result = $wpdb->get_var("
+            SELECT AVG(TIMESTAMPDIFF(HOUR, w.date_added, r.timestamp)) as avg_hours
+            FROM {$waitlist_table} w
+            JOIN {$restock_table} r ON w.product_id = r.product_id
+            WHERE w.notified = 1
+            AND r.timestamp > w.date_added
+        ");
+        
+        return round($result ?? 0, 1);
             
         } catch (Exception $e) {
             return 0;
@@ -578,14 +582,14 @@ class SRWM_Analytics {
             }
             
             // Calculate engagement based on multiple waitlist joins
-            $result = $wpdb->get_var("
-                SELECT 
-                    (COUNT(DISTINCT customer_email) * 100.0 / COUNT(*)) as engagement_rate
-                FROM {$table_name}
-                WHERE date_added >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-            ");
-            
-            return round($result, 1);
+                    $result = $wpdb->get_var("
+            SELECT 
+                (COUNT(DISTINCT customer_email) * 100.0 / COUNT(*)) as engagement_rate
+            FROM {$table_name}
+            WHERE date_added >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ");
+        
+        return round($result ?? 0, 1);
             
         } catch (Exception $e) {
             return 0;
@@ -606,7 +610,7 @@ class SRWM_Analytics {
             }
             
             $count = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
-            return intval($count);
+            return intval($count ?? 0);
             
         } catch (Exception $e) {
             return 0;
@@ -631,7 +635,7 @@ class SRWM_Analytics {
                 FROM {$table_name} 
                 WHERE DATE(date_added) = CURDATE()
             ");
-            return intval($count);
+            return intval($count ?? 0);
             
         } catch (Exception $e) {
             return 0;
@@ -656,7 +660,7 @@ class SRWM_Analytics {
                 FROM {$table_name} 
                 WHERE DATE(timestamp) = CURDATE()
             ");
-            return intval($count);
+            return intval($count ?? 0);
             
         } catch (Exception $e) {
             return 0;
@@ -736,7 +740,7 @@ class SRWM_Analytics {
                 AND r.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             ");
             
-            return round(floatval($avg_time), 1);
+            return round(floatval($avg_time ?? 0), 1);
             
         } catch (Exception $e) {
             return 0;
@@ -755,7 +759,7 @@ class SRWM_Analytics {
             return 0;
         }
         
-        return $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
+        return intval($wpdb->get_var("SELECT COUNT(*) FROM {$table_name}") ?? 0);
     }
     
     /**
@@ -779,7 +783,7 @@ class SRWM_Analytics {
             ) as product_waitlists
         ");
         
-        return round($result, 1);
+        return round($result ?? 0, 1);
     }
     
     /**
@@ -797,11 +801,11 @@ class SRWM_Analytics {
         $total = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
         $notified = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name} WHERE notified = 1");
         
-        if ($total == 0) {
+        if ($total == 0 || $total === null) {
             return 0;
         }
         
-        return round(($notified / $total) * 100, 1);
+        return round((($notified ?? 0) / ($total ?? 1)) * 100, 1);
     }
     
     /**
