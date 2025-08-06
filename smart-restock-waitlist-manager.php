@@ -1220,14 +1220,20 @@ class SmartRestockWaitlistManager {
      * AJAX: Export dashboard report
      */
     public function ajax_export_dashboard_report() {
-        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        check_ajax_referer('srwm_dashboard_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
             wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
         }
         
-        $analytics = SRWM_Analytics::get_instance($this->license_manager);
-        $analytics->export_analytics_csv();
+        try {
+            $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            $csv_data = $analytics->export_analytics_csv();
+            
+            wp_die(json_encode(array('success' => true, 'data' => $csv_data)));
+        } catch (Exception $e) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Error generating report.', 'smart-restock-waitlist'))));
+        }
     }
     
     /**
