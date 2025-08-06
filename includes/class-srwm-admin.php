@@ -832,11 +832,11 @@ class SRWM_Admin {
                                     </td>
                                     <td>
                                         <div class="srwm-action-buttons">
-                                            <button class="button button-small">
+                                            <button class="button button-small view-waitlist" data-product-id="demo-1">
                                                 <span class="dashicons dashicons-groups"></span>
                                                 <?php _e('View', 'smart-restock-waitlist'); ?>
                                             </button>
-                                            <button class="button button-primary button-small">
+                                            <button class="button button-primary button-small restock-product" data-product-id="demo-1">
                                                 <span class="dashicons dashicons-update"></span>
                                                 <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                             </button>
@@ -861,11 +861,11 @@ class SRWM_Admin {
                                     </td>
                                     <td>
                                         <div class="srwm-action-buttons">
-                                            <button class="button button-small">
+                                            <button class="button button-small view-waitlist" data-product-id="demo-2">
                                                 <span class="dashicons dashicons-groups"></span>
                                                 <?php _e('View', 'smart-restock-waitlist'); ?>
                                             </button>
-                                            <button class="button button-primary button-small">
+                                            <button class="button button-primary button-small restock-product" data-product-id="demo-2">
                                                 <span class="dashicons dashicons-update"></span>
                                                 <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                             </button>
@@ -890,11 +890,11 @@ class SRWM_Admin {
                                     </td>
                                     <td>
                                         <div class="srwm-action-buttons">
-                                            <button class="button button-small">
+                                            <button class="button button-small view-waitlist" data-product-id="demo-3">
                                                 <span class="dashicons dashicons-groups"></span>
                                                 <?php _e('View', 'smart-restock-waitlist'); ?>
                                             </button>
-                                            <button class="button button-primary button-small">
+                                            <button class="button button-primary button-small restock-product" data-product-id="demo-3">
                                                 <span class="dashicons dashicons-update"></span>
                                                 <?php _e('Restock', 'smart-restock-waitlist'); ?>
                                             </button>
@@ -1852,14 +1852,19 @@ class SRWM_Admin {
             transition: opacity 0.3s ease;
         }
         
-        /* Interactive Table Controls */
+        /* Interactive Table Controls - Matching Dashboard Design */
         .srwm-table-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            gap: 16px;
+            margin-bottom: 24px;
+            gap: 20px;
             flex-wrap: wrap;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
         }
         
         .srwm-table-info {
@@ -1870,12 +1875,13 @@ class SRWM_Admin {
         .srwm-demo-notice {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
         
         .srwm-table-search {
@@ -1886,12 +1892,13 @@ class SRWM_Admin {
         
         .srwm-search-input {
             width: 100%;
-            padding: 10px 40px 10px 12px;
+            padding: 12px 40px 12px 16px;
             border: 1px solid #d1d5db;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
             background: #fff;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-search-input:focus {
@@ -1915,13 +1922,15 @@ class SRWM_Admin {
         }
         
         .srwm-filter-select {
-            padding: 8px 12px;
+            padding: 10px 16px;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
+            border-radius: 8px;
             background: #fff;
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-width: 140px;
         }
         
         .srwm-filter-select:focus {
@@ -1930,33 +1939,41 @@ class SRWM_Admin {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
-        /* Sortable Table Headers */
+        /* Sortable Table Headers - Enhanced Design */
         .srwm-sortable {
             cursor: pointer;
             user-select: none;
             position: relative;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
+            padding: 16px 12px;
+            font-weight: 600;
+            color: #374151;
         }
         
         .srwm-sortable:hover {
-            background-color: #f3f4f6;
+            background-color: #f8fafc;
+            color: #3b82f6;
+            transform: translateY(-1px);
         }
         
         .srwm-sort-icon {
             margin-left: 8px;
-            font-size: 12px;
+            font-size: 14px;
             color: #9ca3af;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            opacity: 0.7;
         }
         
         .srwm-sortable.sorted-asc .srwm-sort-icon {
             color: #3b82f6;
             transform: rotate(0deg);
+            opacity: 1;
         }
         
         .srwm-sortable.sorted-desc .srwm-sort-icon {
             color: #3b82f6;
             transform: rotate(180deg);
+            opacity: 1;
         }
         
         /* Table Row Filtering */
@@ -1965,7 +1982,10 @@ class SRWM_Admin {
         }
         
         .srwm-table-row-highlight {
-            background-color: #fef3c7 !important;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
+            transform: scale(1.01);
+            transition: all 0.3s ease;
         }
         
         /* Responsive Enhancements */
