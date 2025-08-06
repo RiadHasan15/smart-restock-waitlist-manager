@@ -821,7 +821,7 @@ class SRWM_Admin {
                     <?php endif; ?>
                 </div>
                 </div>
-                <?php elseif (!$this->license_manager->is_pro_active()): ?>
+                <?php if (!$this->license_manager->is_pro_active()): ?>
                 <div class="srwm-pro-card">
                     <div class="srwm-pro-card-header">
                         <h2><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h2>
