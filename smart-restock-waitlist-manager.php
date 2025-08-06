@@ -1166,6 +1166,9 @@ class SmartRestockWaitlistManager {
             // Combine all data
             $data = array_merge($dashboard_data, $chart_data);
             
+            // Clear dashboard cache when data is requested
+            wp_cache_delete('srwm_dashboard_data', 'srwm_analytics');
+            
             wp_send_json_success($data);
         } catch (Exception $e) {
             wp_send_json_error(__('Error loading dashboard data.', 'smart-restock-waitlist'));
@@ -1202,6 +1205,22 @@ class SmartRestockWaitlistManager {
         
         if (!current_user_can('manage_woocommerce')) {
             wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        // Validate stat_type parameter
+        $stat_type = sanitize_text_field($_POST['stat_type'] ?? '');
+        $allowed_stat_types = array(
+            'total_waitlist_customers',
+            'waitlist_products', 
+            'avg_restock_time',
+            'today_waitlists',
+            'today_restocks',
+            'pending_notifications',
+            'low_stock_products'
+        );
+        
+        if (empty($stat_type) || !in_array($stat_type, $allowed_stat_types)) {
+            wp_send_json_error(__('Invalid stat type requested.', 'smart-restock-waitlist'));
         }
         
         // Rate limiting: max 10 requests per minute per user

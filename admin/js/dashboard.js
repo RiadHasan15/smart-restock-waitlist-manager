@@ -1069,8 +1069,6 @@
                 nonce: srwm_dashboard.nonce
             },
             success: function(response) {
-                console.log('SRWM Dashboard: Export response:', response);
-                
                 if (response.success) {
                     showMessage('success', srwm_dashboard.messages.export_success);
                     
@@ -1079,10 +1077,7 @@
                     link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data);
                     link.download = 'srwm-dashboard-report-' + new Date().toISOString().split('T')[0] + '.csv';
                     link.click();
-                    
-                    console.log('SRWM Dashboard: Export download triggered');
                 } else {
-                    console.error('SRWM Dashboard: Export failed:', response.data);
                     showMessage('error', response.data || srwm_dashboard.messages.export_error);
                 }
             },
@@ -1099,22 +1094,16 @@
      * Initialize real-time updates
      */
     function initRealtimeUpdates() {
-        console.log('SRWM Dashboard: Initializing real-time updates...');
-        
         // Start auto-refresh every 30 seconds
         setInterval(function() {
             refreshDashboardData();
         }, 30000); // 30 seconds
-        
-        console.log('SRWM Dashboard: Real-time updates initialized (30s interval)');
     }
     
     /**
      * Refresh dashboard data (real-time update)
      */
     function refreshDashboardData() {
-        console.log('SRWM Dashboard: Auto-refreshing dashboard data...');
-        
         // Show subtle refresh indicator
         showRefreshIndicator();
         
@@ -1334,7 +1323,6 @@
         
         $('#srwm-waitlist-search').on('input', function() {
             const searchTerm = $(this).val().toLowerCase();
-            console.log('SRWM Dashboard: Searching table for:', searchTerm);
             
             $table.find('tbody tr').each(function() {
                 const $row = $(this);
@@ -1376,12 +1364,9 @@
      * Initialize dashboard tabs
      */
     function initDashboardTabs() {
-        console.log('SRWM Dashboard: Initializing tabs...');
-        
         // Tab switching functionality
         $('.srwm-tab-button').on('click', function() {
             const tabName = $(this).data('tab');
-            console.log('SRWM Dashboard: Switching to tab:', tabName);
             
             // Remove active class from all tabs and content
             $('.srwm-tab-button').removeClass('active');
@@ -1394,31 +1379,24 @@
             // Load tab-specific data if needed
             loadTabData(tabName);
         });
-        
-        console.log('SRWM Dashboard: Tabs initialized');
     }
     
     /**
      * Load tab-specific data
      */
     function loadTabData(tabName) {
-        console.log('SRWM Dashboard: Loading data for tab:', tabName);
-        
         switch(tabName) {
             case 'overview':
                 // Overview tab data is already loaded
                 break;
             case 'analytics':
                 // Analytics tab - could load additional analytics data
-                console.log('SRWM Dashboard: Analytics tab selected');
                 break;
             case 'reports':
                 // Reports tab - could load report templates
-                console.log('SRWM Dashboard: Reports tab selected');
                 break;
             case 'actions':
                 // Actions tab - could load quick action shortcuts
-                console.log('SRWM Dashboard: Actions tab selected');
                 break;
         }
     }
@@ -1462,8 +1440,6 @@
      * Refresh statistics cards with real data
      */
     function refreshStatistics() {
-        console.log('SRWM Dashboard: Refreshing statistics...');
-        
         $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
@@ -1472,8 +1448,6 @@
                 nonce: srwm_dashboard.nonce
             },
             success: function(response) {
-                console.log('SRWM Dashboard: Statistics response:', response);
-                
                 if (response.success && response.data) {
                     const data = response.data;
                     
@@ -1487,14 +1461,10 @@
                     updateStatCard('today_restocks', data.today_restocks || 0);
                     updateStatCard('pending_notifications', data.pending_notifications || 0);
                     updateStatCard('low_stock_products', data.low_stock_products || 0);
-                    
-                    console.log('SRWM Dashboard: Statistics updated successfully');
-                } else {
-                    console.error('SRWM Dashboard: Failed to refresh statistics:', response.data);
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('SRWM Dashboard: Error refreshing statistics:', error);
+            error: function() {
+                // Silent error handling for auto-refresh
             }
         });
     }

@@ -37,6 +37,13 @@ class SRWM_Analytics {
     public function get_dashboard_data() {
         global $wpdb;
         
+        // Check for cached data (5 minutes cache)
+        $cache_key = 'srwm_dashboard_data';
+        $cached_data = wp_cache_get($cache_key, 'srwm_analytics');
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+        
         try {
             // Get total waitlist customers
             $total_waitlist_customers = $this->get_total_waitlist_customers();
@@ -56,7 +63,7 @@ class SRWM_Analytics {
             // Get average restock time
             $avg_restock_time = $this->get_average_restock_time();
             
-            return array(
+            $data = array(
                 'total_waitlist_customers' => $total_waitlist_customers,
                 'waitlist_products' => $this->get_waitlist_products_count(),
                 'today_waitlists' => $today_waitlists,
@@ -66,10 +73,16 @@ class SRWM_Analytics {
                 'avg_restock_time' => $avg_restock_time
             );
             
+            // Cache the result for 5 minutes
+            wp_cache_set($cache_key, $data, 'srwm_analytics', 300);
+            
+            return $data;
+            
         } catch (Exception $e) {
             error_log('SRWM Analytics: Exception in get_dashboard_data: ' . $e->getMessage());
             return array(
                 'total_waitlist_customers' => 0,
+                'waitlist_products' => 0,
                 'today_waitlists' => 0,
                 'today_restocks' => 0,
                 'pending_notifications' => 0,
@@ -725,7 +738,7 @@ class SRWM_Analytics {
             // Get low stock threshold from WooCommerce settings
             $low_stock_threshold = get_option('woocommerce_notify_low_stock_amount', 2);
             
-            // Query products with low stock
+            // Query products with low stock - limit to 100 for performance
             $args = array(
                 'post_type' => 'product',
                 'post_status' => 'publish',
@@ -743,7 +756,7 @@ class SRWM_Analytics {
                         'type' => 'NUMERIC'
                     )
                 ),
-                'posts_per_page' => -1,
+                'posts_per_page' => 100,
                 'fields' => 'ids'
             );
             
@@ -751,6 +764,7 @@ class SRWM_Analytics {
             return count($low_stock_products);
             
         } catch (Exception $e) {
+            error_log('SRWM Analytics: Error getting low stock products: ' . $e->getMessage());
             return 0;
         }
     }
