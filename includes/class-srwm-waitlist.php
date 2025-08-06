@@ -206,6 +206,9 @@ class SRWM_Waitlist {
             SRWM_VERSION
         );
         
+        // Add dynamic CSS for custom colors
+        wp_add_inline_style('srwm-waitlist', $this->get_dynamic_css());
+        
         wp_localize_script('srwm-waitlist', 'srwm_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('srwm_waitlist_nonce'),
@@ -215,6 +218,185 @@ class SRWM_Waitlist {
                 'already_on_waitlist' => __('You are already on the waitlist for this product.', 'smart-restock-waitlist')
             )
         ));
+    }
+    
+    /**
+     * Generate dynamic CSS based on user settings
+     */
+    private function get_dynamic_css() {
+        $css = '';
+        
+        // Get user settings
+        $container_bg = get_option('srwm_container_bg', '#f8f9fa');
+        $header_bg = get_option('srwm_header_bg', '#ffffff');
+        $header_text = get_option('srwm_header_text', '#333333');
+        $body_text = get_option('srwm_body_text', '#666666');
+        $btn_primary_bg = get_option('srwm_btn_primary_bg', '#007cba');
+        $btn_primary_text = get_option('srwm_btn_primary_text', '#ffffff');
+        $btn_secondary_bg = get_option('srwm_btn_secondary_bg', '#6c757d');
+        $btn_secondary_text = get_option('srwm_btn_secondary_text', '#ffffff');
+        $success_bg = get_option('srwm_success_bg', '#d4edda');
+        $success_text = get_option('srwm_success_text', '#155724');
+        $border_color = get_option('srwm_border_color', '#dee2e6');
+        $input_bg = get_option('srwm_input_bg', '#ffffff');
+        $input_border = get_option('srwm_input_border', '#ced4da');
+        $input_focus_border = get_option('srwm_input_focus_border', '#007cba');
+        $progress_bg = get_option('srwm_progress_bg', '#e9ecef');
+        $progress_fill = get_option('srwm_progress_fill', '#007cba');
+        $shadow_color = get_option('srwm_shadow_color', '#000000');
+        $border_radius = get_option('srwm_border_radius', '8');
+        $font_size = get_option('srwm_font_size', 'medium');
+        
+        // Font size mapping
+        $font_sizes = array(
+            'small' => '12px',
+            'medium' => '14px',
+            'large' => '16px',
+            'xlarge' => '18px'
+        );
+        
+        $base_font_size = isset($font_sizes[$font_size]) ? $font_sizes[$font_size] : '14px';
+        
+        $css .= "
+        /* SRWM Dynamic Styles */
+        .srwm-waitlist-container {
+            background-color: {$container_bg} !important;
+            border: 1px solid {$border_color} !important;
+            border-radius: {$border_radius}px !important;
+            box-shadow: 0 2px 8px rgba(" . $this->hex_to_rgb($shadow_color) . ", 0.1) !important;
+            font-size: {$base_font_size} !important;
+        }
+        
+        .srwm-waitlist-header {
+            background-color: {$header_bg} !important;
+            color: {$header_text} !important;
+        }
+        
+        .srwm-waitlist-header h3 {
+            color: {$header_text} !important;
+        }
+        
+        .srwm-waitlist-subtitle {
+            color: {$body_text} !important;
+        }
+        
+        .srwm-waitlist-form-container {
+            background-color: {$input_bg} !important;
+            border: 1px solid {$border_color} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-waitlist-form input[type='email'],
+        .srwm-waitlist-form input[type='text'] {
+            background-color: {$input_bg} !important;
+            border: 1px solid {$input_border} !important;
+            border-radius: {$border_radius}px !important;
+            color: {$body_text} !important;
+        }
+        
+        .srwm-waitlist-form input[type='email']:focus,
+        .srwm-waitlist-form input[type='text']:focus {
+            border-color: {$input_focus_border} !important;
+            outline: none !important;
+        }
+        
+        .srwm-waitlist-submit {
+            background-color: {$btn_primary_bg} !important;
+            color: {$btn_primary_text} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-waitlist-submit:hover {
+            background-color: {$this->adjust_brightness($btn_primary_bg, -10)} !important;
+        }
+        
+        .srwm-status-card.active {
+            background-color: {$success_bg} !important;
+            border: 1px solid {$success_text} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-status-card.active h4 {
+            color: {$success_text} !important;
+        }
+        
+        .srwm-status-card.active p {
+            color: {$success_text} !important;
+        }
+        
+        .srwm-queue-bar {
+            background-color: {$progress_bg} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-queue-fill {
+            background-color: {$progress_fill} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-progress-bar {
+            background-color: {$progress_bg} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-progress-fill {
+            background-color: {$progress_fill} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-preview-header {
+            background-color: {$header_bg} !important;
+            border: 1px solid {$border_color} !important;
+            border-radius: {$border_radius}px !important;
+        }
+        
+        .srwm-count-number {
+            color: {$header_text} !important;
+        }
+        
+        .srwm-count-label {
+            color: {$body_text} !important;
+        }
+        
+        .srwm-preview-subtitle {
+            color: {$body_text} !important;
+        }
+        ";
+        
+        return $css;
+    }
+    
+    /**
+     * Convert hex color to RGB
+     */
+    private function hex_to_rgb($hex) {
+        $hex = str_replace('#', '', $hex);
+        if (strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+        } else {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        }
+        return "$r, $g, $b";
+    }
+    
+    /**
+     * Adjust color brightness
+     */
+    private function adjust_brightness($hex, $steps) {
+        $hex = str_replace('#', '', $hex);
+        if (strlen($hex) == 3) {
+            $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
+        }
+        
+        $r = max(0, min(255, hexdec(substr($hex, 0, 2)) + $steps));
+        $g = max(0, min(255, hexdec(substr($hex, 2, 2)) + $steps));
+        $b = max(0, min(255, hexdec(substr($hex, 4, 2)) + $steps));
+        
+        return sprintf("#%02x%02x%02x", $r, $g, $b);
     }
     
     /**
