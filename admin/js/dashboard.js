@@ -152,7 +152,7 @@
         }
         
         console.log('Making AJAX request to:', srwm_dashboard.ajax_url);
-        console.log('Action:', 'srwm_test_dashboard');
+        console.log('Action:', 'srwm_get_dashboard_data');
         console.log('Nonce:', srwm_dashboard.nonce);
         
         return $.ajax({
