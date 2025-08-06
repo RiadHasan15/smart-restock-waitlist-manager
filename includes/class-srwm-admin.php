@@ -7152,12 +7152,20 @@ class SRWM_Admin {
                 clearProductSelection();
             });
             
-            // Pagination event delegation for upload links
+            // Pagination event delegation for upload links and quick restock
             $(document).on('click', '.srwm-pagination-btn, .srwm-page-number', function() {
                 const page = $(this).data('page');
                 if (page) {
                     console.log('Pagination clicked, loading page:', page);
-                    loadUploadLinks(page);
+                    
+                    // Determine which pagination was clicked based on the active tab
+                    const activeTab = $('.srwm-tab-button.active').attr('data-tab');
+                    
+                    if (activeTab === 'quick-restock') {
+                        loadQuickRestockProducts(page);
+                    } else if (activeTab === 'csv-upload') {
+                        loadUploadLinks(page);
+                    }
                 }
             });
             
@@ -8178,7 +8186,7 @@ class SRWM_Admin {
                 });
                 
                 // Add pagination controls
-                if (pagination && pagination.total_pages > 1) {
+                if (pagination && pagination.total_count > 0) {
                     html += generatePaginationControls(pagination);
                 }
                 
@@ -8191,7 +8199,7 @@ class SRWM_Admin {
                 
                 // Previous button
                 if (pagination.has_prev) {
-                    html += `<button class="srwm-pagination-btn" onclick="loadQuickRestockProducts(${pagination.current_page - 1})">
+                    html += `<button class="srwm-pagination-btn" data-page="${pagination.current_page - 1}">
                                 <i class="fas fa-chevron-left"></i> Previous
                             </button>`;
                 }
@@ -8203,7 +8211,7 @@ class SRWM_Admin {
                         html += `<span class="srwm-page-number active">${i}</span>`;
                     } else if (i === 1 || i === pagination.total_pages || 
                               (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)) {
-                        html += `<button class="srwm-page-number" onclick="loadQuickRestockProducts(${i})">${i}</button>`;
+                        html += `<button class="srwm-page-number" data-page="${i}">${i}</button>`;
                     } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
                         html += '<span class="srwm-page-ellipsis">...</span>';
                     }
@@ -8212,7 +8220,7 @@ class SRWM_Admin {
                 
                 // Next button
                 if (pagination.has_next) {
-                    html += `<button class="srwm-pagination-btn" onclick="loadQuickRestockProducts(${pagination.current_page + 1})">
+                    html += `<button class="srwm-pagination-btn" data-page="${pagination.current_page + 1}">
                                 Next <i class="fas fa-chevron-right"></i>
                             </button>`;
                 }
