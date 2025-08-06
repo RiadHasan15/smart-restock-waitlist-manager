@@ -980,6 +980,7 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_get_waitlist_data', array($this, 'ajax_get_waitlist_data'));
         add_action('wp_ajax_srwm_export_waitlist', array($this, 'ajax_export_waitlist'));
         add_action('wp_ajax_srwm_get_dashboard_data', array($this, 'ajax_get_dashboard_data'));
+        add_action('wp_ajax_srwm_test_dashboard', array($this, 'ajax_test_dashboard'));
         add_action('wp_ajax_srwm_export_dashboard_report', array($this, 'ajax_export_dashboard_report'));
         
         // Pro AJAX handlers - Always register, check license in handler
@@ -1123,6 +1124,12 @@ class SmartRestockWaitlistManager {
         }
         
         try {
+            // Check if Analytics class exists
+            if (!class_exists('SRWM_Analytics')) {
+                error_log('SRWM_Analytics class not found');
+                wp_die(json_encode(array('success' => false, 'message' => __('Analytics class not available.', 'smart-restock-waitlist'))));
+            }
+            
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
             
             // Get days parameter (default to 7)
@@ -1130,22 +1137,71 @@ class SmartRestockWaitlistManager {
             $days = max(1, min(90, $days)); // Limit between 1 and 90 days
             
             // Get basic dashboard data
-            $dashboard_data = $analytics->get_dashboard_data();
+            try {
+                $dashboard_data = $analytics->get_dashboard_data();
+            } catch (Exception $e) {
+                error_log('Dashboard data error: ' . $e->getMessage());
+                $dashboard_data = array(
+                    'today_waitlists' => 0,
+                    'today_restocks' => 0,
+                    'pending_notifications' => 0,
+                    'low_stock_products' => 0
+                );
+            }
             
             // Get chart data that JavaScript expects
-            $chart_data = array(
-                'waitlist_growth' => $analytics->get_waitlist_growth_trend($days),
-                'restock_activity' => $analytics->get_restock_method_breakdown()
-            );
+            try {
+                $chart_data = array(
+                    'waitlist_growth' => $analytics->get_waitlist_growth_trend($days),
+                    'restock_activity' => $analytics->get_restock_method_breakdown()
+                );
+            } catch (Exception $e) {
+                error_log('Chart data error: ' . $e->getMessage());
+                $chart_data = array(
+                    'waitlist_growth' => array(),
+                    'restock_activity' => array()
+                );
+            }
             
             // Combine all data
             $data = array_merge($dashboard_data, $chart_data);
             
+            // Debug logging
+            error_log('Dashboard data: ' . print_r($data, true));
+            
             wp_die(json_encode(array('success' => true, 'data' => $data)));
         } catch (Exception $e) {
             error_log('Dashboard AJAX error: ' . $e->getMessage());
-            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data.', 'smart-restock-waitlist'))));
+            error_log('Dashboard AJAX error trace: ' . $e->getTraceAsString());
+            wp_die(json_encode(array('success' => false, 'message' => __('Error loading dashboard data: ' . $e->getMessage(), 'smart-restock-waitlist'))));
         }
+    }
+    
+    /**
+     * AJAX: Test dashboard (for debugging)
+     */
+    public function ajax_test_dashboard() {
+        check_ajax_referer('srwm_dashboard_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        // Simple test data
+        $test_data = array(
+            'waitlist_growth' => array(
+                array('date' => '2024-01-15', 'count' => 5),
+                array('date' => '2024-01-16', 'count' => 8),
+                array('date' => '2024-01-17', 'count' => 3)
+            ),
+            'restock_activity' => array(
+                array('method' => 'manual', 'count' => 10),
+                array('method' => 'csv_upload', 'count' => 5),
+                array('method' => 'quick_restock', 'count' => 3)
+            )
+        );
+        
+        wp_die(json_encode(array('success' => true, 'data' => $test_data)));
     }
     
     /**
