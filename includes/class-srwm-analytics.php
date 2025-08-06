@@ -885,6 +885,10 @@ class SRWM_Analytics {
         global $wpdb;
         
         try {
+            if (empty($stat_type)) {
+                return array('error' => 'Invalid stat type');
+            }
+            
             switch($stat_type) {
                 case 'total_waitlist_customers':
                     return $this->get_waitlist_customers_details();
@@ -901,11 +905,11 @@ class SRWM_Analytics {
                 case 'low_stock_products':
                     return $this->get_low_stock_products_details();
                 default:
-                    return array('error' => 'Invalid stat type');
+                    return array('error' => 'Invalid stat type: ' . $stat_type);
             }
         } catch (Exception $e) {
             error_log('SRWM Analytics: Exception in get_stat_card_details: ' . $e->getMessage());
-            return array('error' => 'Failed to load details');
+            return array('error' => 'Failed to load details: ' . $e->getMessage());
         }
     }
     
@@ -915,10 +919,81 @@ class SRWM_Analytics {
     private function get_waitlist_customers_details() {
         global $wpdb;
         
-        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
-        
-        // Check if table exists
-        if (!$this->table_exists($waitlist_table)) {
+        try {
+            $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+            
+            // Check if table exists
+            if (!$this->table_exists($waitlist_table)) {
+                return array(
+                    'summary' => array(
+                        'total_customers' => 0,
+                        'active_waitlists' => 0,
+                        'avg_wait_time' => 'N/A',
+                        'conversion_rate' => '0%'
+                    ),
+                    'recent_activity' => array()
+                );
+            }
+            
+            // Get total customers
+            $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting total customers: ' . $wpdb->last_error);
+                $total_customers = 0;
+            }
+            
+            // Get active waitlists (not notified)
+            $active_waitlists = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 0");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting active waitlists: ' . $wpdb->last_error);
+                $active_waitlists = 0;
+            }
+            
+            // Get average wait time
+            $avg_wait_time = $wpdb->get_var("
+                SELECT AVG(DATEDIFF(date_added, CURDATE())) 
+                FROM {$waitlist_table} 
+                WHERE notified = 1
+            ");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting average wait time: ' . $wpdb->last_error);
+                $avg_wait_time = null;
+            }
+            
+            // Get conversion rate (notified vs total)
+            $total_notified = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 1");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting total notified: ' . $wpdb->last_error);
+                $total_notified = 0;
+            }
+            
+            $conversion_rate = $total_customers > 0 ? round(($total_notified / $total_customers) * 100, 1) : 0;
+            
+            // Get recent activity with product names
+            $recent_activity = $wpdb->get_results("
+                SELECT w.email, w.product_id, p.post_title as product_name, w.date_added, w.notified
+                FROM {$waitlist_table} w
+                LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+                ORDER BY w.date_added DESC
+                LIMIT 10
+            ");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting recent activity: ' . $wpdb->last_error);
+                $recent_activity = array();
+            }
+            
+            return array(
+                'summary' => array(
+                    'total_customers' => $total_customers ?: 0,
+                    'active_waitlists' => $active_waitlists ?: 0,
+                    'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
+                    'conversion_rate' => $conversion_rate . '%'
+                ),
+                'recent_activity' => $recent_activity ?: array()
+            );
+            
+        } catch (Exception $e) {
+            error_log('SRWM Analytics: Exception in get_waitlist_customers_details: ' . $e->getMessage());
             return array(
                 'summary' => array(
                     'total_customers' => 0,
@@ -929,42 +1004,6 @@ class SRWM_Analytics {
                 'recent_activity' => array()
             );
         }
-        
-        // Get total customers
-        $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
-        
-        // Get active waitlists (not notified)
-        $active_waitlists = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 0");
-        
-        // Get average wait time
-        $avg_wait_time = $wpdb->get_var("
-            SELECT AVG(DATEDIFF(date_added, CURDATE())) 
-            FROM {$waitlist_table} 
-            WHERE notified = 1
-        ");
-        
-        // Get conversion rate (notified vs total)
-        $total_notified = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 1");
-        $conversion_rate = $total_customers > 0 ? round(($total_notified / $total_customers) * 100, 1) : 0;
-        
-        // Get recent activity with product names
-        $recent_activity = $wpdb->get_results("
-            SELECT w.email, w.product_id, p.post_title as product_name, w.date_added, w.notified
-            FROM {$waitlist_table} w
-            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
-            ORDER BY w.date_added DESC
-            LIMIT 10
-        ");
-        
-        return array(
-            'summary' => array(
-                'total_customers' => $total_customers ?: 0,
-                'active_waitlists' => $active_waitlists ?: 0,
-                'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
-                'conversion_rate' => $conversion_rate . '%'
-            ),
-            'recent_activity' => $recent_activity ?: array()
-        );
     }
     
     /**
