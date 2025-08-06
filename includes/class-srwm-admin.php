@@ -414,11 +414,17 @@ class SRWM_Admin {
                     <div class="srwm-section-header">
                         <h2 class="srwm-section-title">
                             <span class="dashicons dashicons-chart-bar"></span>
-                            <?php _e('Key Metrics', 'smart-restock-waitlist'); ?>
+                            <?php _e('Analytics Dashboard', 'smart-restock-waitlist'); ?>
                         </h2>
                         <p class="srwm-section-description">
                             <?php _e('Real-time statistics and performance indicators', 'smart-restock-waitlist'); ?>
                         </p>
+                        <div class="srwm-section-actions">
+                            <button id="srwm-refresh-dashboard" class="srwm-btn srwm-btn-outline srwm-btn-sm">
+                                <span class="dashicons dashicons-update"></span>
+                                <?php _e('Refresh Data', 'smart-restock-waitlist'); ?>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="srwm-stats-grid">
@@ -1033,6 +1039,152 @@ class SRWM_Admin {
             color: #6b7280;
         }
         
+        /* Dashboard Analytics Enhancements */
+        .srwm-section-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .srwm-live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #22c55e;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .srwm-live-dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .srwm-analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .srwm-analytics-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .srwm-card-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .srwm-activity-feed {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .srwm-activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .srwm-activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .srwm-activity-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .srwm-activity-content {
+            flex: 1;
+        }
+        
+        .srwm-activity-text {
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        
+        .srwm-activity-time {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        .srwm-metrics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .srwm-metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+        
+        .srwm-metric-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .srwm-metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        /* Quick Navigation */
+        .srwm-quick-nav {
+            margin-bottom: 24px;
+        }
+        
+        .srwm-nav-notice {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #1e40af;
+        }
+        
+        .srwm-nav-notice .dashicons {
+            color: #3b82f6;
+            font-size: 16px;
+        }
+        
+        .srwm-nav-notice a {
+            color: #1e40af;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .srwm-nav-notice a:hover {
+            text-decoration: underline;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .srwm-analytics-header {
@@ -1048,6 +1200,10 @@ class SRWM_Admin {
             .srwm-header-actions {
                 flex-direction: column;
                 width: 100%;
+            }
+            
+            .srwm-analytics-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -5181,8 +5337,8 @@ class SRWM_Admin {
         <div class="wrap">
             <div class="srwm-analytics-header">
                 <div class="srwm-header-content">
-                    <h1><?php _e('Analytics Dashboard', 'smart-restock-waitlist'); ?></h1>
-                    <p><?php _e('Comprehensive insights into your waitlist and restock performance', 'smart-restock-waitlist'); ?></p>
+                    <h1><?php _e('Advanced Reports & Analytics', 'smart-restock-waitlist'); ?></h1>
+                    <p><?php _e('Detailed reports, exports, and advanced analytics for your waitlist performance', 'smart-restock-waitlist'); ?></p>
                 </div>
                 <div class="srwm-header-actions">
                     <button id="srwm-refresh-analytics" class="srwm-btn srwm-btn-primary">
@@ -5194,6 +5350,17 @@ class SRWM_Admin {
                         <span class="dashicons dashicons-download"></span>
                         <?php _e('Export Data', 'smart-restock-waitlist'); ?>
                     </a>
+                </div>
+            </div>
+            
+            <!-- Quick Navigation -->
+            <div class="srwm-quick-nav">
+                <div class="srwm-nav-notice">
+                    <span class="dashicons dashicons-info"></span>
+                    <strong><?php _e('Tip:', 'smart-restock-waitlist'); ?></strong>
+                    <?php _e('For real-time analytics and quick overview, visit the', 'smart-restock-waitlist'); ?>
+                    <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>"><?php _e('Dashboard', 'smart-restock-waitlist'); ?></a>
+                    <?php _e('page.', 'smart-restock-waitlist'); ?>
                 </div>
             </div>
             
