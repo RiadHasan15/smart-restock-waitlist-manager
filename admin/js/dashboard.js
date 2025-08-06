@@ -4,6 +4,8 @@
 
 (function($) {
     'use strict';
+    
+    console.log('SRWM Dashboard: Script loaded successfully');
 
     // Global variables
     let waitlistChart = null;
@@ -496,41 +498,6 @@
     window.srwm_init_realtime_updates = initRealtimeUpdates;
     
     // Enhanced UX functions temporarily disabled to fix conflicts
-        
-        // Create and show modal
-        const modal = $(`
-            <div class="srwm-modal">
-                <div class="srwm-modal-content">
-                    <div class="srwm-modal-header">
-                        <h3>${metric} Details</h3>
-                        <button class="srwm-modal-close">&times;</button>
-                    </div>
-                    <div class="srwm-modal-body">
-                        <div class="srwm-metric-details">
-                            <div class="srwm-metric-value">${value}</div>
-                            <div class="srwm-metric-chart">
-                                <canvas id="metricChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `);
-        
-        $('body').append(modal);
-        
-        // Close modal functionality
-        modal.find('.srwm-modal-close').on('click', function() {
-            modal.remove();
-        });
-        
-        // Click outside to close
-        modal.on('click', function(e) {
-            if (e.target === this) {
-                modal.remove();
-            }
-        });
-    }
 
     // Floating action button temporarily disabled
 
