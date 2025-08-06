@@ -130,11 +130,12 @@
             url: srwm_dashboard.ajax_url,
             type: 'POST',
             data: {
-                action: 'srwm_get_dashboard_data',
+                action: 'srwm_test_dashboard', // Temporarily use test endpoint
                 nonce: srwm_dashboard.nonce,
                 days: days
             },
             success: function(response) {
+                console.log('Dashboard AJAX success:', response);
                 if (response.success) {
                     updateCharts(response.data);
                 } else {
@@ -144,6 +145,7 @@
             },
             error: function(xhr, status, error) {
                 console.log('Dashboard AJAX error:', {xhr, status, error});
+                console.log('Response text:', xhr.responseText);
                 showMessage('error', 'Failed to load chart data. Please try again.');
             }
         });
@@ -153,6 +155,8 @@
      * Update charts with new data
      */
     function updateCharts(data) {
+        console.log('Updating charts with data:', data);
+        
         // Update waitlist chart
         if (waitlistChart) {
             if (data.waitlist_growth && data.waitlist_growth.length > 0) {
