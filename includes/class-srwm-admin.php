@@ -337,6 +337,11 @@ class SRWM_Admin {
      */
     public function render_dashboard_page() {
         try {
+            // Check if WooCommerce is active
+            if (!class_exists('WooCommerce')) {
+                throw new Exception('WooCommerce is required for this plugin to function properly.');
+            }
+            
             $total_waitlist_customers = $this->get_total_waitlist_customers();
             $waitlist_products = $this->get_waitlist_products();
             $supplier_products = $this->get_supplier_products();
@@ -344,19 +349,29 @@ class SRWM_Admin {
             // Get analytics data for charts
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
             $analytics_data = $analytics->get_dashboard_data();
+            
         } catch (Exception $e) {
+            // Log the error for debugging
+            error_log('SRWM Dashboard Error: ' . $e->getMessage());
+            
             // Fallback values if there's an error
             $total_waitlist_customers = 0;
             $waitlist_products = array();
             $supplier_products = array();
             $analytics_data = array(
                 'total_waitlist_customers' => 0,
+                'waitlist_products' => 0,
                 'today_waitlists' => 0,
                 'today_restocks' => 0,
                 'pending_notifications' => 0,
                 'low_stock_products' => 0,
                 'avg_restock_time' => 0
             );
+            
+            // Show error notice to admin
+            if (current_user_can('manage_woocommerce')) {
+                echo '<div class="notice notice-error"><p><strong>' . esc_html__('Dashboard Error:', 'smart-restock-waitlist') . '</strong> ' . esc_html($e->getMessage()) . '</p></div>';
+            }
         }
         
         ?>
@@ -511,7 +526,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo count($supplier_products); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(count($supplier_products)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Products with Suppliers', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Managed products', 'smart-restock-waitlist'); ?></span>
@@ -552,7 +567,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['avg_restock_time'] ?? 0, 1); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(number_format($analytics_data['avg_restock_time'] ?? 0, 1)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Avg. Restock Time', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Days', 'smart-restock-waitlist'); ?></span>
@@ -573,7 +588,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['today_waitlists'] ?? 0); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(number_format($analytics_data['today_waitlists'] ?? 0)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Today\'s Waitlists', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Today', 'smart-restock-waitlist'); ?></span>
@@ -593,7 +608,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['today_restocks'] ?? 0); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(number_format($analytics_data['today_restocks'] ?? 0)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Today\'s Restocks', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Today', 'smart-restock-waitlist'); ?></span>
@@ -613,7 +628,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['pending_notifications'] ?? 0); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(number_format($analytics_data['pending_notifications'] ?? 0)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Pending Notifications', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Awaiting', 'smart-restock-waitlist'); ?></span>
@@ -633,7 +648,7 @@ class SRWM_Admin {
                                 </div>
                             </div>
                             <div class="srwm-stat-content">
-                                <h3 class="srwm-stat-number"><?php echo number_format($analytics_data['low_stock_products'] ?? 0); ?></h3>
+                                <h3 class="srwm-stat-number"><?php echo esc_html(number_format($analytics_data['low_stock_products'] ?? 0)); ?></h3>
                                 <p class="srwm-stat-label"><?php _e('Low Stock Products', 'smart-restock-waitlist'); ?></p>
                                 <div class="srwm-stat-meta">
                                     <span class="srwm-stat-period"><?php _e('Needs attention', 'smart-restock-waitlist'); ?></span>
