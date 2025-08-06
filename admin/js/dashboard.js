@@ -306,9 +306,10 @@
             });
         });
 
-        // Stat card interactions
+        // Stat card interactions - Enhanced with detailed data
         $('.srwm-stat-card').on('click', function() {
-            const statType = $(this).find('h3').text().toLowerCase();
+            const statType = $(this).data('stat');
+            console.log('SRWM Dashboard: Stat card clicked:', statType);
             handleStatCardClick(statType);
         });
         
@@ -328,26 +329,499 @@
             const activityType = $(this).data('type');
             handleActivityClick(activityType, $(this));
         });
+        
+        // Modal close functionality
+        $(document).on('click', '.srwm-modal-close', function() {
+            $(this).closest('.srwm-modal').hide();
+        });
+        
+        // Close modal when clicking outside
+        $(document).on('click', '.srwm-modal', function(e) {
+            if (e.target === this) {
+                $(this).hide();
+            }
+        });
     }
 
     /**
-     * Handle stat card clicks
+     * Handle stat card clicks with detailed data
      */
     function handleStatCardClick(statType) {
-        switch(statType) {
-            case 'today\'s waitlists':
-                window.location.href = 'admin.php?page=smart-restock-waitlist';
-                break;
-            case 'today\'s restocks':
-                window.location.href = 'admin.php?page=smart-restock-waitlist-analytics';
-                break;
-            case 'pending notifications':
-                window.location.href = 'admin.php?page=smart-restock-waitlist';
-                break;
-            case 'low stock products':
-                window.location.href = 'admin.php?page=smart-restock-waitlist-settings';
-                break;
-        }
+        console.log('SRWM Dashboard: Handling stat card click for:', statType);
+        
+        // Show loading state
+        showStatCardLoading(statType);
+        
+        // Load detailed data for the stat card
+        loadStatCardDetails(statType);
+    }
+    
+    /**
+     * Show loading state for stat card
+     */
+    function showStatCardLoading(statType) {
+        const $modal = $('#srwm-stat-detail-modal');
+        const $content = $('#srwm-stat-modal-content');
+        
+        // Set modal title
+        const titles = {
+            'total_waitlist_customers': 'Total Waitlist Customers',
+            'waitlist_products': 'Products with Waitlist',
+            'avg_restock_time': 'Average Restock Time',
+            'today_waitlists': 'Today\'s Waitlists',
+            'today_restocks': 'Today\'s Restocks',
+            'pending_notifications': 'Pending Notifications',
+            'low_stock_products': 'Low Stock Products'
+        };
+        
+        $('#srwm-stat-modal-title').text(titles[statType] || 'Statistics Details');
+        
+        // Show loading content
+        $content.html(`
+            <div class="srwm-loading-content">
+                <div class="srwm-loading-spinner"></div>
+                <p>Loading detailed data...</p>
+            </div>
+        `);
+        
+        $modal.show();
+    }
+    
+    /**
+     * Load detailed data for stat card
+     */
+    function loadStatCardDetails(statType) {
+        console.log('SRWM Dashboard: Loading details for:', statType);
+        
+        // Simulate loading time and show demo data
+        setTimeout(function() {
+            const $content = $('#srwm-stat-modal-content');
+            
+            switch(statType) {
+                case 'total_waitlist_customers':
+                    $content.html(generateWaitlistCustomersDetails());
+                    break;
+                case 'waitlist_products':
+                    $content.html(generateWaitlistProductsDetails());
+                    break;
+                case 'avg_restock_time':
+                    $content.html(generateRestockTimeDetails());
+                    break;
+                case 'today_waitlists':
+                    $content.html(generateTodayWaitlistsDetails());
+                    break;
+                case 'today_restocks':
+                    $content.html(generateTodayRestocksDetails());
+                    break;
+                case 'pending_notifications':
+                    $content.html(generatePendingNotificationsDetails());
+                    break;
+                case 'low_stock_products':
+                    $content.html(generateLowStockProductsDetails());
+                    break;
+                default:
+                    $content.html('<p>No detailed data available for this statistic.</p>');
+            }
+        }, 800);
+    }
+    
+    /**
+     * Generate waitlist customers details
+     */
+    function generateWaitlistCustomersDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Total Customers</h4>
+                    <div class="value">1,247</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Active Waitlists</h4>
+                    <div class="value">892</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Average Wait Time</h4>
+                    <div class="value">3.2 days</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Conversion Rate</h4>
+                    <div class="value">68%</div>
+                </div>
+            </div>
+            <h3>Recent Waitlist Activity</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Date Added</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>john.doe@email.com</td>
+                        <td>Premium Widget Pro</td>
+                        <td>2024-01-15</td>
+                        <td><span class="srwm-status srwm-status-waiting">Waiting</span></td>
+                    </tr>
+                    <tr>
+                        <td>jane.smith@email.com</td>
+                        <td>Smart Gadget X</td>
+                        <td>2024-01-15</td>
+                        <td><span class="srwm-status srwm-status-notified">Notified</span></td>
+                    </tr>
+                    <tr>
+                        <td>mike.wilson@email.com</td>
+                        <td>Ultra Device Plus</td>
+                        <td>2024-01-14</td>
+                        <td><span class="srwm-status srwm-status-waiting">Waiting</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate waitlist products details
+     */
+    function generateWaitlistProductsDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Total Products</h4>
+                    <div class="value">24</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>High Demand</h4>
+                    <div class="value">8</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Out of Stock</h4>
+                    <div class="value">3</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Low Stock</h4>
+                    <div class="value">5</div>
+                </div>
+            </div>
+            <h3>Top Waitlisted Products</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Waitlist Count</th>
+                        <th>Current Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Premium Widget Pro</td>
+                        <td>156</td>
+                        <td>0</td>
+                        <td><span class="srwm-status srwm-status-out">Out of Stock</span></td>
+                    </tr>
+                    <tr>
+                        <td>Smart Gadget X</td>
+                        <td>89</td>
+                        <td>3</td>
+                        <td><span class="srwm-status srwm-status-low">Low Stock</span></td>
+                    </tr>
+                    <tr>
+                        <td>Ultra Device Plus</td>
+                        <td>67</td>
+                        <td>12</td>
+                        <td><span class="srwm-status srwm-status-ok">In Stock</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate restock time details
+     */
+    function generateRestockTimeDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Average Time</h4>
+                    <div class="value">2.4 days</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Fastest Restock</h4>
+                    <div class="value">0.5 days</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Slowest Restock</h4>
+                    <div class="value">7.2 days</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Total Restocks</h4>
+                    <div class="value">156</div>
+                </div>
+            </div>
+            <h3>Recent Restock Activity</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Restock Date</th>
+                        <th>Time to Restock</th>
+                        <th>Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Premium Widget Pro</td>
+                        <td>2024-01-15</td>
+                        <td>1.2 days</td>
+                        <td>Manual</td>
+                    </tr>
+                    <tr>
+                        <td>Smart Gadget X</td>
+                        <td>2024-01-14</td>
+                        <td>3.5 days</td>
+                        <td>CSV Upload</td>
+                    </tr>
+                    <tr>
+                        <td>Ultra Device Plus</td>
+                        <td>2024-01-13</td>
+                        <td>0.8 days</td>
+                        <td>Quick Restock</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate today's waitlists details
+     */
+    function generateTodayWaitlistsDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>New Today</h4>
+                    <div class="value">23</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Most Popular</h4>
+                    <div class="value">Premium Widget Pro</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Average per Hour</h4>
+                    <div class="value">1.9</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Peak Hour</h4>
+                    <div class="value">2:00 PM</div>
+                </div>
+            </div>
+            <h3>Today's Waitlist Activity</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>14:30</td>
+                        <td>john.doe@email.com</td>
+                        <td>Premium Widget Pro</td>
+                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
+                    </tr>
+                    <tr>
+                        <td>14:15</td>
+                        <td>jane.smith@email.com</td>
+                        <td>Smart Gadget X</td>
+                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
+                    </tr>
+                    <tr>
+                        <td>13:45</td>
+                        <td>mike.wilson@email.com</td>
+                        <td>Ultra Device Plus</td>
+                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate today's restocks details
+     */
+    function generateTodayRestocksDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Restocks Today</h4>
+                    <div class="value">8</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Products Restocked</h4>
+                    <div class="value">6</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Total Stock Added</h4>
+                    <div class="value">1,247</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Notifications Sent</h4>
+                    <div class="value">156</div>
+                </div>
+            </div>
+            <h3>Today's Restock Activity</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Product</th>
+                        <th>Stock Added</th>
+                        <th>Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>16:00</td>
+                        <td>Premium Widget Pro</td>
+                        <td>250</td>
+                        <td>Manual</td>
+                    </tr>
+                    <tr>
+                        <td>15:30</td>
+                        <td>Smart Gadget X</td>
+                        <td>180</td>
+                        <td>CSV Upload</td>
+                    </tr>
+                    <tr>
+                        <td>14:15</td>
+                        <td>Ultra Device Plus</td>
+                        <td>95</td>
+                        <td>Quick Restock</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate pending notifications details
+     */
+    function generatePendingNotificationsDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Pending</h4>
+                    <div class="value">12</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Email</h4>
+                    <div class="value">8</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>SMS</h4>
+                    <div class="value">3</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>WhatsApp</h4>
+                    <div class="value">1</div>
+                </div>
+            </div>
+            <h3>Pending Notifications</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>john.doe@email.com</td>
+                        <td>Premium Widget Pro</td>
+                        <td>Email</td>
+                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>jane.smith@email.com</td>
+                        <td>Smart Gadget X</td>
+                        <td>SMS</td>
+                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>mike.wilson@email.com</td>
+                        <td>Ultra Device Plus</td>
+                        <td>WhatsApp</td>
+                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    /**
+     * Generate low stock products details
+     */
+    function generateLowStockProductsDetails() {
+        return `
+            <div class="srwm-stat-detail-grid">
+                <div class="srwm-stat-detail-card">
+                    <h4>Low Stock</h4>
+                    <div class="value">7</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Out of Stock</h4>
+                    <div class="value">3</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Critical Level</h4>
+                    <div class="value">2</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Total Value</h4>
+                    <div class="value">$12,450</div>
+                </div>
+            </div>
+            <h3>Low Stock Products</h3>
+            <table class="srwm-stat-detail-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Current Stock</th>
+                        <th>Threshold</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Premium Widget Pro</td>
+                        <td>0</td>
+                        <td>10</td>
+                        <td><span class="srwm-status srwm-status-out">Out of Stock</span></td>
+                    </tr>
+                    <tr>
+                        <td>Smart Gadget X</td>
+                        <td>3</td>
+                        <td>15</td>
+                        <td><span class="srwm-status srwm-status-low">Low Stock</span></td>
+                    </tr>
+                    <tr>
+                        <td>Ultra Device Plus</td>
+                        <td>1</td>
+                        <td>20</td>
+                        <td><span class="srwm-status srwm-status-critical">Critical</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
     }
 
     /**
