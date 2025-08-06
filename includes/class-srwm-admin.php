@@ -704,13 +704,41 @@ class SRWM_Admin {
                     </div>
                     
                     <div class="srwm-table-container">
-                        <table class="srwm-modern-table">
+                        <!-- Table Controls -->
+                        <div class="srwm-table-controls">
+                            <div class="srwm-table-search">
+                                <input type="text" id="srwm-waitlist-search" class="srwm-search-input" placeholder="<?php _e('Search products...', 'smart-restock-waitlist'); ?>">
+                                <span class="dashicons dashicons-search"></span>
+                            </div>
+                            <div class="srwm-table-filters">
+                                <select id="srwm-status-filter" class="srwm-filter-select">
+                                    <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
+                                    <option value="out"><?php _e('Out of Stock', 'smart-restock-waitlist'); ?></option>
+                                    <option value="low"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></option>
+                                    <option value="ok"><?php _e('In Stock', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <table class="srwm-modern-table srwm-interactive-table" id="srwm-waitlist-table">
                             <thead>
                                 <tr>
-                                    <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Current Stock', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Waitlist Count', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
+                                    <th class="srwm-sortable" data-sort="product">
+                                        <?php _e('Product', 'smart-restock-waitlist'); ?>
+                                        <span class="srwm-sort-icon dashicons dashicons-arrow-up-alt2"></span>
+                                    </th>
+                                    <th class="srwm-sortable" data-sort="stock">
+                                        <?php _e('Current Stock', 'smart-restock-waitlist'); ?>
+                                        <span class="srwm-sort-icon dashicons dashicons-arrow-up-alt2"></span>
+                                    </th>
+                                    <th class="srwm-sortable" data-sort="waitlist">
+                                        <?php _e('Waitlist Count', 'smart-restock-waitlist'); ?>
+                                        <span class="srwm-sort-icon dashicons dashicons-arrow-up-alt2"></span>
+                                    </th>
+                                    <th class="srwm-sortable" data-sort="status">
+                                        <?php _e('Status', 'smart-restock-waitlist'); ?>
+                                        <span class="srwm-sort-icon dashicons dashicons-arrow-up-alt2"></span>
+                                    </th>
                                     <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
                                 </tr>
                             </thead>
@@ -1711,6 +1739,106 @@ class SRWM_Admin {
         .srwm-loading .srwm-chart-card {
             opacity: 0.6;
             transition: opacity 0.3s ease;
+        }
+        
+        /* Interactive Table Controls */
+        .srwm-table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .srwm-table-search {
+            position: relative;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .srwm-search-input {
+            width: 100%;
+            padding: 10px 40px 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-table-search .dashicons {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 16px;
+        }
+        
+        .srwm-table-filters {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .srwm-filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Sortable Table Headers */
+        .srwm-sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        
+        .srwm-sortable:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .srwm-sort-icon {
+            margin-left: 8px;
+            font-size: 12px;
+            color: #9ca3af;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-sortable.sorted-asc .srwm-sort-icon {
+            color: #3b82f6;
+            transform: rotate(0deg);
+        }
+        
+        .srwm-sortable.sorted-desc .srwm-sort-icon {
+            color: #3b82f6;
+            transform: rotate(180deg);
+        }
+        
+        /* Table Row Filtering */
+        .srwm-table-row-hidden {
+            display: none !important;
+        }
+        
+        .srwm-table-row-highlight {
+            background-color: #fef3c7 !important;
         }
         
         /* Responsive Enhancements */
