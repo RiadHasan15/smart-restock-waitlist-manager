@@ -2098,10 +2098,14 @@ class SmartRestockWaitlistManager {
             customer_name varchar(255) DEFAULT '',
             date_added datetime DEFAULT CURRENT_TIMESTAMP,
             notified tinyint(1) DEFAULT 0,
+            notification_date datetime DEFAULT NULL,
+            status enum('active','notified','removed') DEFAULT 'active',
             PRIMARY KEY (id),
+            UNIQUE KEY product_email_unique (product_id, customer_email),
             KEY product_id (product_id),
             KEY customer_email (customer_email),
-            KEY notified (notified)
+            KEY date_added (date_added),
+            KEY status (status)
         ) $charset_collate;";
         
         // Enhanced Suppliers table
@@ -2241,6 +2245,68 @@ class SmartRestockWaitlistManager {
         dbDelta($sql_waitlist);
         dbDelta($sql_supplier);
         dbDelta($sql_logs);
+        
+        // Add sample data for testing if table is empty
+        $this->add_sample_data_if_empty();
+    }
+    
+    /**
+     * Add sample data if tables are empty (for testing)
+     */
+    private function add_sample_data_if_empty() {
+        global $wpdb;
+        
+        $waitlist_table = $wpdb->prefix . 'srwm_waitlist';
+        $restock_table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        // Check if waitlist table is empty
+        $waitlist_count = $wpdb->get_var("SELECT COUNT(*) FROM $waitlist_table");
+        
+        if ($waitlist_count == 0) {
+            // Get some WooCommerce products
+            $products = get_posts(array(
+                'post_type' => 'product',
+                'post_status' => 'publish',
+                'numberposts' => 3
+            ));
+            
+            if (!empty($products)) {
+                $sample_data = array(
+                    array('customer_email' => 'john@example.com', 'customer_name' => 'John Doe'),
+                    array('customer_email' => 'jane@example.com', 'customer_name' => 'Jane Smith'),
+                    array('customer_email' => 'bob@example.com', 'customer_name' => 'Bob Johnson'),
+                    array('customer_email' => 'alice@example.com', 'customer_name' => 'Alice Brown'),
+                    array('customer_email' => 'charlie@example.com', 'customer_name' => 'Charlie Wilson')
+                );
+                
+                foreach ($products as $product) {
+                    foreach ($sample_data as $data) {
+                        $wpdb->insert($waitlist_table, array(
+                            'product_id' => $product->ID,
+                            'customer_email' => $data['customer_email'],
+                            'customer_name' => $data['customer_name'],
+                            'date_added' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 30) . ' days')),
+                            'notified' => rand(0, 1),
+                            'status' => 'active'
+                        ));
+                    }
+                }
+            }
+        }
+        
+        // Check if restock table is empty
+        $restock_count = $wpdb->get_var("SELECT COUNT(*) FROM $restock_table");
+        
+        if ($restock_count == 0 && !empty($products)) {
+            foreach ($products as $product) {
+                $wpdb->insert($restock_table, array(
+                    'product_id' => $product->ID,
+                    'quantity' => rand(10, 50),
+                    'method' => 'manual',
+                    'timestamp' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 7) . ' days'))
+                ));
+            }
+        }
     }
     
     /**

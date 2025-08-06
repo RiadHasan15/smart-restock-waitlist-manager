@@ -948,14 +948,14 @@ class SRWM_Analytics {
                 );
             }
             
-                    // Get total customers
-        $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
-        if ($wpdb->last_error) {
-            error_log('SRWM Analytics: Error getting total customers: ' . $wpdb->last_error);
-            $total_customers = 0;
-        } else {
-            $total_customers = intval($total_customers ?: 0);
-        }
+            // Get total customers
+            $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT customer_email) FROM {$waitlist_table}");
+            if ($wpdb->last_error) {
+                error_log('SRWM Analytics: Error getting total customers: ' . $wpdb->last_error);
+                $total_customers = 0;
+            } else {
+                $total_customers = intval($total_customers ?: 0);
+            }
             
             // Get active waitlists (not notified)
             $active_waitlists = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 0");
@@ -986,7 +986,7 @@ class SRWM_Analytics {
             
             // Get recent activity with product names
             $recent_activity = $wpdb->get_results("
-                SELECT w.email, w.product_id, p.post_title as product_name, w.date_added, w.notified
+                SELECT w.customer_email as email, w.product_id, p.post_title as product_name, w.date_added, w.notified
                 FROM {$waitlist_table} w
                 LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
                 ORDER BY w.date_added DESC
@@ -997,25 +997,25 @@ class SRWM_Analytics {
                 $recent_activity = array();
             }
             
-                    // Validate and sanitize data
-        $result = array(
-            'summary' => array(
-                'total_customers' => intval($total_customers ?: 0),
-                'active_waitlists' => intval($active_waitlists ?: 0),
-                'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
-                'conversion_rate' => $conversion_rate . '%'
-            ),
-            'recent_activity' => is_array($recent_activity) ? $recent_activity : array()
-        );
-        
-        // Validate summary data
-        foreach ($result['summary'] as $key => $value) {
-            if (is_numeric($value) && $value < 0) {
-                $result['summary'][$key] = 0;
+            // Validate and sanitize data
+            $result = array(
+                'summary' => array(
+                    'total_customers' => intval($total_customers ?: 0),
+                    'active_waitlists' => intval($active_waitlists ?: 0),
+                    'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
+                    'conversion_rate' => $conversion_rate . '%'
+                ),
+                'recent_activity' => is_array($recent_activity) ? $recent_activity : array()
+            );
+            
+            // Validate summary data
+            foreach ($result['summary'] as $key => $value) {
+                if (is_numeric($value) && $value < 0) {
+                    $result['summary'][$key] = 0;
+                }
             }
-        }
-        
-        return $result;
+            
+            return $result;
             
         } catch (Exception $e) {
             error_log('SRWM Analytics: Exception in get_waitlist_customers_details: ' . $e->getMessage());
@@ -1150,7 +1150,7 @@ class SRWM_Analytics {
         
         // Get today's waitlists with product names
         $today_waitlists = $wpdb->get_results("
-            SELECT w.email, w.product_id, p.post_title as product_name, w.date_added
+            SELECT w.customer_email as email, w.product_id, p.post_title as product_name, w.date_added
             FROM {$waitlist_table} w
             LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
             WHERE DATE(w.date_added) = CURDATE()
