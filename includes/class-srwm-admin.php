@@ -6637,16 +6637,7 @@ class SRWM_Admin {
                 <?php if ($this->license_manager->is_pro_active()): ?>
                 <div class="srwm-settings-section">
                     <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
-                <?php else: ?>
-                <div class="srwm-settings-section">
-                    <div class="notice notice-info">
-                        <p><strong><?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?></strong></p>
-                        <p><?php _e('Unlock supplier management, automated notifications, and advanced features to streamline your restock workflow.', 'smart-restock-waitlist'); ?></p>
-                        <p><a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-pro'); ?>" class="button button-primary"><?php _e('View Pro Features', 'smart-restock-waitlist'); ?></a></p>
-                    </div>
-                    <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
-                <?php endif; ?>
-                <table class="form-table">
+                    <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('WhatsApp Notifications', 'smart-restock-waitlist'); ?></th>
                         <td>
@@ -6706,6 +6697,16 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     </table>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!$this->license_manager->is_pro_active()): ?>
+                <div class="srwm-settings-section">
+                    <div class="notice notice-info">
+                        <p><strong><?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?></strong></p>
+                        <p><?php _e('Unlock supplier management, automated notifications, and advanced features to streamline your restock workflow.', 'smart-restock-waitlist'); ?></p>
+                        <p><a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-pro'); ?>" class="button button-primary"><?php _e('View Pro Features', 'smart-restock-waitlist'); ?></a></p>
+                    </div>
                 </div>
                 <?php endif; ?>
                 
