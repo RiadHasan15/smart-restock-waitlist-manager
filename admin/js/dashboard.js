@@ -432,11 +432,14 @@
                             $content.html('<p>No detailed data available for this statistic.</p>');
                     }
                 } else {
+                    console.error('SRWM Dashboard: Invalid response format:', response);
                     $content.html('<p class="srwm-error">Failed to load data. Please try again.</p>');
                 }
             },
             error: function(xhr, status, error) {
                 console.error('SRWM Dashboard: AJAX error:', error);
+                console.error('SRWM Dashboard: XHR status:', xhr.status);
+                console.error('SRWM Dashboard: Response text:', xhr.responseText);
                 $content.html('<p class="srwm-error">Error loading data. Please try again.</p>');
             }
         });

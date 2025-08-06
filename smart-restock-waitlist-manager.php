@@ -1206,13 +1206,28 @@ class SmartRestockWaitlistManager {
         
         try {
             $stat_type = sanitize_text_field($_POST['stat_type']);
+            
+            if (empty($stat_type)) {
+                wp_send_json_error(__('Invalid stat type.', 'smart-restock-waitlist'));
+            }
+            
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            
+            if (!$analytics) {
+                wp_send_json_error(__('Analytics class not available.', 'smart-restock-waitlist'));
+            }
             
             $details = $analytics->get_stat_card_details($stat_type);
             
+            if (empty($details)) {
+                wp_send_json_error(__('No data available for this statistic.', 'smart-restock-waitlist'));
+            }
+            
             wp_send_json_success($details);
+            
         } catch (Exception $e) {
-            wp_send_json_error(__('Error loading stat details.', 'smart-restock-waitlist'));
+            error_log('SRWM Stat Card Error: ' . $e->getMessage());
+            wp_send_json_error(__('Error loading stat details: ', 'smart-restock-waitlist') . $e->getMessage());
         }
     }
     
