@@ -158,11 +158,13 @@ class SRWM_Admin {
             register_setting('srwm_notifications', 'srwm_email_template');
             register_setting('srwm_notifications', 'srwm_whatsapp_enabled');
             register_setting('srwm_notifications', 'srwm_whatsapp_api_key');
+            register_setting('srwm_notifications', 'srwm_whatsapp_phone');
             register_setting('srwm_notifications', 'srwm_whatsapp_template');
             register_setting('srwm_notifications', 'srwm_sms_enabled');
             register_setting('srwm_notifications', 'srwm_sms_provider');
             register_setting('srwm_notifications', 'srwm_sms_api_key');
             register_setting('srwm_notifications', 'srwm_sms_api_secret');
+            register_setting('srwm_notifications', 'srwm_sms_phone');
             register_setting('srwm_notifications', 'srwm_sms_template');
         }
     }
@@ -241,6 +243,54 @@ class SRWM_Admin {
                     if (window.location.search.includes("settings-updated=true")) {
                         showNotification("Notification settings saved successfully!", "success");
                     }
+                    
+                    // Test notifications button
+                    $("#test-notifications").on("click", function() {
+                        const btn = $(this);
+                        const originalText = btn.html();
+                        
+                        btn.html("<span class=\"dashicons dashicons-update-alt\" style=\"animation: spin 1s linear infinite;\"></span> Testing...");
+                        btn.prop("disabled", true);
+                        
+                        // Get current settings
+                        const emailEnabled = $("input[name=\"srwm_email_enabled\"]").is(":checked");
+                        const whatsappEnabled = $("input[name=\"srwm_whatsapp_enabled\"]").is(":checked");
+                        const smsEnabled = $("input[name=\"srwm_sms_enabled\"]").is(":checked");
+                        
+                        if (!emailEnabled && !whatsappEnabled && !smsEnabled) {
+                            showNotification("Please enable at least one notification channel first.", "warning");
+                            btn.html(originalText);
+                            btn.prop("disabled", false);
+                            return;
+                        }
+                        
+                        // Send test notification via AJAX
+                        $.ajax({
+                            url: ajaxurl,
+                            type: "POST",
+                            data: {
+                                action: "srwm_test_notifications",
+                                nonce: srwm_admin.nonce,
+                                email_enabled: emailEnabled,
+                                whatsapp_enabled: whatsappEnabled,
+                                sms_enabled: smsEnabled
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    showNotification("Test notifications sent successfully! Check your configured channels.", "success");
+                                } else {
+                                    showNotification("Failed to send test notifications: " + response.data, "error");
+                                }
+                            },
+                            error: function() {
+                                showNotification("Error sending test notifications. Please try again.", "error");
+                            },
+                            complete: function() {
+                                btn.html(originalText);
+                                btn.prop("disabled", false);
+                            }
+                        });
+                    });
                 });
             ');
         }
@@ -1792,7 +1842,7 @@ class SRWM_Admin {
                         <div class="srwm-notification-card">
                             <div class="srwm-notification-header">
                                 <div class="srwm-notification-icon">
-                                    <span class="dashicons dashicons-whatsapp"></span>
+                                    <span class="dashicons dashicons-phone"></span>
                                 </div>
                                 <div class="srwm-notification-title">
                                     <h3><?php _e('WhatsApp Notifications', 'smart-restock-waitlist'); ?></h3>
@@ -1810,6 +1860,11 @@ class SRWM_Admin {
                                     <label><?php _e('WhatsApp API Key:', 'smart-restock-waitlist'); ?></label>
                                     <input type="text" name="srwm_whatsapp_api_key" value="<?php echo esc_attr(get_option('srwm_whatsapp_api_key')); ?>" class="regular-text">
                                     <p class="description"><?php _e('Enter your WhatsApp Business API key', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                <div class="srwm-form-group">
+                                    <label><?php _e('WhatsApp Phone Number:', 'smart-restock-waitlist'); ?></label>
+                                    <input type="text" name="srwm_whatsapp_phone" value="<?php echo esc_attr(get_option('srwm_whatsapp_phone')); ?>" class="regular-text" placeholder="+1234567890">
+                                    <p class="description"><?php _e('Enter the WhatsApp phone number to send from (with country code)', 'smart-restock-waitlist'); ?></p>
                                 </div>
                                 <div class="srwm-form-group">
                                     <label><?php _e('WhatsApp Template:', 'smart-restock-waitlist'); ?></label>
@@ -1853,6 +1908,11 @@ class SRWM_Admin {
                                     <input type="password" name="srwm_sms_api_secret" value="<?php echo esc_attr(get_option('srwm_sms_api_secret')); ?>" class="regular-text">
                                 </div>
                                 <div class="srwm-form-group">
+                                    <label><?php _e('SMS Phone Number:', 'smart-restock-waitlist'); ?></label>
+                                    <input type="text" name="srwm_sms_phone" value="<?php echo esc_attr(get_option('srwm_sms_phone')); ?>" class="regular-text" placeholder="+1234567890">
+                                    <p class="description"><?php _e('Enter the phone number to send SMS from (with country code)', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                <div class="srwm-form-group">
                                     <label><?php _e('SMS Template:', 'smart-restock-waitlist'); ?></label>
                                     <textarea name="srwm_sms_template" rows="4" class="large-text"><?php echo esc_textarea(get_option('srwm_sms_template', $this->get_default_sms_template())); ?></textarea>
                                     <p class="description"><?php _e('Available placeholders: {supplier_name}, {product_name}, {sku}, {current_stock}, {waitlist_count}', 'smart-restock-waitlist'); ?></p>
@@ -1865,6 +1925,10 @@ class SRWM_Admin {
                         <button type="submit" class="button button-primary">
                             <span class="dashicons dashicons-saved"></span>
                             <?php _e('Save Notification Settings', 'smart-restock-waitlist'); ?>
+                        </button>
+                        <button type="button" class="button button-secondary" id="test-notifications">
+                            <span class="dashicons dashicons-testing"></span>
+                            <?php _e('Test Notifications', 'smart-restock-waitlist'); ?>
                         </button>
                     </div>
                 </form>

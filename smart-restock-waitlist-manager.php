@@ -993,6 +993,7 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_reset_threshold', array($this, 'ajax_reset_threshold'));
         add_action('wp_ajax_srwm_save_notification_settings', array($this, 'ajax_save_notification_settings'));
         add_action('wp_ajax_srwm_save_email_templates', array($this, 'ajax_save_email_templates'));
+        add_action('wp_ajax_srwm_test_notifications', array($this, 'ajax_test_notifications'));
         add_action('wp_ajax_srwm_save_global_threshold', array($this, 'ajax_save_global_threshold'));
         add_action('wp_ajax_srwm_download_csv_template', array($this, 'ajax_download_csv_template'));
         
@@ -1378,6 +1379,74 @@ class SmartRestockWaitlistManager {
         update_option('srwm_notification_settings', $notification_settings);
         
         wp_die(json_encode(array('success' => true, 'message' => __('Notification settings saved successfully!', 'smart-restock-waitlist'))));
+    }
+    
+    /**
+     * AJAX: Test notifications
+     */
+    public function ajax_test_notifications() {
+        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        }
+        
+        $email_enabled = isset($_POST['email_enabled']) ? $_POST['email_enabled'] === 'true' : false;
+        $whatsapp_enabled = isset($_POST['whatsapp_enabled']) ? $_POST['whatsapp_enabled'] === 'true' : false;
+        $sms_enabled = isset($_POST['sms_enabled']) ? $_POST['sms_enabled'] === 'true' : false;
+        
+        $success = true;
+        $messages = array();
+        
+        // Test email notification
+        if ($email_enabled) {
+            $admin_email = get_option('admin_email');
+            $email_template = get_option('srwm_email_template', $this->get_default_email_template());
+            $test_content = str_replace(
+                array('{supplier_name}', '{product_name}', '{sku}', '{current_stock}', '{waitlist_count}', '{restock_link}'),
+                array('Test Supplier', 'Test Product', 'TEST-001', '5', '10', 'https://example.com/restock'),
+                $email_template
+            );
+            
+            $email_sent = wp_mail(
+                $admin_email,
+                __('Test Notification: Restock Request', 'smart-restock-waitlist'),
+                $test_content,
+                array('Content-Type: text/html; charset=UTF-8')
+            );
+            
+            if ($email_sent) {
+                $messages[] = __('Email test sent successfully to admin email.', 'smart-restock-waitlist');
+            } else {
+                $success = false;
+                $messages[] = __('Email test failed.', 'smart-restock-waitlist');
+            }
+        }
+        
+        // Test WhatsApp notification (placeholder)
+        if ($whatsapp_enabled) {
+            $whatsapp_api_key = get_option('srwm_whatsapp_api_key');
+            if ($whatsapp_api_key) {
+                $messages[] = __('WhatsApp test would be sent (API integration pending).', 'smart-restock-waitlist');
+            } else {
+                $success = false;
+                $messages[] = __('WhatsApp API key not configured.', 'smart-restock-waitlist');
+            }
+        }
+        
+        // Test SMS notification (placeholder)
+        if ($sms_enabled) {
+            $sms_api_key = get_option('srwm_sms_api_key');
+            if ($sms_api_key) {
+                $messages[] = __('SMS test would be sent (API integration pending).', 'smart-restock-waitlist');
+            } else {
+                $success = false;
+                $messages[] = __('SMS API key not configured.', 'smart-restock-waitlist');
+            }
+        }
+        
+        $message = implode(' ', $messages);
+        wp_die(json_encode(array('success' => $success, 'message' => $message)));
     }
     
     /**
