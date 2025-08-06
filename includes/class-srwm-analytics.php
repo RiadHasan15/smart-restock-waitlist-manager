@@ -94,11 +94,11 @@ class SRWM_Analytics {
             
             $results = $wpdb->get_results($wpdb->prepare("
                 SELECT 
-                    DATE(created_at) as date,
+                    DATE(date_added) as date,
                     COUNT(*) as count
                 FROM {$table_name}
-                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
-                GROUP BY DATE(created_at)
+                WHERE date_added >= DATE_SUB(CURDATE(), INTERVAL %d DAY)
+                GROUP BY DATE(date_added)
                 ORDER BY date ASC
             ", $days));
             
@@ -137,7 +137,7 @@ class SRWM_Analytics {
                     method,
                     COUNT(*) as count
                 FROM {$table_name}
-                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                WHERE timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
                 GROUP BY method
                 ORDER BY count DESC
             ");
@@ -209,7 +209,7 @@ class SRWM_Analytics {
             $count = $wpdb->get_var("
                 SELECT COUNT(*) 
                 FROM {$table_name} 
-                WHERE DATE(created_at) = CURDATE()
+                WHERE DATE(date_added) = CURDATE()
             ");
             return intval($count);
             
@@ -235,7 +235,7 @@ class SRWM_Analytics {
             $count = $wpdb->get_var("
                 SELECT COUNT(*) 
                 FROM {$table_name} 
-                WHERE DATE(created_at) = CURDATE()
+                WHERE DATE(timestamp) = CURDATE()
             ");
             return intval($count);
             
@@ -262,8 +262,33 @@ class SRWM_Analytics {
                 return 0;
             }
             
-            $low_stock_products = wc_get_low_stock_count();
-            return intval($low_stock_products);
+            // Get low stock threshold from WooCommerce settings
+            $low_stock_threshold = get_option('woocommerce_notify_low_stock_amount', 2);
+            
+            // Query products with low stock
+            $args = array(
+                'post_type' => 'product',
+                'post_status' => 'publish',
+                'meta_query' => array(
+                    array(
+                        'key' => '_stock',
+                        'value' => $low_stock_threshold,
+                        'compare' => '<=',
+                        'type' => 'NUMERIC'
+                    ),
+                    array(
+                        'key' => '_stock',
+                        'value' => 0,
+                        'compare' => '>',
+                        'type' => 'NUMERIC'
+                    )
+                ),
+                'posts_per_page' => -1,
+                'fields' => 'ids'
+            );
+            
+            $low_stock_products = get_posts($args);
+            return count($low_stock_products);
             
         } catch (Exception $e) {
             error_log('Analytics get_low_stock_products error: ' . $e->getMessage());
@@ -287,11 +312,11 @@ class SRWM_Analytics {
             
             // Get average time between waitlist addition and restock
             $avg_time = $wpdb->get_var("
-                SELECT AVG(DATEDIFF(r.created_at, w.created_at)) as avg_days
+                SELECT AVG(DATEDIFF(r.timestamp, w.date_added)) as avg_days
                 FROM {$waitlist_table} w
                 INNER JOIN {$restock_table} r ON w.product_id = r.product_id
-                WHERE r.created_at > w.created_at
-                AND r.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                WHERE r.timestamp > w.date_added
+                AND r.timestamp >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             ");
             
             return round(floatval($avg_time), 1);
