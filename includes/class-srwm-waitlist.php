@@ -227,8 +227,8 @@ class SRWM_Waitlist {
         $css = '';
         
         // Get user settings
-        $container_bg = get_option('srwm_container_bg', '#f8f9fa');
-        $header_bg = get_option('srwm_header_bg', '#ffffff');
+        $container_bg = get_option('srwm_container_bg', '#ffffff');
+        $header_bg = get_option('srwm_header_bg', '#f8f9fa');
         $header_text = get_option('srwm_header_text', '#333333');
         $body_text = get_option('srwm_body_text', '#666666');
         $btn_primary_bg = get_option('srwm_btn_primary_bg', '#007cba');
@@ -237,13 +237,12 @@ class SRWM_Waitlist {
         $btn_secondary_text = get_option('srwm_btn_secondary_text', '#ffffff');
         $success_bg = get_option('srwm_success_bg', '#d4edda');
         $success_text = get_option('srwm_success_text', '#155724');
-        $border_color = get_option('srwm_border_color', '#dee2e6');
+        $border_color = get_option('srwm_border_color', '#e9ecef');
         $input_bg = get_option('srwm_input_bg', '#ffffff');
         $input_border = get_option('srwm_input_border', '#ced4da');
         $input_focus_border = get_option('srwm_input_focus_border', '#007cba');
         $progress_bg = get_option('srwm_progress_bg', '#e9ecef');
         $progress_fill = get_option('srwm_progress_fill', '#007cba');
-        $shadow_color = get_option('srwm_shadow_color', '#000000');
         $border_radius = get_option('srwm_border_radius', '8');
         $font_size = get_option('srwm_font_size', 'medium');
         
@@ -263,7 +262,7 @@ class SRWM_Waitlist {
             background-color: {$container_bg} !important;
             border: 1px solid {$border_color} !important;
             border-radius: {$border_radius}px !important;
-            box-shadow: 0 2px 8px rgba(" . $this->hex_to_rgb($shadow_color) . ", 0.1) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
             font-size: {$base_font_size} !important;
         }
         
