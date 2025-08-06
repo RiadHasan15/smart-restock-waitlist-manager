@@ -173,10 +173,10 @@ class SRWM_Admin {
         $waitlist_enabled = isset($_POST['srwm_waitlist_enabled']) ? 'yes' : 'no';
         $auto_disable_at_zero = isset($_POST['srwm_auto_disable_at_zero']) ? 'yes' : 'no';
         
-        // Validate low stock threshold
-        $low_stock_threshold = isset($_POST['srwm_low_stock_threshold']) ? 
-            intval($_POST['srwm_low_stock_threshold']) : 5;
-        $low_stock_threshold = max(0, min(1000, $low_stock_threshold)); // Limit between 0 and 1000
+        // Validate waitlist display threshold (free version)
+        $waitlist_display_threshold = isset($_POST['srwm_waitlist_display_threshold']) ? 
+            intval($_POST['srwm_waitlist_display_threshold']) : 5;
+        $waitlist_display_threshold = max(0, min(1000, $waitlist_display_threshold)); // Limit between 0 and 1000
         
         // Validate and sanitize email templates
         $waitlist_email_template = isset($_POST['srwm_email_template_waitlist']) ? 
@@ -190,7 +190,7 @@ class SRWM_Admin {
         // Save settings
         update_option('srwm_waitlist_enabled', $waitlist_enabled);
         update_option('srwm_auto_disable_at_zero', $auto_disable_at_zero);
-        update_option('srwm_low_stock_threshold', $low_stock_threshold);
+        update_option('srwm_waitlist_display_threshold', $waitlist_display_threshold);
         update_option('srwm_email_template_waitlist', $waitlist_email_template);
         
         // Save Pro settings if license is active
@@ -221,6 +221,12 @@ class SRWM_Admin {
             update_option('srwm_company_address', $company_address);
             update_option('srwm_company_phone', $company_phone);
             update_option('srwm_company_email', $company_email);
+            
+            // Save low stock threshold (Pro feature)
+            $low_stock_threshold = isset($_POST['srwm_low_stock_threshold']) ? 
+                intval($_POST['srwm_low_stock_threshold']) : 5;
+            $low_stock_threshold = max(0, min(1000, $low_stock_threshold));
+            update_option('srwm_low_stock_threshold', $low_stock_threshold);
         }
         
         // Redirect to show success message
@@ -235,7 +241,7 @@ class SRWM_Admin {
         // Reset general settings
         update_option('srwm_waitlist_enabled', 'yes');
         update_option('srwm_auto_disable_at_zero', 'no');
-        update_option('srwm_low_stock_threshold', 5);
+        update_option('srwm_waitlist_display_threshold', 5);
         update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
         
         // Reset Pro settings if license is active
@@ -246,6 +252,7 @@ class SRWM_Admin {
             update_option('srwm_company_address', '');
             update_option('srwm_company_phone', '');
             update_option('srwm_company_email', get_option('admin_email'));
+            update_option('srwm_low_stock_threshold', 5);
         }
         
         // Redirect to show success message
@@ -6588,6 +6595,19 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     
+                    <tr>
+                        <th scope="row"><?php _e('Waitlist Display Threshold', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="number" name="srwm_waitlist_display_threshold" 
+                                   value="<?php echo esc_attr(get_option('srwm_waitlist_display_threshold', 5)); ?>" 
+                                   min="0" max="1000" class="regular-text">
+                            <p class="description">
+                                <?php _e('Stock level at which to show waitlist option to customers. Must be between 0 and 1000.', 'smart-restock-waitlist'); ?>
+                                <br><strong><?php _e('Example:', 'smart-restock-waitlist'); ?></strong> <?php _e('If set to 5, customers will see the waitlist option when stock is 5 or less.', 'smart-restock-waitlist'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    
                     <?php if ($this->license_manager->is_pro_active()): ?>
                     <tr>
                         <th scope="row"><?php _e('Supplier Notifications', 'smart-restock-waitlist'); ?></th>
@@ -6600,18 +6620,6 @@ class SRWM_Admin {
                         </td>
                     </tr>
                     <?php endif; ?>
-                    
-                    <tr>
-                        <th scope="row"><?php _e('Low Stock Threshold', 'smart-restock-waitlist'); ?></th>
-                        <td>
-                            <input type="number" name="srwm_low_stock_threshold" 
-                                   value="<?php echo esc_attr(get_option('srwm_low_stock_threshold', 5)); ?>" 
-                                   min="0" max="1000" class="regular-text">
-                            <p class="description">
-                                <?php _e('Stock level at which to notify suppliers (global default). Must be between 0 and 1000.', 'smart-restock-waitlist'); ?>
-                            </p>
-                        </td>
-                    </tr>
                     
                     <tr>
                         <th scope="row"><?php _e('Auto-disable at Zero Stock', 'smart-restock-waitlist'); ?></th>
@@ -6628,7 +6636,16 @@ class SRWM_Admin {
                 
                 <?php if ($this->license_manager->is_pro_active()): ?>
                 <div class="srwm-settings-section">
-                <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
+                    <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
+                <?php else: ?>
+                <div class="srwm-settings-section">
+                    <div class="notice notice-info">
+                        <p><strong><?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?></strong></p>
+                        <p><?php _e('Unlock supplier management, automated notifications, and advanced features to streamline your restock workflow.', 'smart-restock-waitlist'); ?></p>
+                        <p><a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-pro'); ?>" class="button button-primary"><?php _e('View Pro Features', 'smart-restock-waitlist'); ?></a></p>
+                    </div>
+                    <h2><?php _e('Pro Settings', 'smart-restock-waitlist'); ?></h2>
+                <?php endif; ?>
                 <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('WhatsApp Notifications', 'smart-restock-waitlist'); ?></th>
@@ -6676,6 +6693,18 @@ class SRWM_Admin {
                             </p>
                         </td>
                     </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Low Stock Threshold', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="number" name="srwm_low_stock_threshold" 
+                                   value="<?php echo esc_attr(get_option('srwm_low_stock_threshold', 5)); ?>" 
+                                   min="0" max="1000" class="regular-text">
+                            <p class="description">
+                                <?php _e('Stock level at which to notify suppliers (global default). Must be between 0 and 1000.', 'smart-restock-waitlist'); ?>
+                            </p>
+                        </td>
+                    </tr>
                     </table>
                 </div>
                 
@@ -6717,6 +6746,49 @@ class SRWM_Admin {
                                    class="regular-text">
                         </td>
                     </tr>
+                    </table>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($this->license_manager->is_pro_active()): ?>
+                <div class="srwm-settings-section">
+                    <h2><?php _e('Company Information (for Purchase Orders)', 'smart-restock-waitlist'); ?></h2>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('Company Name', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <input type="text" name="srwm_company_name" 
+                                       value="<?php echo esc_attr(get_option('srwm_company_name', get_bloginfo('name'))); ?>" 
+                                       class="regular-text">
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('Company Address', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <textarea name="srwm_company_address" rows="3" class="regular-text"><?php 
+                                    echo esc_textarea(get_option('srwm_company_address')); 
+                                ?></textarea>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('Company Phone', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <input type="text" name="srwm_company_phone" 
+                                       value="<?php echo esc_attr(get_option('srwm_company_phone')); ?>" 
+                                       class="regular-text">
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('Company Email', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <input type="email" name="srwm_company_email" 
+                                       value="<?php echo esc_attr(get_option('srwm_company_email', get_option('admin_email'))); ?>" 
+                                       class="regular-text">
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 <?php endif; ?>
