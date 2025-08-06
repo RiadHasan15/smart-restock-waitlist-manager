@@ -360,6 +360,10 @@ class SRWM_Waitlist {
         .srwm-preview-subtitle {
             color: {$body_text} !important;
         }
+        
+        .srwm-queue-position {
+            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.1) !important;
+        }
         ";
         
         return $css;
