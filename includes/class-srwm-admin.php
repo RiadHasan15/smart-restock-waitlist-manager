@@ -1449,6 +1449,17 @@ class SRWM_Admin {
             100% { left: 100%; }
         }
         
+        /* Auto-refresh animation */
+        @keyframes auto-refresh-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        .srwm-auto-refresh {
+            animation: auto-refresh-pulse 2s ease-in-out;
+        }
+        
         /* Responsive Enhancements */
         @media (max-width: 768px) {
             .srwm-dashboard-tabs {
