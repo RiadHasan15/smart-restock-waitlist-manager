@@ -257,12 +257,12 @@ class SRWM_Waitlist {
         $base_font_size = isset($font_sizes[$font_size]) ? $font_sizes[$font_size] : '14px';
         
         $css .= "
-        /* SRWM Dynamic Styles */
+        /* SRWM Modern Dynamic Styles */
         .srwm-waitlist-container {
             background-color: {$container_bg} !important;
             border: 1px solid {$border_color} !important;
             border-radius: {$border_radius}px !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
             font-size: {$base_font_size} !important;
         }
         
@@ -288,7 +288,7 @@ class SRWM_Waitlist {
         .srwm-waitlist-form input[type='email'],
         .srwm-waitlist-form input[type='text'] {
             background-color: {$input_bg} !important;
-            border: 1px solid {$input_border} !important;
+            border: 2px solid {$input_border} !important;
             border-radius: {$border_radius}px !important;
             color: {$body_text} !important;
         }
@@ -297,16 +297,19 @@ class SRWM_Waitlist {
         .srwm-waitlist-form input[type='text']:focus {
             border-color: {$input_focus_border} !important;
             outline: none !important;
+            box-shadow: 0 8px 32px rgba(" . $this->hex_to_rgb($input_focus_border) . ", 0.15) !important;
         }
         
         .srwm-waitlist-submit {
             background-color: {$btn_primary_bg} !important;
             color: {$btn_primary_text} !important;
             border-radius: {$border_radius}px !important;
+            box-shadow: 0 4px 16px rgba(" . $this->hex_to_rgb($btn_primary_bg) . ", 0.3) !important;
         }
         
         .srwm-waitlist-submit:hover {
             background-color: {$this->adjust_brightness($btn_primary_bg, -10)} !important;
+            box-shadow: 0 12px 40px rgba(" . $this->hex_to_rgb($btn_primary_bg) . ", 0.4) !important;
         }
         
         .srwm-status-card.active {
@@ -329,7 +332,7 @@ class SRWM_Waitlist {
         }
         
         .srwm-queue-fill {
-            background-color: {$progress_fill} !important;
+            background: linear-gradient(90deg, {$progress_fill}, " . $this->adjust_brightness($progress_fill, -15) . ") !important;
             border-radius: {$border_radius}px !important;
         }
         
@@ -339,7 +342,7 @@ class SRWM_Waitlist {
         }
         
         .srwm-progress-fill {
-            background-color: {$progress_fill} !important;
+            background: linear-gradient(90deg, {$progress_fill}, " . $this->adjust_brightness($progress_fill, -15) . ") !important;
             border-radius: {$border_radius}px !important;
         }
         
@@ -362,7 +365,18 @@ class SRWM_Waitlist {
         }
         
         .srwm-queue-position {
-            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.1) !important;
+            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.08) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        .srwm-queue-number {
+            color: {$btn_primary_bg} !important;
+            text-shadow: 0 2px 4px rgba(" . $this->hex_to_rgb($btn_primary_bg) . ", 0.2) !important;
+        }
+        
+        .srwm-stat-item {
+            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.05) !important;
+            backdrop-filter: blur(10px) !important;
         }
         ";
         
