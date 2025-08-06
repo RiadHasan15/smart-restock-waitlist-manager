@@ -884,6 +884,14 @@ class SRWM_Analytics {
     public function get_stat_card_details($stat_type) {
         global $wpdb;
         
+        // Check for cached data (5 minutes cache)
+        $cache_key = 'srwm_stat_card_' . $stat_type;
+        $cached_data = wp_cache_get($cache_key, 'srwm_analytics');
+        
+        if ($cached_data !== false) {
+            return $cached_data;
+        }
+        
         try {
             if (empty($stat_type)) {
                 return array('error' => 'Invalid stat type');
@@ -909,8 +917,13 @@ class SRWM_Analytics {
             }
         } catch (Exception $e) {
             error_log('SRWM Analytics: Exception in get_stat_card_details: ' . $e->getMessage());
-            return array('error' => 'Failed to load details: ' . $e->getMessage());
+            $result = array('error' => 'Failed to load details: ' . $e->getMessage());
         }
+        
+        // Cache the result for 5 minutes
+        wp_cache_set($cache_key, $result, 'srwm_analytics', 300);
+        
+        return $result;
     }
     
     /**
@@ -935,12 +948,14 @@ class SRWM_Analytics {
                 );
             }
             
-            // Get total customers
-            $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
-            if ($wpdb->last_error) {
-                error_log('SRWM Analytics: Error getting total customers: ' . $wpdb->last_error);
-                $total_customers = 0;
-            }
+                    // Get total customers
+        $total_customers = $wpdb->get_var("SELECT COUNT(DISTINCT email) FROM {$waitlist_table}");
+        if ($wpdb->last_error) {
+            error_log('SRWM Analytics: Error getting total customers: ' . $wpdb->last_error);
+            $total_customers = 0;
+        } else {
+            $total_customers = intval($total_customers ?: 0);
+        }
             
             // Get active waitlists (not notified)
             $active_waitlists = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 0");
@@ -982,15 +997,25 @@ class SRWM_Analytics {
                 $recent_activity = array();
             }
             
-            return array(
-                'summary' => array(
-                    'total_customers' => $total_customers ?: 0,
-                    'active_waitlists' => $active_waitlists ?: 0,
-                    'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
-                    'conversion_rate' => $conversion_rate . '%'
-                ),
-                'recent_activity' => $recent_activity ?: array()
-            );
+                    // Validate and sanitize data
+        $result = array(
+            'summary' => array(
+                'total_customers' => intval($total_customers ?: 0),
+                'active_waitlists' => intval($active_waitlists ?: 0),
+                'avg_wait_time' => $avg_wait_time ? round(abs($avg_wait_time), 1) . ' days' : 'N/A',
+                'conversion_rate' => $conversion_rate . '%'
+            ),
+            'recent_activity' => is_array($recent_activity) ? $recent_activity : array()
+        );
+        
+        // Validate summary data
+        foreach ($result['summary'] as $key => $value) {
+            if (is_numeric($value) && $value < 0) {
+                $result['summary'][$key] = 0;
+            }
+        }
+        
+        return $result;
             
         } catch (Exception $e) {
             error_log('SRWM Analytics: Exception in get_waitlist_customers_details: ' . $e->getMessage());
@@ -1226,7 +1251,7 @@ class SRWM_Analytics {
         $critical_level = 0;
         
         // Check if WooCommerce is active and has products
-        if (!class_exists('WooCommerce')) {
+        if (!class_exists('WooCommerce') || !function_exists('wc_get_products')) {
             return array(
                 'summary' => array(
                     'low_stock' => 0,
@@ -1239,12 +1264,12 @@ class SRWM_Analytics {
         }
         
         try {
-            // Get products with low stock
-            $products = wc_get_products(array(
-                'limit' => 50,
-                'status' => 'publish',
-                'stock_status' => array('outofstock', 'onbackorder')
-            ));
+                    // Get products with low stock (limit for performance)
+        $products = wc_get_products(array(
+            'limit' => 20, // Reduced for better performance
+            'status' => 'publish',
+            'stock_status' => array('outofstock', 'onbackorder')
+        ));
             
             foreach ($products as $product) {
                 $stock_quantity = $product->get_stock_quantity();

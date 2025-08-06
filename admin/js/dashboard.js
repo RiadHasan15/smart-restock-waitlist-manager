@@ -5,7 +5,7 @@
 (function($) {
     'use strict';
     
-    console.log('SRWM Dashboard: Script loaded successfully');
+    // Dashboard script loaded
 
     // Global variables
     let waitlistChart = null;
@@ -28,7 +28,7 @@
             return;
         }
         
-        console.log('SRWM Dashboard: Initializing dashboard...');
+        // Initializing dashboard
         
         initCharts();
         initEventHandlers();
@@ -40,7 +40,7 @@
         // Load initial chart data
         loadChartData();
         
-        console.log('SRWM Dashboard: Dashboard initialized successfully');
+        // Dashboard initialized successfully
     }
 
     /**
@@ -143,11 +143,11 @@
      * Load chart data via AJAX
      */
     function loadChartData(days = 7) {
-        console.log('SRWM Dashboard: Loading chart data for', days, 'days');
+        // Loading chart data for period
         
         // Check if srwm_dashboard is available
         if (typeof srwm_dashboard === 'undefined') {
-            console.error('SRWM Dashboard: srwm_dashboard not available');
+            // Dashboard variables not available
             showMessage('error', 'Dashboard configuration not loaded');
             return $.Deferred().reject('srwm_dashboard not available');
         }
@@ -162,12 +162,12 @@
                 days: days
             },
             success: function(response) {
-                console.log('SRWM Dashboard: Chart data response:', response);
+                // Chart data response received
                 
                 if (response.success) {
                     updateCharts(response.data);
                 } else {
-                    console.error('SRWM Dashboard: Chart data error:', response.data);
+                    // Chart data error occurred
                     showMessage('error', response.data || 'Failed to load chart data');
                 }
             },
@@ -185,11 +185,11 @@
      * Update charts with new data
      */
     function updateCharts(data) {
-        console.log('SRWM Dashboard: Updating charts with data:', data);
+        // Updating charts with data
         
         // Check if Chart.js is available
         if (typeof Chart === 'undefined') {
-            console.error('SRWM Dashboard: Chart.js not available for chart updates');
+            // Chart.js not available for updates
             return;
         }
         
@@ -270,7 +270,7 @@
         // Global period selector
         $('#srwm-global-period').on('change', function() {
             const days = $(this).val();
-            console.log('SRWM Dashboard: Global period changed to', days, 'days');
+            // Global period changed
             
             // Update all chart period selectors to match
             $('.srwm-chart-period').val(days);
@@ -282,7 +282,7 @@
         // Chart period selector (sync with global)
         $('.srwm-chart-period').on('change', function() {
             const days = $(this).val();
-            console.log('SRWM Dashboard: Chart period changed to', days, 'days');
+            // Chart period changed
             
             // Update global period selector to match
             $('#srwm-global-period').val(days);
@@ -293,7 +293,7 @@
 
         // Dashboard refresh button
         $('#srwm-refresh-dashboard').on('click', function() {
-            console.log('SRWM Dashboard: Refresh button clicked');
+            // Refresh button clicked
             
             // Get current period
             const currentPeriod = $('#srwm-global-period').val() || 7;
@@ -302,14 +302,14 @@
             loadDashboardData(currentPeriod).always(function() {
                 // Show success message
                 showMessage('success', 'Dashboard data refreshed successfully!');
-                console.log('SRWM Dashboard: Refresh completed');
+                // Refresh completed
             });
         });
 
         // Stat card interactions - Enhanced with detailed data
         $('.srwm-stat-card').on('click', function() {
             const statType = $(this).data('stat');
-            console.log('SRWM Dashboard: Stat card clicked:', statType);
+            // Stat card clicked
             handleStatCardClick(statType);
         });
         
@@ -338,7 +338,7 @@
      * Handle stat card clicks with detailed data
      */
     function handleStatCardClick(statType) {
-        console.log('SRWM Dashboard: Handling stat card click for:', statType);
+        // Handling stat card click
         
         // Show loading state
         showStatCardLoading(statType);
@@ -382,7 +382,7 @@
      * Load detailed data for stat card
      */
     function loadStatCardDetails(statType) {
-        console.log('SRWM Dashboard: Loading details for:', statType);
+        // Loading details for stat card
         
         const $content = $('#srwm-stat-modal-content');
         
@@ -396,7 +396,7 @@
                 nonce: srwm_dashboard.nonce
             },
             success: function(response) {
-                console.log('SRWM Dashboard: Stat details response:', response);
+                // Stat details response received
                 
                 if (response.success && response.data) {
                     const data = response.data;
@@ -437,10 +437,25 @@
                 }
             },
             error: function(xhr, status, error) {
-                console.error('SRWM Dashboard: AJAX error:', error);
-                console.error('SRWM Dashboard: XHR status:', xhr.status);
-                console.error('SRWM Dashboard: Response text:', xhr.responseText);
-                $content.html('<p class="srwm-error">Error loading data. Please try again.</p>');
+                // Log error for debugging (only in development)
+                if (typeof srwm_dashboard !== 'undefined' && srwm_dashboard.debug) {
+                    console.error('SRWM Dashboard: AJAX error:', error);
+                    console.error('SRWM Dashboard: XHR status:', xhr.status);
+                    console.error('SRWM Dashboard: Response text:', xhr.responseText);
+                }
+                
+                // Show user-friendly error message
+                let errorMessage = 'Error loading data. Please try again.';
+                
+                if (xhr.status === 429) {
+                    errorMessage = 'Too many requests. Please wait a moment and try again.';
+                } else if (xhr.status === 403) {
+                    errorMessage = 'Access denied. Please refresh the page and try again.';
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Server error. Please try again later.';
+                }
+                
+                $content.html('<p class="srwm-error">' + errorMessage + '</p>');
             }
         });
     }
