@@ -247,6 +247,11 @@ class SRWM_Admin {
                 } else {
                     console.error("srwm_dashboard variables NOT available");
                 }
+                if (typeof Chart !== "undefined") {
+                    console.log("Chart.js available");
+                } else {
+                    console.error("Chart.js NOT available");
+                }
             ');
             
             wp_localize_script('srwm-dashboard', 'srwm_dashboard', array(
@@ -555,6 +560,10 @@ class SRWM_Admin {
                                     <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testAjax()">
                                         <span class="dashicons dashicons-admin-tools"></span>
                                         Test AJAX
+                                    </button>
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testChart()">
+                                        <span class="dashicons dashicons-chart-line"></span>
+                                        Test Chart
                                     </button>
                                 </div>
                             </div>

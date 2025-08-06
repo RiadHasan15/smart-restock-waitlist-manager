@@ -42,6 +42,14 @@
      */
     function initCharts() {
         console.log('Initializing charts...');
+        console.log('Chart.js available:', typeof Chart !== 'undefined' ? 'yes' : 'no');
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded, cannot initialize charts');
+            showMessage('error', 'Chart library not loaded. Please refresh the page.');
+            return;
+        }
         
         // Waitlist Growth Chart
         const waitlistCtx = document.getElementById('waitlistChart');
@@ -177,19 +185,34 @@
      */
     function updateCharts(data) {
         console.log('Updating charts with data:', data);
+        console.log('Chart.js available:', typeof Chart !== 'undefined' ? 'yes' : 'no');
+        console.log('waitlistChart exists:', !!waitlistChart);
+        console.log('restockChart exists:', !!restockChart);
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not available for chart updates');
+            return;
+        }
         
         // Update waitlist chart
         if (waitlistChart) {
             if (data.waitlist_growth && data.waitlist_growth.length > 0) {
+                console.log('Updating waitlist chart with growth data');
                 const labels = data.waitlist_growth.map(item => {
                     const date = new Date(item.date);
                     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 });
                 const values = data.waitlist_growth.map(item => parseInt(item.count));
                 
+                console.log('Waitlist labels:', labels);
+                console.log('Waitlist values:', values);
+                
                 waitlistChart.data.labels = labels;
                 waitlistChart.data.datasets[0].data = values;
                 waitlistChart.update();
+                console.log('Waitlist chart updated');
+            } else {
             } else {
                 // Show empty state with last 7 days
                 const labels = [];
@@ -212,6 +235,7 @@
         // Update restock chart
         if (restockChart) {
             if (data.restock_activity && data.restock_activity.length > 0) {
+                console.log('Updating restock chart with activity data');
                 const labels = data.restock_activity.map(item => {
                     // Format method names for better display
                     const method = item.method || 'Unknown';
@@ -219,9 +243,14 @@
                 });
                 const values = data.restock_activity.map(item => parseInt(item.count));
                 
+                console.log('Restock labels:', labels);
+                console.log('Restock values:', values);
+                
                 restockChart.data.labels = labels;
                 restockChart.data.datasets[0].data = values;
                 restockChart.update();
+                console.log('Restock chart updated');
+            } else {
             } else {
                 // Show empty state
                 restockChart.data.labels = ['Manual', 'CSV Upload', 'Quick Restock'];
@@ -601,6 +630,45 @@
                 alert('AJAX Test Error: ' + error + '\nStatus: ' + status);
             }
         });
+    };
+    
+    // Test Chart.js function
+    window.testChart = function() {
+        console.log('Testing Chart.js...');
+        if (typeof Chart === 'undefined') {
+            alert('Chart.js not available');
+            return;
+        }
+        
+        // Create a simple test chart
+        const testCanvas = document.createElement('canvas');
+        testCanvas.id = 'testChart';
+        testCanvas.width = 300;
+        testCanvas.height = 200;
+        document.body.appendChild(testCanvas);
+        
+        const testChart = new Chart(testCanvas, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar'],
+                datasets: [{
+                    label: 'Test Data',
+                    data: [10, 20, 15],
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255,0,0,0.1)'
+                }]
+            },
+            options: {
+                responsive: false
+            }
+        });
+        
+        alert('Chart.js test successful! Check for red test chart on page.');
+        
+        // Remove test chart after 3 seconds
+        setTimeout(function() {
+            document.body.removeChild(testCanvas);
+        }, 3000);
     };
 
 })(jQuery);
