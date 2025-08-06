@@ -266,37 +266,41 @@
             window.location.href = 'admin.php?page=smart-restock-waitlist-pro';
         });
 
-        // Chart period selector
+        // Global period selector
+        $('#srwm-global-period').on('change', function() {
+            const days = $(this).val();
+            console.log('SRWM Dashboard: Global period changed to', days, 'days');
+            
+            // Update all chart period selectors to match
+            $('.srwm-chart-period').val(days);
+            
+            // Load new data for the selected period
+            loadDashboardData(days);
+        });
+        
+        // Chart period selector (sync with global)
         $('.srwm-chart-period').on('change', function() {
             const days = $(this).val();
+            console.log('SRWM Dashboard: Chart period changed to', days, 'days');
+            
+            // Update global period selector to match
+            $('#srwm-global-period').val(days);
+            
+            // Load chart data for the selected period
             loadChartData(days);
         });
 
         // Dashboard refresh button
         $('#srwm-refresh-dashboard').on('click', function() {
-            const $button = $(this);
-            const $icon = $button.find('.dashicons');
-            
             console.log('SRWM Dashboard: Refresh button clicked');
             
-            // Add loading state
-            $button.prop('disabled', true);
-            $icon.removeClass('dashicons-update').addClass('dashicons-update-alt');
-            $icon.css('animation', 'spin 1s linear infinite');
+            // Get current period
+            const currentPeriod = $('#srwm-global-period').val() || 7;
             
-            // Reload chart data and refresh statistics
-            loadChartData().always(function() {
-                // Also refresh statistics cards
-                refreshStatistics();
-                
-                // Remove loading state
-                $button.prop('disabled', false);
-                $icon.removeClass('dashicons-update-alt').addClass('dashicons-update');
-                $icon.css('animation', '');
-                
+            // Load dashboard data for current period
+            loadDashboardData(currentPeriod).always(function() {
                 // Show success message
                 showMessage('success', 'Dashboard data refreshed successfully!');
-                
                 console.log('SRWM Dashboard: Refresh completed');
             });
         });
@@ -461,6 +465,98 @@
             setTimeout(function() {
                 $refreshBtn.removeClass('srwm-auto-refresh');
             }, 2000);
+        }
+    }
+    
+    /**
+     * Load dashboard data (charts + statistics) for a specific period
+     */
+    function loadDashboardData(days = 7) {
+        console.log('SRWM Dashboard: Loading dashboard data for', days, 'days');
+        
+        // Show loading state
+        showDashboardLoading();
+        
+        // Load both charts and statistics
+        $.when(
+            loadChartData(days),
+            loadStatisticsData(days)
+        ).always(function() {
+            // Hide loading state
+            hideDashboardLoading();
+            console.log('SRWM Dashboard: Dashboard data loading completed');
+        });
+    }
+    
+    /**
+     * Load statistics data for a specific period
+     */
+    function loadStatisticsData(days = 7) {
+        console.log('SRWM Dashboard: Loading statistics data for', days, 'days');
+        
+        return $.ajax({
+            url: srwm_dashboard.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'srwm_get_dashboard_data',
+                nonce: srwm_dashboard.nonce,
+                days: days
+            },
+            success: function(response) {
+                console.log('SRWM Dashboard: Statistics response:', response);
+                
+                if (response.success && response.data) {
+                    const data = response.data;
+                    
+                    // Update statistics cards
+                    updateStatCard('total_waitlist_customers', data.total_waitlist_customers || 0);
+                    updateStatCard('waitlist_products', data.waitlist_products || 0);
+                    updateStatCard('avg_restock_time', data.avg_restock_time || 0);
+                    updateStatCard('today_waitlists', data.today_waitlists || 0);
+                    updateStatCard('today_restocks', data.today_restocks || 0);
+                    updateStatCard('pending_notifications', data.pending_notifications || 0);
+                    updateStatCard('low_stock_products', data.low_stock_products || 0);
+                    
+                    console.log('SRWM Dashboard: Statistics updated successfully');
+                } else {
+                    console.error('SRWM Dashboard: Failed to load statistics:', response.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('SRWM Dashboard: Error loading statistics:', error);
+            }
+        });
+    }
+    
+    /**
+     * Show dashboard loading state
+     */
+    function showDashboardLoading() {
+        // Add loading class to dashboard
+        $('.srwm-dashboard').addClass('srwm-loading');
+        
+        // Show loading indicator on refresh button
+        const $refreshBtn = $('#srwm-refresh-dashboard');
+        if ($refreshBtn.length) {
+            $refreshBtn.prop('disabled', true);
+            $refreshBtn.find('.dashicons').addClass('dashicons-update-alt');
+            $refreshBtn.find('.dashicons').css('animation', 'spin 1s linear infinite');
+        }
+    }
+    
+    /**
+     * Hide dashboard loading state
+     */
+    function hideDashboardLoading() {
+        // Remove loading class from dashboard
+        $('.srwm-dashboard').removeClass('srwm-loading');
+        
+        // Hide loading indicator on refresh button
+        const $refreshBtn = $('#srwm-refresh-dashboard');
+        if ($refreshBtn.length) {
+            $refreshBtn.prop('disabled', false);
+            $refreshBtn.find('.dashicons').removeClass('dashicons-update-alt');
+            $refreshBtn.find('.dashicons').css('animation', '');
         }
     }
 
