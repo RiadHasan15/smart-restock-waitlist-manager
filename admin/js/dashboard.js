@@ -33,6 +33,7 @@
         initCharts();
         initEventHandlers();
         initRealtimeUpdates();
+        initDashboardTabs();
         initTooltips();
         
         // Load initial chart data
@@ -477,6 +478,57 @@
                 hideTooltip();
             });
         });
+    }
+    
+    /**
+     * Initialize dashboard tabs
+     */
+    function initDashboardTabs() {
+        console.log('SRWM Dashboard: Initializing tabs...');
+        
+        // Tab switching functionality
+        $('.srwm-tab-button').on('click', function() {
+            const tabName = $(this).data('tab');
+            console.log('SRWM Dashboard: Switching to tab:', tabName);
+            
+            // Remove active class from all tabs and content
+            $('.srwm-tab-button').removeClass('active');
+            $('.srwm-tab-content').removeClass('active');
+            
+            // Add active class to clicked tab and corresponding content
+            $(this).addClass('active');
+            $(`.srwm-tab-content[data-tab="${tabName}"]`).addClass('active');
+            
+            // Load tab-specific data if needed
+            loadTabData(tabName);
+        });
+        
+        console.log('SRWM Dashboard: Tabs initialized');
+    }
+    
+    /**
+     * Load tab-specific data
+     */
+    function loadTabData(tabName) {
+        console.log('SRWM Dashboard: Loading data for tab:', tabName);
+        
+        switch(tabName) {
+            case 'overview':
+                // Overview tab data is already loaded
+                break;
+            case 'analytics':
+                // Analytics tab - could load additional analytics data
+                console.log('SRWM Dashboard: Analytics tab selected');
+                break;
+            case 'reports':
+                // Reports tab - could load report templates
+                console.log('SRWM Dashboard: Reports tab selected');
+                break;
+            case 'actions':
+                // Actions tab - could load quick action shortcuts
+                console.log('SRWM Dashboard: Actions tab selected');
+                break;
+        }
     }
 
     /**

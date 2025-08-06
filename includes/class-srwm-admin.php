@@ -402,8 +402,32 @@ class SRWM_Admin {
             <?php endif; ?>
             
             <div class="srwm-dashboard-content">
-                <!-- Statistics Overview -->
-                <div class="srwm-section">
+                <!-- Dashboard Tabs Navigation -->
+                <div class="srwm-dashboard-tabs">
+                    <button class="srwm-tab-button active" data-tab="overview">
+                        <span class="dashicons dashicons-chart-area"></span>
+                        <?php _e('Overview', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="analytics">
+                        <span class="dashicons dashicons-chart-line"></span>
+                        <?php _e('Analytics', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="reports">
+                        <span class="dashicons dashicons-analytics"></span>
+                        <?php _e('Reports', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="actions">
+                        <span class="dashicons dashicons-admin-tools"></span>
+                        <?php _e('Quick Actions', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+                
+                <!-- Tab Content Container -->
+                <div class="srwm-tab-content-container">
+                    <!-- Overview Tab -->
+                    <div class="srwm-tab-content active" data-tab="overview">
+                        <!-- Statistics Overview -->
+                        <div class="srwm-section">
                     <div class="srwm-section-header">
                         <h2 class="srwm-section-title">
                             <span class="dashicons dashicons-chart-bar"></span>
@@ -606,7 +630,7 @@ class SRWM_Admin {
                     </div>
                 </div>
                 
-                <!-- Analytics Charts -->
+                <!-- Analytics Charts (Moved to Overview Tab) -->
                 <div class="srwm-section">
                     <div class="srwm-section-header">
                         <h2 class="srwm-section-title">
@@ -653,119 +677,6 @@ class SRWM_Admin {
                             </div>
                             <div class="srwm-chart-container">
                                 <canvas id="restockChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Export Section -->
-                <div class="srwm-section">
-                    <div class="srwm-section-header">
-                        <h2 class="srwm-section-title">
-                            <span class="dashicons dashicons-download"></span>
-                            <?php _e('Data Export', 'smart-restock-waitlist'); ?>
-                        </h2>
-                        <p class="srwm-section-description">
-                            <?php _e('Export your waitlist data for analysis and reporting', 'smart-restock-waitlist'); ?>
-                        </p>
-                    </div>
-                    
-                    <div class="srwm-export-actions">
-                        <a href="<?php echo admin_url('admin-ajax.php?action=srwm_export_waitlist&nonce=' . wp_create_nonce('srwm_export_nonce')); ?>" 
-                           class="srwm-btn srwm-btn-primary">
-                            <span class="dashicons dashicons-download"></span>
-                            <?php _e('Export Waitlist Data', 'smart-restock-waitlist'); ?>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Quick Actions -->
-                <div class="srwm-section">
-                    <div class="srwm-section-header">
-                        <h2 class="srwm-section-title">
-                            <span class="dashicons dashicons-admin-tools"></span>
-                            <?php _e('Quick Actions', 'smart-restock-waitlist'); ?>
-                        </h2>
-                        <p class="srwm-section-description">
-                            <?php _e('Common tasks and shortcuts for efficient management', 'smart-restock-waitlist'); ?>
-                        </p>
-                    </div>
-                    
-                    <div class="srwm-actions-grid">
-                        <div class="srwm-action-card">
-                            <div class="srwm-action-icon">
-                                <span class="dashicons dashicons-list-view"></span>
-                            </div>
-                            <div class="srwm-action-content">
-                                <h3><?php _e('View Waitlists', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Browse and manage customer waitlists', 'smart-restock-waitlist'); ?></p>
-                            </div>
-                            <div class="srwm-action-footer">
-                                <button id="srwm-view-waitlists" class="srwm-btn srwm-btn-primary">
-                                    <?php _e('Open', 'smart-restock-waitlist'); ?>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <?php if ($this->license_manager->is_pro_active()): ?>
-                        <div class="srwm-action-card">
-                            <div class="srwm-action-icon">
-                                <span class="dashicons dashicons-businessman"></span>
-                            </div>
-                            <div class="srwm-action-content">
-                                <h3><?php _e('Manage Suppliers', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Add and manage supplier relationships', 'smart-restock-waitlist'); ?></p>
-                            </div>
-                            <div class="srwm-action-footer">
-                                <button id="srwm-manage-suppliers" class="srwm-btn srwm-btn-primary">
-                                    <?php _e('Open', 'smart-restock-waitlist'); ?>
-                                </button>
-                            </div>
-                        </div>
-                        <?php else: ?>
-                        <div class="srwm-action-card srwm-pro-locked">
-                            <div class="srwm-action-icon">
-                                <span class="dashicons dashicons-lock"></span>
-                            </div>
-                            <div class="srwm-action-content">
-                                <h3><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Advanced supplier management with categories, analytics, and bulk operations', 'smart-restock-waitlist'); ?></p>
-                            </div>
-                            <div class="srwm-action-footer">
-                                <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="srwm-btn srwm-btn-secondary">
-                                    <?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?>
-                                </a>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <div class="srwm-action-card">
-                            <div class="srwm-action-icon">
-                                <span class="dashicons dashicons-star-filled"></span>
-                            </div>
-                            <div class="srwm-action-content">
-                                <h3><?php _e('Pro Features', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Explore advanced features and capabilities', 'smart-restock-waitlist'); ?></p>
-                            </div>
-                            <div class="srwm-action-footer">
-                                <button id="srwm-pro-features" class="srwm-btn srwm-btn-secondary">
-                                    <?php _e('Explore', 'smart-restock-waitlist'); ?>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="srwm-action-card">
-                            <div class="srwm-action-icon">
-                                <span class="dashicons dashicons-admin-settings"></span>
-                            </div>
-                            <div class="srwm-action-content">
-                                <h3><?php _e('Settings', 'smart-restock-waitlist'); ?></h3>
-                                <p><?php _e('Configure plugin settings and preferences', 'smart-restock-waitlist'); ?></p>
-                            </div>
-                            <div class="srwm-action-footer">
-                                <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>" class="srwm-btn srwm-btn-secondary">
-                                    <?php _e('Configure', 'smart-restock-waitlist'); ?>
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -920,6 +831,160 @@ class SRWM_Admin {
                         </table>
                     </div>
                     <?php endif; ?>
+                </div>
+                    </div>
+                    
+                    <!-- Analytics Tab -->
+                    <div class="srwm-tab-content" data-tab="analytics">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-chart-line"></span>
+                                    <?php _e('Advanced Analytics', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Detailed analytics and performance insights', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-analytics-grid">
+                                <div class="srwm-analytics-card">
+                                    <h3><?php _e('Trend Analysis', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Coming soon: Advanced trend analysis and predictions', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                
+                                <div class="srwm-analytics-card">
+                                    <h3><?php _e('Performance Metrics', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Coming soon: Detailed performance metrics and KPIs', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reports Tab -->
+                    <div class="srwm-tab-content" data-tab="reports">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-analytics"></span>
+                                    <?php _e('Custom Reports', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Generate custom reports and export data', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-reports-grid">
+                                <div class="srwm-report-card">
+                                    <h3><?php _e('Waitlist Report', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Export comprehensive waitlist data', 'smart-restock-waitlist'); ?></p>
+                                    <button class="srwm-btn srwm-btn-primary" onclick="exportDashboardReport()">
+                                        <span class="dashicons dashicons-download"></span>
+                                        <?php _e('Generate Report', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                                
+                                <div class="srwm-report-card">
+                                    <h3><?php _e('Restock Activity Report', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Coming soon: Detailed restock activity analysis', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions Tab -->
+                    <div class="srwm-tab-content" data-tab="actions">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-admin-tools"></span>
+                                    <?php _e('Quick Actions', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Common tasks and shortcuts for efficient management', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-actions-grid">
+                                <div class="srwm-action-card">
+                                    <div class="srwm-action-icon">
+                                        <span class="dashicons dashicons-list-view"></span>
+                                    </div>
+                                    <div class="srwm-action-content">
+                                        <h3><?php _e('View Waitlists', 'smart-restock-waitlist'); ?></h3>
+                                        <p><?php _e('Browse and manage customer waitlists', 'smart-restock-waitlist'); ?></p>
+                                    </div>
+                                    <div class="srwm-action-footer">
+                                        <button id="srwm-view-waitlists" class="srwm-btn srwm-btn-primary">
+                                            <?php _e('Open', 'smart-restock-waitlist'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <?php if ($this->license_manager->is_pro_active()): ?>
+                                <div class="srwm-action-card">
+                                    <div class="srwm-action-icon">
+                                        <span class="dashicons dashicons-businessman"></span>
+                                    </div>
+                                    <div class="srwm-action-content">
+                                        <h3><?php _e('Manage Suppliers', 'smart-restock-waitlist'); ?></h3>
+                                        <p><?php _e('Add and manage supplier relationships', 'smart-restock-waitlist'); ?></p>
+                                    </div>
+                                    <div class="srwm-action-footer">
+                                        <button id="srwm-manage-suppliers" class="srwm-btn srwm-btn-primary">
+                                            <?php _e('Open', 'smart-restock-waitlist'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                                <?php else: ?>
+                                <div class="srwm-action-card srwm-pro-locked">
+                                    <div class="srwm-action-icon">
+                                        <span class="dashicons dashicons-lock"></span>
+                                    </div>
+                                    <div class="srwm-action-content">
+                                        <h3><?php _e('Supplier Management', 'smart-restock-waitlist'); ?></h3>
+                                        <p><?php _e('Advanced supplier management with categories, analytics, and bulk operations', 'smart-restock-waitlist'); ?></p>
+                                    </div>
+                                    <div class="srwm-action-footer">
+                                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-license'); ?>" class="srwm-btn srwm-btn-secondary">
+                                            <?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?>
+                                        </a>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <div class="srwm-action-card">
+                                    <div class="srwm-action-icon">
+                                        <span class="dashicons dashicons-star-filled"></span>
+                                    </div>
+                                    <div class="srwm-action-content">
+                                        <h3><?php _e('Pro Features', 'smart-restock-waitlist'); ?></h3>
+                                        <p><?php _e('Explore advanced features and capabilities', 'smart-restock-waitlist'); ?></p>
+                                    </div>
+                                    <div class="srwm-action-footer">
+                                        <button id="srwm-pro-features" class="srwm-btn srwm-btn-secondary">
+                                            <?php _e('Explore', 'smart-restock-waitlist'); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="srwm-action-card">
+                                    <div class="srwm-action-icon">
+                                        <span class="dashicons dashicons-admin-settings"></span>
+                                    </div>
+                                    <div class="srwm-action-content">
+                                        <h3><?php _e('Settings', 'smart-restock-waitlist'); ?></h3>
+                                        <p><?php _e('Configure plugin settings and preferences', 'smart-restock-waitlist'); ?></p>
+                                    </div>
+                                    <div class="srwm-action-footer">
+                                        <a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>" class="srwm-btn srwm-btn-secondary">
+                                            <?php _e('Configure', 'smart-restock-waitlist'); ?>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 </div>
                 <?php if (!$this->license_manager->is_pro_active()): ?>
@@ -1458,6 +1523,119 @@ class SRWM_Admin {
         
         .srwm-auto-refresh {
             animation: auto-refresh-pulse 2s ease-in-out;
+        }
+        
+        /* Dashboard Tabs */
+        .srwm-dashboard-tabs {
+            display: flex;
+            background: #fff;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-tab-button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .srwm-tab-button:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .srwm-tab-button.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-tab-button .dashicons {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Tab Content */
+        .srwm-tab-content {
+            display: none;
+        }
+        
+        .srwm-tab-content.active {
+            display: block;
+        }
+        
+        /* Analytics Grid */
+        .srwm-analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .srwm-analytics-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-analytics-card h3 {
+            margin: 0 0 12px 0;
+            color: #111827;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .srwm-analytics-card p {
+            margin: 0;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        
+        /* Reports Grid */
+        .srwm-reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .srwm-report-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .srwm-report-card h3 {
+            margin: 0 0 12px 0;
+            color: #111827;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .srwm-report-card p {
+            margin: 0 0 20px 0;
+            color: #6b7280;
+            line-height: 1.5;
         }
         
         /* Responsive Enhancements */
