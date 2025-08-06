@@ -398,104 +398,11 @@
     }
 
     /**
-     * Initialize real-time updates
+     * Initialize real-time updates (disabled for now)
      */
     function initRealtimeUpdates() {
-        // Update dashboard data every 30 seconds
-        realtimeUpdateInterval = setInterval(function() {
-            updateDashboardData();
-        }, 30000);
-    }
-
-    /**
-     * Update dashboard data
-     */
-    function updateDashboardData() {
-        $.ajax({
-            url: srwm_dashboard.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'srwm_get_dashboard_data',
-                nonce: srwm_dashboard.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    updateStatCards(response.data.dashboard_data);
-                    updateActivityFeed();
-                }
-            }
-        });
-    }
-
-    /**
-     * Update stat cards with new data
-     */
-    function updateStatCards(data) {
-        $('.srwm-stat-card').each(function() {
-            const $card = $(this);
-            const statType = $card.find('h3').text().toLowerCase();
-            const $number = $card.find('.stat-number');
-            
-            let newValue = 0;
-            switch(statType) {
-                case 'today\'s waitlists':
-                    newValue = data.today_waitlists;
-                    break;
-                case 'today\'s restocks':
-                    newValue = data.today_restocks;
-                    break;
-                case 'pending notifications':
-                    newValue = data.pending_notifications;
-                    break;
-                case 'low stock products':
-                    newValue = data.low_stock_products;
-                    break;
-            }
-            
-            // Animate number change
-            animateNumber($number, parseInt($number.text()), newValue);
-        });
-    }
-
-    /**
-     * Animate number change
-     */
-    function animateNumber($element, start, end) {
-        const duration = 1000;
-        const startTime = performance.now();
-        
-        function updateNumber(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            const current = Math.floor(start + (end - start) * progress);
-            $element.text(current);
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateNumber);
-            }
-        }
-        
-        requestAnimationFrame(updateNumber);
-    }
-
-    /**
-     * Update activity feed
-     */
-    function updateActivityFeed() {
-        $.ajax({
-            url: srwm_dashboard.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'srwm_get_activity_feed',
-                nonce: srwm_dashboard.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#srwm-activity-feed').html(response.data.html);
-                }
-            }
-        });
+        // Real-time updates disabled - will be implemented in future version
+        // This prevents unnecessary AJAX calls and improves performance
     }
 
     /**

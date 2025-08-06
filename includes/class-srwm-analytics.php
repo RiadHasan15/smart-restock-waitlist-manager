@@ -339,4 +339,56 @@ class SRWM_Analytics {
             return false;
         }
     }
+    
+    /**
+     * Export analytics data to CSV
+     */
+    public function export_analytics_csv() {
+        try {
+            // Get comprehensive analytics data
+            $dashboard_data = $this->get_dashboard_data();
+            $waitlist_growth = $this->get_waitlist_growth_trend(30); // Last 30 days
+            $restock_activity = $this->get_restock_method_breakdown();
+            
+            // Prepare CSV data
+            $csv_data = array();
+            
+            // Dashboard Overview
+            $csv_data[] = array('Dashboard Overview');
+            $csv_data[] = array('Metric', 'Value');
+            $csv_data[] = array('Total Waitlist Customers', $dashboard_data['total_waitlist_customers']);
+            $csv_data[] = array('Today\'s Waitlists', $dashboard_data['today_waitlists']);
+            $csv_data[] = array('Today\'s Restocks', $dashboard_data['today_restocks']);
+            $csv_data[] = array('Pending Notifications', $dashboard_data['pending_notifications']);
+            $csv_data[] = array('Low Stock Products', $dashboard_data['low_stock_products']);
+            $csv_data[] = array('Average Restock Time (days)', $dashboard_data['avg_restock_time']);
+            $csv_data[] = array(''); // Empty row
+            
+            // Waitlist Growth Trend
+            $csv_data[] = array('Waitlist Growth Trend (Last 30 Days)');
+            $csv_data[] = array('Date', 'New Signups');
+            foreach ($waitlist_growth as $data) {
+                $csv_data[] = array($data['date'], $data['count']);
+            }
+            $csv_data[] = array(''); // Empty row
+            
+            // Restock Activity
+            $csv_data[] = array('Restock Activity Breakdown');
+            $csv_data[] = array('Method', 'Count');
+            foreach ($restock_activity as $data) {
+                $csv_data[] = array($data['method'], $data['count']);
+            }
+            
+            // Convert to CSV string
+            $csv_string = '';
+            foreach ($csv_data as $row) {
+                $csv_string .= '"' . implode('","', $row) . '"' . "\n";
+            }
+            
+            return $csv_string;
+            
+        } catch (Exception $e) {
+            return 'Error generating report: ' . $e->getMessage();
+        }
+    }
 }
