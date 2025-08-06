@@ -1198,21 +1198,26 @@ class SmartRestockWaitlistManager {
         
         error_log('Test dashboard AJAX successful');
         
-        // Simple test data
-        $test_data = array(
-            'waitlist_growth' => array(
-                array('date' => '2024-01-15', 'count' => 5),
-                array('date' => '2024-01-16', 'count' => 8),
-                array('date' => '2024-01-17', 'count' => 3)
-            ),
-            'restock_activity' => array(
-                array('method' => 'manual', 'count' => 10),
-                array('method' => 'csv_upload', 'count' => 5),
-                array('method' => 'quick_restock', 'count' => 3)
-            )
-        );
-        
-        wp_die(json_encode(array('success' => true, 'data' => $test_data)));
+        // Get real dashboard data
+        try {
+            $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            
+            // Get waitlist growth trend
+            $waitlist_growth = $analytics->get_waitlist_growth_trend($days);
+            
+            // Get restock activity breakdown
+            $restock_activity = $analytics->get_restock_method_breakdown();
+            
+            $dashboard_data = array(
+                'waitlist_growth' => $waitlist_growth,
+                'restock_activity' => $restock_activity
+            );
+            
+            wp_die(json_encode(array('success' => true, 'data' => $dashboard_data)));
+        } catch (Exception $e) {
+            error_log('Dashboard data error: ' . $e->getMessage());
+            wp_die(json_encode(array('success' => false, 'message' => 'Error loading dashboard data: ' . $e->getMessage())));
+        }
     }
     
     /**

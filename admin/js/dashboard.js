@@ -159,19 +159,15 @@
             url: srwm_dashboard.ajax_url,
             type: 'POST',
             data: {
-                action: 'srwm_test_dashboard', // Temporarily use test endpoint
+                action: 'srwm_get_dashboard_data', // Use real dashboard endpoint
                 nonce: srwm_dashboard.nonce,
                 days: days
             },
             success: function(response) {
-                console.log('Dashboard AJAX success:', response);
-                console.log('Response type:', typeof response);
-                
                 // Ensure response is an object
                 if (typeof response === 'string') {
                     try {
                         response = JSON.parse(response);
-                        console.log('Parsed response:', response);
                     } catch (e) {
                         console.error('Failed to parse response:', e);
                         showMessage('error', 'Invalid response format');
@@ -180,10 +176,8 @@
                 }
                 
                 if (response.success) {
-                    console.log('Calling updateCharts with data:', response.data);
                     updateCharts(response.data);
                 } else {
-                    console.log('Dashboard data response:', response);
                     showMessage('error', response.message || 'Failed to load chart data');
                 }
             },
@@ -199,12 +193,6 @@
      * Update charts with new data
      */
     function updateCharts(data) {
-        console.log('=== UPDATE CHARTS FUNCTION CALLED ===');
-        console.log('Updating charts with data:', data);
-        console.log('Chart.js available:', typeof Chart !== 'undefined' ? 'yes' : 'no');
-        console.log('waitlistChart exists:', !!waitlistChart);
-        console.log('restockChart exists:', !!restockChart);
-        
         // Check if Chart.js is available
         if (typeof Chart === 'undefined') {
             console.error('Chart.js not available for chart updates');
@@ -214,20 +202,15 @@
         // Update waitlist chart
         if (waitlistChart) {
             if (data.waitlist_growth && data.waitlist_growth.length > 0) {
-                console.log('Updating waitlist chart with growth data');
                 const labels = data.waitlist_growth.map(item => {
                     const date = new Date(item.date);
                     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 });
                 const values = data.waitlist_growth.map(item => parseInt(item.count));
                 
-                console.log('Waitlist labels:', labels);
-                console.log('Waitlist values:', values);
-                
                 waitlistChart.data.labels = labels;
                 waitlistChart.data.datasets[0].data = values;
                 waitlistChart.update();
-                console.log('Waitlist chart updated');
             } else {
                 // Show empty state with last 7 days
                 const labels = [];
@@ -250,7 +233,6 @@
         // Update restock chart
         if (restockChart) {
             if (data.restock_activity && data.restock_activity.length > 0) {
-                console.log('Updating restock chart with activity data');
                 const labels = data.restock_activity.map(item => {
                     // Format method names for better display
                     const method = item.method || 'Unknown';
@@ -258,13 +240,9 @@
                 });
                 const values = data.restock_activity.map(item => parseInt(item.count));
                 
-                console.log('Restock labels:', labels);
-                console.log('Restock values:', values);
-                
                 restockChart.data.labels = labels;
                 restockChart.data.datasets[0].data = values;
                 restockChart.update();
-                console.log('Restock chart updated');
             } else {
                 // Show empty state
                 restockChart.data.labels = ['Manual', 'CSV Upload', 'Quick Restock'];
@@ -620,114 +598,6 @@
     window.srwm_init_charts = initCharts;
     window.srwm_init_realtime_updates = initRealtimeUpdates;
     
-    // Test function for debugging
-    window.testAjax = function() {
-        console.log('Testing AJAX manually...');
-        if (typeof srwm_dashboard === 'undefined') {
-            alert('srwm_dashboard not available');
-            return;
-        }
-        
-        $.ajax({
-            url: srwm_dashboard.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'srwm_test_dashboard',
-                nonce: srwm_dashboard.nonce
-            },
-            success: function(response) {
-                console.log('Manual AJAX test success:', response);
-                alert('AJAX Test Success: ' + JSON.stringify(response));
-            },
-            error: function(xhr, status, error) {
-                console.log('Manual AJAX test error:', {xhr, status, error});
-                alert('AJAX Test Error: ' + error + '\nStatus: ' + status);
-            }
-        });
-    };
-    
-    // Test Chart.js function
-    window.testChart = function() {
-        console.log('Testing Chart.js...');
-        if (typeof Chart === 'undefined') {
-            alert('Chart.js not available');
-            return;
-        }
-        
-        // Create a simple test chart
-        const testCanvas = document.createElement('canvas');
-        testCanvas.id = 'testChart';
-        testCanvas.width = 300;
-        testCanvas.height = 200;
-        document.body.appendChild(testCanvas);
-        
-        const testChart = new Chart(testCanvas, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar'],
-                datasets: [{
-                    label: 'Test Data',
-                    data: [10, 20, 15],
-                    borderColor: 'red',
-                    backgroundColor: 'rgba(255,0,0,0.1)'
-                }]
-            },
-            options: {
-                responsive: false
-            }
-        });
-        
-        alert('Chart.js test successful! Check for red test chart on page.');
-        
-        // Remove test chart after 3 seconds
-        setTimeout(function() {
-            document.body.removeChild(testCanvas);
-        }, 3000);
-    };
-    
-    // Test updateCharts function directly
-    window.testUpdateCharts = function() {
-        console.log('Testing updateCharts function directly...');
-        const testData = {
-            waitlist_growth: [
-                {date: '2024-01-15', count: 5},
-                {date: '2024-01-16', count: 8},
-                {date: '2024-01-17', count: 3}
-            ],
-            restock_activity: [
-                {method: 'manual', count: 10},
-                {method: 'csv_upload', count: 5},
-                {method: 'quick_restock', count: 3}
-            ]
-        };
-        updateCharts(testData);
-    };
-    
-    // Test AJAX success callback directly
-    window.testAjaxCallback = function() {
-        console.log('Testing AJAX success callback directly...');
-        const mockResponse = {
-            success: true,
-            data: {
-                waitlist_growth: [
-                    {date: '2024-01-15', count: 5},
-                    {date: '2024-01-16', count: 8},
-                    {date: '2024-01-17', count: 3}
-                ],
-                restock_activity: [
-                    {method: 'manual', count: 10},
-                    {method: 'csv_upload', count: 5},
-                    {method: 'quick_restock', count: 3}
-                ]
-            }
-        };
-        
-        // Simulate the success callback
-        console.log('Mock response:', mockResponse);
-        if (mockResponse.success) {
-            console.log('Calling updateCharts with mock data:', mockResponse.data);
-            updateCharts(mockResponse.data);
-        }
-    };
+
 
 })(jQuery);
