@@ -166,6 +166,7 @@
             success: function(response) {
                 console.log('Dashboard AJAX success:', response);
                 if (response.success) {
+                    console.log('Calling updateCharts with data:', response.data);
                     updateCharts(response.data);
                 } else {
                     console.log('Dashboard data response:', response);
@@ -184,6 +185,7 @@
      * Update charts with new data
      */
     function updateCharts(data) {
+        console.log('=== UPDATE CHARTS FUNCTION CALLED ===');
         console.log('Updating charts with data:', data);
         console.log('Chart.js available:', typeof Chart !== 'undefined' ? 'yes' : 'no');
         console.log('waitlistChart exists:', !!waitlistChart);
@@ -667,6 +669,24 @@
         setTimeout(function() {
             document.body.removeChild(testCanvas);
         }, 3000);
+    };
+    
+    // Test updateCharts function directly
+    window.testUpdateCharts = function() {
+        console.log('Testing updateCharts function directly...');
+        const testData = {
+            waitlist_growth: [
+                {date: '2024-01-15', count: 5},
+                {date: '2024-01-16', count: 8},
+                {date: '2024-01-17', count: 3}
+            ],
+            restock_activity: [
+                {method: 'manual', count: 10},
+                {method: 'csv_upload', count: 5},
+                {method: 'quick_restock', count: 3}
+            ]
+        };
+        updateCharts(testData);
     };
 
 })(jQuery);

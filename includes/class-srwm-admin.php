@@ -565,6 +565,10 @@ class SRWM_Admin {
                                         <span class="dashicons dashicons-chart-line"></span>
                                         Test Chart
                                     </button>
+                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary" onclick="testUpdateCharts()">
+                                        <span class="dashicons dashicons-update"></span>
+                                        Test Update
+                                    </button>
                                 </div>
                             </div>
                             <div class="srwm-chart-container">
