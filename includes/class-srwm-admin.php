@@ -6707,47 +6707,6 @@ class SRWM_Admin {
                     </tr>
                     </table>
                 </div>
-                
-                <div class="srwm-settings-section">
-                    <h2><?php _e('Company Information (for Purchase Orders)', 'smart-restock-waitlist'); ?></h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php _e('Company Name', 'smart-restock-waitlist'); ?></th>
-                        <td>
-                            <input type="text" name="srwm_company_name" 
-                                   value="<?php echo esc_attr(get_option('srwm_company_name', get_bloginfo('name'))); ?>" 
-                                   class="regular-text">
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php _e('Company Address', 'smart-restock-waitlist'); ?></th>
-                        <td>
-                            <textarea name="srwm_company_address" rows="3" class="regular-text"><?php 
-                                echo esc_textarea(get_option('srwm_company_address')); 
-                            ?></textarea>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php _e('Company Phone', 'smart-restock-waitlist'); ?></th>
-                        <td>
-                            <input type="text" name="srwm_company_phone" 
-                                   value="<?php echo esc_attr(get_option('srwm_company_phone')); ?>" 
-                                   class="regular-text">
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row"><?php _e('Company Email', 'smart-restock-waitlist'); ?></th>
-                        <td>
-                            <input type="email" name="srwm_company_email" 
-                                   value="<?php echo esc_attr(get_option('srwm_company_email', get_option('admin_email'))); ?>" 
-                                   class="regular-text">
-                        </td>
-                    </tr>
-                    </table>
-                </div>
                 <?php endif; ?>
                 
                 <?php if ($this->license_manager->is_pro_active()): ?>
