@@ -939,11 +939,12 @@ class SRWM_Analytics {
         $total_notified = $wpdb->get_var("SELECT COUNT(*) FROM {$waitlist_table} WHERE notified = 1");
         $conversion_rate = $total_customers > 0 ? round(($total_notified / $total_customers) * 100, 1) : 0;
         
-        // Get recent activity
+        // Get recent activity with product names
         $recent_activity = $wpdb->get_results("
-            SELECT email, product_id, date_added, notified
-            FROM {$waitlist_table}
-            ORDER BY date_added DESC
+            SELECT w.email, w.product_id, p.post_title as product_name, w.date_added, w.notified
+            FROM {$waitlist_table} w
+            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+            ORDER BY w.date_added DESC
             LIMIT 10
         ");
         
@@ -970,14 +971,16 @@ class SRWM_Analytics {
             return $this->get_demo_waitlist_products_details();
         }
         
-        // Get product statistics
+        // Get product statistics with product names
         $product_stats = $wpdb->get_results("
             SELECT 
-                product_id,
+                w.product_id,
+                p.post_title as product_name,
                 COUNT(*) as waitlist_count,
-                SUM(CASE WHEN notified = 0 THEN 1 ELSE 0 END) as active_count
-            FROM {$waitlist_table}
-            GROUP BY product_id
+                SUM(CASE WHEN w.notified = 0 THEN 1 ELSE 0 END) as active_count
+            FROM {$waitlist_table} w
+            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+            GROUP BY w.product_id
             ORDER BY waitlist_count DESC
             LIMIT 10
         ");
@@ -1012,15 +1015,17 @@ class SRWM_Analytics {
             return $this->get_demo_restock_time_details();
         }
         
-        // Get restock statistics
+        // Get restock statistics with product names
         $restock_stats = $wpdb->get_results("
             SELECT 
-                product_id,
-                method,
-                timestamp,
-                quantity
-            FROM {$restock_logs_table}
-            ORDER BY timestamp DESC
+                r.product_id,
+                p.post_title as product_name,
+                r.method,
+                r.timestamp,
+                r.quantity
+            FROM {$restock_logs_table} r
+            LEFT JOIN {$wpdb->posts} p ON r.product_id = p.ID
+            ORDER BY r.timestamp DESC
             LIMIT 20
         ");
         
@@ -1051,12 +1056,13 @@ class SRWM_Analytics {
             return $this->get_demo_today_waitlists_details();
         }
         
-        // Get today's waitlists
+        // Get today's waitlists with product names
         $today_waitlists = $wpdb->get_results("
-            SELECT email, product_id, date_added
-            FROM {$waitlist_table}
-            WHERE DATE(date_added) = CURDATE()
-            ORDER BY date_added DESC
+            SELECT w.email, w.product_id, p.post_title as product_name, w.date_added
+            FROM {$waitlist_table} w
+            LEFT JOIN {$wpdb->posts} p ON w.product_id = p.ID
+            WHERE DATE(w.date_added) = CURDATE()
+            ORDER BY w.date_added DESC
         ");
         
         $new_today = count($today_waitlists);
@@ -1088,12 +1094,13 @@ class SRWM_Analytics {
             return $this->get_demo_today_restocks_details();
         }
         
-        // Get today's restocks
+        // Get today's restocks with product names
         $today_restocks = $wpdb->get_results("
-            SELECT product_id, method, timestamp, quantity
-            FROM {$restock_logs_table}
-            WHERE DATE(timestamp) = CURDATE()
-            ORDER BY timestamp DESC
+            SELECT r.product_id, p.post_title as product_name, r.method, r.timestamp, r.quantity
+            FROM {$restock_logs_table} r
+            LEFT JOIN {$wpdb->posts} p ON r.product_id = p.ID
+            WHERE DATE(r.timestamp) = CURDATE()
+            ORDER BY r.timestamp DESC
         ");
         
         $restocks_today = count($today_restocks);
@@ -1112,8 +1119,10 @@ class SRWM_Analytics {
      * Get pending notifications details
      */
     private function get_pending_notifications_details() {
-        // This would integrate with your notification system
-        // For now, return demo data
+        global $wpdb;
+        
+        // For now, return demo data since notification system is not fully integrated
+        // In a real implementation, this would query notification queue tables
         return $this->get_demo_pending_notifications_details();
     }
     
@@ -1121,9 +1130,81 @@ class SRWM_Analytics {
      * Get low stock products details
      */
     private function get_low_stock_products_details() {
-        // This would integrate with WooCommerce stock levels
-        // For now, return demo data
-        return $this->get_demo_low_stock_products_details();
+        global $wpdb;
+        
+        // Try to get real WooCommerce low stock products
+        $low_stock_products = array();
+        $out_of_stock = 0;
+        $low_stock = 0;
+        $critical_level = 0;
+        
+        // Check if WooCommerce is active and has products
+        if (class_exists('WooCommerce')) {
+            // Get products with low stock
+            $products = wc_get_products(array(
+                'limit' => 50,
+                'status' => 'publish',
+                'stock_status' => array('outofstock', 'onbackorder')
+            ));
+            
+            foreach ($products as $product) {
+                $stock_quantity = $product->get_stock_quantity();
+                $low_stock_amount = $product->get_low_stock_amount();
+                
+                if ($stock_quantity === null || $stock_quantity <= 0) {
+                    $out_of_stock++;
+                    $low_stock_products[] = array(
+                        'product_id' => $product->get_id(),
+                        'current_stock' => 0,
+                        'threshold' => $low_stock_amount ?: 10,
+                        'status' => 'Out of Stock'
+                    );
+                } elseif ($stock_quantity <= ($low_stock_amount ?: 10)) {
+                    $low_stock++;
+                    $low_stock_products[] = array(
+                        'product_id' => $product->get_id(),
+                        'current_stock' => $stock_quantity,
+                        'threshold' => $low_stock_amount ?: 10,
+                        'status' => 'Low Stock'
+                    );
+                }
+            }
+            
+            // Get products with very low stock (critical)
+            $critical_products = wc_get_products(array(
+                'limit' => 20,
+                'status' => 'publish',
+                'stock_status' => 'instock'
+            ));
+            
+            foreach ($critical_products as $product) {
+                $stock_quantity = $product->get_stock_quantity();
+                if ($stock_quantity !== null && $stock_quantity > 0 && $stock_quantity <= 3) {
+                    $critical_level++;
+                    $low_stock_products[] = array(
+                        'product_id' => $product->get_id(),
+                        'current_stock' => $stock_quantity,
+                        'threshold' => 5,
+                        'status' => 'Critical'
+                    );
+                }
+            }
+        }
+        
+        // If no real data, return demo data
+        if (empty($low_stock_products)) {
+            return $this->get_demo_low_stock_products_details();
+        }
+        
+        return array(
+            'summary' => array(
+                'low_stock' => $low_stock + $critical_level,
+                'out_of_stock' => $out_of_stock,
+                'critical_level' => $critical_level,
+                'total_value' => '$' . number_format(($out_of_stock + $low_stock + $critical_level) * 500, 0, ',', ',')
+            ),
+            'recent_activity' => array_slice($low_stock_products, 0, 10)
+        );
     }
     
     /**
