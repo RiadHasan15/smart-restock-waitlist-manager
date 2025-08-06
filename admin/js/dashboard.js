@@ -393,59 +393,106 @@
     function loadStatCardDetails(statType) {
         console.log('SRWM Dashboard: Loading details for:', statType);
         
-        // Simulate loading time and show demo data
-        setTimeout(function() {
-            const $content = $('#srwm-stat-modal-content');
-            
-            switch(statType) {
-                case 'total_waitlist_customers':
-                    $content.html(generateWaitlistCustomersDetails());
-                    break;
-                case 'waitlist_products':
-                    $content.html(generateWaitlistProductsDetails());
-                    break;
-                case 'avg_restock_time':
-                    $content.html(generateRestockTimeDetails());
-                    break;
-                case 'today_waitlists':
-                    $content.html(generateTodayWaitlistsDetails());
-                    break;
-                case 'today_restocks':
-                    $content.html(generateTodayRestocksDetails());
-                    break;
-                case 'pending_notifications':
-                    $content.html(generatePendingNotificationsDetails());
-                    break;
-                case 'low_stock_products':
-                    $content.html(generateLowStockProductsDetails());
-                    break;
-                default:
-                    $content.html('<p>No detailed data available for this statistic.</p>');
+        const $content = $('#srwm-stat-modal-content');
+        
+        // Make AJAX call to get real data
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'srwm_get_stat_card_details',
+                stat_type: statType,
+                nonce: srwm_dashboard_vars.nonce
+            },
+            success: function(response) {
+                console.log('SRWM Dashboard: Stat details response:', response);
+                
+                if (response.success && response.data) {
+                    const data = response.data;
+                    
+                    if (data.error) {
+                        $content.html('<p class="srwm-error">Error: ' + data.error + '</p>');
+                        return;
+                    }
+                    
+                    switch(statType) {
+                        case 'total_waitlist_customers':
+                            $content.html(generateWaitlistCustomersDetails(data));
+                            break;
+                        case 'waitlist_products':
+                            $content.html(generateWaitlistProductsDetails(data));
+                            break;
+                        case 'avg_restock_time':
+                            $content.html(generateRestockTimeDetails(data));
+                            break;
+                        case 'today_waitlists':
+                            $content.html(generateTodayWaitlistsDetails(data));
+                            break;
+                        case 'today_restocks':
+                            $content.html(generateTodayRestocksDetails(data));
+                            break;
+                        case 'pending_notifications':
+                            $content.html(generatePendingNotificationsDetails(data));
+                            break;
+                        case 'low_stock_products':
+                            $content.html(generateLowStockProductsDetails(data));
+                            break;
+                        default:
+                            $content.html('<p>No detailed data available for this statistic.</p>');
+                    }
+                } else {
+                    $content.html('<p class="srwm-error">Failed to load data. Please try again.</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('SRWM Dashboard: AJAX error:', error);
+                $content.html('<p class="srwm-error">Error loading data. Please try again.</p>');
             }
-        }, 800);
+        });
     }
     
     /**
      * Generate waitlist customers details
      */
-    function generateWaitlistCustomersDetails() {
+    function generateWaitlistCustomersDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                const status = activity.notified == 1 ? 'Notified' : 'Waiting';
+                const statusClass = activity.notified == 1 ? 'srwm-status-notified' : 'srwm-status-waiting';
+                activityRows += `
+                    <tr>
+                        <td>${activity.email}</td>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${activity.date_added}</td>
+                        <td><span class="srwm-status ${statusClass}">${status}</span></td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No recent activity</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>Total Customers</h4>
-                    <div class="value">1,247</div>
+                    <div class="value">${summary.total_customers || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Active Waitlists</h4>
-                    <div class="value">892</div>
+                    <div class="value">${summary.active_waitlists || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Average Wait Time</h4>
-                    <div class="value">3.2 days</div>
+                    <div class="value">${summary.avg_wait_time || 'N/A'}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Conversion Rate</h4>
-                    <div class="value">68%</div>
+                    <div class="value">${summary.conversion_rate || '0%'}</div>
                 </div>
             </div>
             <h3>Recent Waitlist Activity</h3>
@@ -459,24 +506,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>john.doe@email.com</td>
-                        <td>Premium Widget Pro</td>
-                        <td>2024-01-15</td>
-                        <td><span class="srwm-status srwm-status-waiting">Waiting</span></td>
-                    </tr>
-                    <tr>
-                        <td>jane.smith@email.com</td>
-                        <td>Smart Gadget X</td>
-                        <td>2024-01-15</td>
-                        <td><span class="srwm-status srwm-status-notified">Notified</span></td>
-                    </tr>
-                    <tr>
-                        <td>mike.wilson@email.com</td>
-                        <td>Ultra Device Plus</td>
-                        <td>2024-01-14</td>
-                        <td><span class="srwm-status srwm-status-waiting">Waiting</span></td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
@@ -485,24 +515,43 @@
     /**
      * Generate waitlist products details
      */
-    function generateWaitlistProductsDetails() {
+    function generateWaitlistProductsDetails(data) {
+        const summary = data.summary || {};
+        const topProducts = data.top_products || [];
+        
+        let productRows = '';
+        if (topProducts.length > 0) {
+            topProducts.forEach(function(product) {
+                productRows += `
+                    <tr>
+                        <td>Product ID: ${product.product_id}</td>
+                        <td>${product.waitlist_count}</td>
+                        <td>${product.active_count}</td>
+                        <td><span class="srwm-status srwm-status-waiting">Active</span></td>
+                    </tr>
+                `;
+            });
+        } else {
+            productRows = '<tr><td colspan="4">No products with waitlists</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>Total Products</h4>
-                    <div class="value">24</div>
+                    <div class="value">${summary.total_products || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>High Demand</h4>
-                    <div class="value">8</div>
+                    <div class="value">${summary.high_demand || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Out of Stock</h4>
-                    <div class="value">3</div>
+                    <div class="value">${summary.out_of_stock || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Low Stock</h4>
-                    <div class="value">5</div>
+                    <div class="value">${summary.low_stock || 0}</div>
                 </div>
             </div>
             <h3>Top Waitlisted Products</h3>
@@ -511,29 +560,12 @@
                     <tr>
                         <th>Product</th>
                         <th>Waitlist Count</th>
-                        <th>Current Stock</th>
+                        <th>Active Waitlists</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Premium Widget Pro</td>
-                        <td>156</td>
-                        <td>0</td>
-                        <td><span class="srwm-status srwm-status-out">Out of Stock</span></td>
-                    </tr>
-                    <tr>
-                        <td>Smart Gadget X</td>
-                        <td>89</td>
-                        <td>3</td>
-                        <td><span class="srwm-status srwm-status-low">Low Stock</span></td>
-                    </tr>
-                    <tr>
-                        <td>Ultra Device Plus</td>
-                        <td>67</td>
-                        <td>12</td>
-                        <td><span class="srwm-status srwm-status-ok">In Stock</span></td>
-                    </tr>
+                    ${productRows}
                 </tbody>
             </table>
         `;
@@ -542,24 +574,44 @@
     /**
      * Generate restock time details
      */
-    function generateRestockTimeDetails() {
+    function generateRestockTimeDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                const date = new Date(activity.timestamp).toLocaleDateString();
+                activityRows += `
+                    <tr>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${date}</td>
+                        <td>${activity.quantity} units</td>
+                        <td>${activity.method}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No recent restock activity</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
-                    <h4>Average Time</h4>
-                    <div class="value">2.4 days</div>
-                </div>
-                <div class="srwm-stat-detail-card">
-                    <h4>Fastest Restock</h4>
-                    <div class="value">0.5 days</div>
-                </div>
-                <div class="srwm-stat-detail-card">
-                    <h4>Slowest Restock</h4>
-                    <div class="value">7.2 days</div>
-                </div>
-                <div class="srwm-stat-detail-card">
                     <h4>Total Restocks</h4>
-                    <div class="value">156</div>
+                    <div class="value">${summary.total_restocks || 0}</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Methods Used</h4>
+                    <div class="value">${Object.keys(summary.methods || {}).length}</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Most Popular</h4>
+                    <div class="value">${getMostPopularMethod(summary.methods)}</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Recent Activity</h4>
+                    <div class="value">${recentActivity.length} items</div>
                 </div>
             </div>
             <h3>Recent Restock Activity</h3>
@@ -568,55 +620,83 @@
                     <tr>
                         <th>Product</th>
                         <th>Restock Date</th>
-                        <th>Time to Restock</th>
+                        <th>Quantity</th>
                         <th>Method</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Premium Widget Pro</td>
-                        <td>2024-01-15</td>
-                        <td>1.2 days</td>
-                        <td>Manual</td>
-                    </tr>
-                    <tr>
-                        <td>Smart Gadget X</td>
-                        <td>2024-01-14</td>
-                        <td>3.5 days</td>
-                        <td>CSV Upload</td>
-                    </tr>
-                    <tr>
-                        <td>Ultra Device Plus</td>
-                        <td>2024-01-13</td>
-                        <td>0.8 days</td>
-                        <td>Quick Restock</td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
     }
     
     /**
+     * Get most popular method
+     */
+    function getMostPopularMethod(methods) {
+        if (!methods || Object.keys(methods).length === 0) {
+            return 'N/A';
+        }
+        
+        let mostPopular = '';
+        let maxCount = 0;
+        
+        for (const [method, count] of Object.entries(methods)) {
+            if (count > maxCount) {
+                maxCount = count;
+                mostPopular = method;
+            }
+        }
+        
+        return mostPopular;
+    }
+    
+    /**
      * Generate today's waitlists details
      */
-    function generateTodayWaitlistsDetails() {
+    function generateTodayWaitlistsDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                const time = new Date(activity.date_added).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                activityRows += `
+                    <tr>
+                        <td>${time}</td>
+                        <td>${activity.email}</td>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No waitlists added today</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>New Today</h4>
-                    <div class="value">23</div>
+                    <div class="value">${summary.new_today || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
-                    <h4>Most Popular</h4>
-                    <div class="value">Premium Widget Pro</div>
-                </div>
-                <div class="srwm-stat-detail-card">
-                    <h4>Average per Hour</h4>
-                    <div class="value">1.9</div>
+                    <h4>Hourly Breakdown</h4>
+                    <div class="value">${Object.keys(summary.hourly_breakdown || {}).length} hours</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Peak Hour</h4>
-                    <div class="value">2:00 PM</div>
+                    <div class="value">${getPeakHour(summary.hourly_breakdown)}</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Average per Hour</h4>
+                    <div class="value">${getAveragePerHour(summary.hourly_breakdown, summary.new_today)}</div>
                 </div>
             </div>
             <h3>Today's Waitlist Activity</h3>
@@ -630,50 +710,90 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>14:30</td>
-                        <td>john.doe@email.com</td>
-                        <td>Premium Widget Pro</td>
-                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
-                    </tr>
-                    <tr>
-                        <td>14:15</td>
-                        <td>jane.smith@email.com</td>
-                        <td>Smart Gadget X</td>
-                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
-                    </tr>
-                    <tr>
-                        <td>13:45</td>
-                        <td>mike.wilson@email.com</td>
-                        <td>Ultra Device Plus</td>
-                        <td><span class="srwm-status srwm-status-waiting">Added</span></td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
     }
     
     /**
+     * Get peak hour from hourly breakdown
+     */
+    function getPeakHour(hourlyBreakdown) {
+        if (!hourlyBreakdown || Object.keys(hourlyBreakdown).length === 0) {
+            return 'N/A';
+        }
+        
+        let peakHour = '';
+        let maxCount = 0;
+        
+        for (const [hour, count] of Object.entries(hourlyBreakdown)) {
+            if (count > maxCount) {
+                maxCount = count;
+                peakHour = hour + ':00';
+            }
+        }
+        
+        return peakHour;
+    }
+    
+    /**
+     * Get average per hour
+     */
+    function getAveragePerHour(hourlyBreakdown, total) {
+        if (!hourlyBreakdown || Object.keys(hourlyBreakdown).length === 0 || !total) {
+            return '0';
+        }
+        
+        const activeHours = Object.keys(hourlyBreakdown).length;
+        return (total / activeHours).toFixed(1);
+    }
+    
+    /**
      * Generate today's restocks details
      */
-    function generateTodayRestocksDetails() {
+    function generateTodayRestocksDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                const time = new Date(activity.timestamp).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                activityRows += `
+                    <tr>
+                        <td>${time}</td>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${activity.quantity}</td>
+                        <td>${activity.method}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No restocks today</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>Restocks Today</h4>
-                    <div class="value">8</div>
-                </div>
-                <div class="srwm-stat-detail-card">
-                    <h4>Products Restocked</h4>
-                    <div class="value">6</div>
+                    <div class="value">${summary.restocks_today || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Total Stock Added</h4>
-                    <div class="value">1,247</div>
+                    <div class="value">${summary.total_stock_added || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
-                    <h4>Notifications Sent</h4>
-                    <div class="value">156</div>
+                    <h4>Average per Restock</h4>
+                    <div class="value">${summary.restocks_today > 0 ? Math.round(summary.total_stock_added / summary.restocks_today) : 0}</div>
+                </div>
+                <div class="srwm-stat-detail-card">
+                    <h4>Methods Used</h4>
+                    <div class="value">${Object.keys(summary.methods || {}).length}</div>
                 </div>
             </div>
             <h3>Today's Restock Activity</h3>
@@ -687,24 +807,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>16:00</td>
-                        <td>Premium Widget Pro</td>
-                        <td>250</td>
-                        <td>Manual</td>
-                    </tr>
-                    <tr>
-                        <td>15:30</td>
-                        <td>Smart Gadget X</td>
-                        <td>180</td>
-                        <td>CSV Upload</td>
-                    </tr>
-                    <tr>
-                        <td>14:15</td>
-                        <td>Ultra Device Plus</td>
-                        <td>95</td>
-                        <td>Quick Restock</td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
@@ -713,24 +816,43 @@
     /**
      * Generate pending notifications details
      */
-    function generatePendingNotificationsDetails() {
+    function generatePendingNotificationsDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                activityRows += `
+                    <tr>
+                        <td>${activity.email}</td>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${activity.type}</td>
+                        <td><span class="srwm-status srwm-status-pending">${activity.status}</span></td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No pending notifications</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>Pending</h4>
-                    <div class="value">12</div>
+                    <div class="value">${summary.pending || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Email</h4>
-                    <div class="value">8</div>
+                    <div class="value">${summary.email || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>SMS</h4>
-                    <div class="value">3</div>
+                    <div class="value">${summary.sms || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>WhatsApp</h4>
-                    <div class="value">1</div>
+                    <div class="value">${summary.whatsapp || 0}</div>
                 </div>
             </div>
             <h3>Pending Notifications</h3>
@@ -744,24 +866,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>john.doe@email.com</td>
-                        <td>Premium Widget Pro</td>
-                        <td>Email</td>
-                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
-                    </tr>
-                    <tr>
-                        <td>jane.smith@email.com</td>
-                        <td>Smart Gadget X</td>
-                        <td>SMS</td>
-                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
-                    </tr>
-                    <tr>
-                        <td>mike.wilson@email.com</td>
-                        <td>Ultra Device Plus</td>
-                        <td>WhatsApp</td>
-                        <td><span class="srwm-status srwm-status-pending">Pending</span></td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
@@ -770,24 +875,44 @@
     /**
      * Generate low stock products details
      */
-    function generateLowStockProductsDetails() {
+    function generateLowStockProductsDetails(data) {
+        const summary = data.summary || {};
+        const recentActivity = data.recent_activity || [];
+        
+        let activityRows = '';
+        if (recentActivity.length > 0) {
+            recentActivity.forEach(function(activity) {
+                const statusClass = getStockStatusClass(activity.status);
+                activityRows += `
+                    <tr>
+                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${activity.current_stock}</td>
+                        <td>${activity.threshold}</td>
+                        <td><span class="srwm-status ${statusClass}">${activity.status}</span></td>
+                    </tr>
+                `;
+            });
+        } else {
+            activityRows = '<tr><td colspan="4">No low stock products</td></tr>';
+        }
+        
         return `
             <div class="srwm-stat-detail-grid">
                 <div class="srwm-stat-detail-card">
                     <h4>Low Stock</h4>
-                    <div class="value">7</div>
+                    <div class="value">${summary.low_stock || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Out of Stock</h4>
-                    <div class="value">3</div>
+                    <div class="value">${summary.out_of_stock || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Critical Level</h4>
-                    <div class="value">2</div>
+                    <div class="value">${summary.critical_level || 0}</div>
                 </div>
                 <div class="srwm-stat-detail-card">
                     <h4>Total Value</h4>
-                    <div class="value">$12,450</div>
+                    <div class="value">${summary.total_value || '$0'}</div>
                 </div>
             </div>
             <h3>Low Stock Products</h3>
@@ -801,27 +926,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Premium Widget Pro</td>
-                        <td>0</td>
-                        <td>10</td>
-                        <td><span class="srwm-status srwm-status-out">Out of Stock</span></td>
-                    </tr>
-                    <tr>
-                        <td>Smart Gadget X</td>
-                        <td>3</td>
-                        <td>15</td>
-                        <td><span class="srwm-status srwm-status-low">Low Stock</span></td>
-                    </tr>
-                    <tr>
-                        <td>Ultra Device Plus</td>
-                        <td>1</td>
-                        <td>20</td>
-                        <td><span class="srwm-status srwm-status-critical">Critical</span></td>
-                    </tr>
+                    ${activityRows}
                 </tbody>
             </table>
         `;
+    }
+    
+    /**
+     * Get stock status class
+     */
+    function getStockStatusClass(status) {
+        switch(status) {
+            case 'Out of Stock': return 'srwm-status-out';
+            case 'Low Stock': return 'srwm-status-low';
+            case 'Critical': return 'srwm-status-critical';
+            default: return 'srwm-status-waiting';
+        }
     }
 
     /**

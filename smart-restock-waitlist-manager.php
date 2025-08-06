@@ -982,6 +982,7 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_get_dashboard_data', array($this, 'ajax_get_dashboard_data'));
         add_action('wp_ajax_srwm_test_dashboard', array($this, 'ajax_test_dashboard'));
         add_action('wp_ajax_srwm_export_dashboard_report', array($this, 'ajax_export_dashboard_report'));
+        add_action('wp_ajax_srwm_get_stat_card_details', array($this, 'ajax_get_stat_card_details'));
         
         // Pro AJAX handlers - Always register, check license in handler
         add_action('wp_ajax_srwm_generate_restock_link', array($this, 'ajax_generate_restock_link'));
@@ -1190,6 +1191,28 @@ class SmartRestockWaitlistManager {
             wp_send_json_success($csv_data);
         } catch (Exception $e) {
             wp_send_json_error(__('Error generating report.', 'smart-restock-waitlist'));
+        }
+    }
+    
+    /**
+     * AJAX: Get stat card details
+     */
+    public function ajax_get_stat_card_details() {
+        check_ajax_referer('srwm_dashboard_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        try {
+            $stat_type = sanitize_text_field($_POST['stat_type']);
+            $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            
+            $details = $analytics->get_stat_card_details($stat_type);
+            
+            wp_send_json_success($details);
+        } catch (Exception $e) {
+            wp_send_json_error(__('Error loading stat details.', 'smart-restock-waitlist'));
         }
     }
     
