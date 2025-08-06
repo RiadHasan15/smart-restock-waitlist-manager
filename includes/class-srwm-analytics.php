@@ -1226,7 +1226,19 @@ class SRWM_Analytics {
         $critical_level = 0;
         
         // Check if WooCommerce is active and has products
-        if (class_exists('WooCommerce')) {
+        if (!class_exists('WooCommerce')) {
+            return array(
+                'summary' => array(
+                    'low_stock' => 0,
+                    'out_of_stock' => 0,
+                    'critical_level' => 0,
+                    'total_value' => '$0'
+                ),
+                'recent_activity' => array()
+            );
+        }
+        
+        try {
             // Get products with low stock
             $products = wc_get_products(array(
                 'limit' => 50,
@@ -1276,10 +1288,57 @@ class SRWM_Analytics {
                     );
                 }
             }
+        } catch (Exception $e) {
+            error_log('SRWM Analytics: Error getting WooCommerce products: ' . $e->getMessage());
+            return array(
+                'summary' => array(
+                    'low_stock' => 0,
+                    'out_of_stock' => 0,
+                    'critical_level' => 0,
+                    'total_value' => '$0'
+                ),
+                'recent_activity' => array()
+            );
+        }
+        
+        // Calculate real total value from WooCommerce products
+        $total_value = 0;
+        $real_products = array();
+        
+        foreach ($low_stock_products as $product_data) {
+            $product_id = $product_data['product_id'];
+            $product = wc_get_product($product_id);
+            
+            if ($product) {
+                $price = $product->get_price();
+                $stock_quantity = $product_data['current_stock'];
+                
+                // Validate price is numeric and positive
+                if (is_numeric($price) && $price > 0) {
+                    // Calculate value based on current stock
+                    if ($stock_quantity > 0) {
+                        $total_value += ($price * $stock_quantity);
+                    } else {
+                        // For out of stock, use price * threshold for potential value
+                        $threshold = $product_data['threshold'];
+                        $total_value += ($price * $threshold);
+                    }
+                }
+                
+                // Add real product data
+                $real_products[] = array(
+                    'product_id' => $product_id,
+                    'product_name' => $product->get_name(),
+                    'current_stock' => $stock_quantity,
+                    'threshold' => $product_data['threshold'],
+                    'price' => $price,
+                    'status' => $product_data['status']
+                );
+            }
         }
         
         // If no real data, return empty data
-        if (empty($low_stock_products)) {
+        if (empty($real_products)) {
             return array(
                 'summary' => array(
                     'low_stock' => 0,
@@ -1296,9 +1355,9 @@ class SRWM_Analytics {
                 'low_stock' => $low_stock + $critical_level,
                 'out_of_stock' => $out_of_stock,
                 'critical_level' => $critical_level,
-                'total_value' => '$' . number_format(($out_of_stock + $low_stock + $critical_level) * 500, 0, ',', ',')
+                'total_value' => '$' . number_format($total_value, 2, '.', ',')
             ),
-            'recent_activity' => array_slice($low_stock_products, 0, 10)
+            'recent_activity' => array_slice($real_products, 0, 10)
         );
     }
     

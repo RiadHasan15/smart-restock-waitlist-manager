@@ -882,17 +882,20 @@
         if (recentActivity.length > 0) {
             recentActivity.forEach(function(activity) {
                 const statusClass = getStockStatusClass(activity.status);
+                const productName = activity.product_name || `Product ID: ${activity.product_id}`;
+                const price = activity.price ? '$' + parseFloat(activity.price).toFixed(2) : 'N/A';
                 activityRows += `
                     <tr>
-                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${productName}</td>
                         <td>${activity.current_stock}</td>
                         <td>${activity.threshold}</td>
+                        <td>${price}</td>
                         <td><span class="srwm-status ${statusClass}">${activity.status}</span></td>
                     </tr>
                 `;
             });
         } else {
-            activityRows = '<tr><td colspan="4">No low stock products</td></tr>';
+            activityRows = '<tr><td colspan="5">No low stock products</td></tr>';
         }
         
         return `
@@ -921,6 +924,7 @@
                         <th>Product</th>
                         <th>Current Stock</th>
                         <th>Threshold</th>
+                        <th>Price</th>
                         <th>Status</th>
                     </tr>
                 </thead>
