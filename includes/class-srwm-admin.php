@@ -369,6 +369,14 @@ class SRWM_Admin {
                         </p>
                     </div>
                     <div class="srwm-header-actions">
+                        <div class="srwm-period-selector">
+                            <label for="srwm-global-period"><?php _e('Time Period:', 'smart-restock-waitlist'); ?></label>
+                            <select id="srwm-global-period" class="srwm-period-select">
+                                <option value="7"><?php _e('Last 7 Days', 'smart-restock-waitlist'); ?></option>
+                                <option value="30"><?php _e('Last 30 Days', 'smart-restock-waitlist'); ?></option>
+                                <option value="90"><?php _e('Last 90 Days', 'smart-restock-waitlist'); ?></option>
+                            </select>
+                        </div>
                         <button id="srwm-export-report" class="srwm-btn srwm-btn-primary">
                             <span class="dashicons dashicons-download"></span>
                             <?php _e('Export Report', 'smart-restock-waitlist'); ?>
@@ -1636,6 +1644,73 @@ class SRWM_Admin {
             margin: 0 0 20px 0;
             color: #6b7280;
             line-height: 1.5;
+        }
+        
+        /* Global Period Selector */
+        .srwm-period-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: 16px;
+        }
+        
+        .srwm-period-selector label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .srwm-period-select {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        
+        .srwm-period-select:hover {
+            border-color: #3b82f6;
+        }
+        
+        .srwm-period-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Header Actions Layout */
+        .srwm-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        /* Dashboard Loading State */
+        .srwm-loading {
+            position: relative;
+        }
+        
+        .srwm-loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        .srwm-loading .srwm-stat-card,
+        .srwm-loading .srwm-chart-card {
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
         }
         
         /* Responsive Enhancements */
