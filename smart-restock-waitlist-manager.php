@@ -1125,6 +1125,7 @@ class SmartRestockWaitlistManager {
         
         try {
             error_log('Dashboard AJAX called successfully');
+            error_log('POST data: ' . print_r($_POST, true));
             
             // Check if Analytics class exists
             if (!class_exists('SRWM_Analytics')) {
@@ -1171,6 +1172,7 @@ class SmartRestockWaitlistManager {
             $data = array_merge($dashboard_data, $chart_data);
             
             error_log('Dashboard data: ' . print_r($data, true));
+            error_log('Sending response...');
             
             wp_die(json_encode(array('success' => true, 'data' => $data)));
         } catch (Exception $e) {
