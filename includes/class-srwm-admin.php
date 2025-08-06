@@ -547,10 +547,6 @@ class SRWM_Admin {
                                         <span class="dashicons dashicons-update"></span>
                                         <?php _e('Refresh', 'smart-restock-waitlist'); ?>
                                     </button>
-                                    <button class="srwm-btn srwm-btn-sm srwm-btn-secondary srwm-btn-refresh-chart">
-                                        <span class="dashicons dashicons-update"></span>
-                                        <?php _e('Refresh', 'smart-restock-waitlist'); ?>
-                                    </button>
                                 </div>
                             </div>
                             <div class="srwm-chart-container">
