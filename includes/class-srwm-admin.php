@@ -199,7 +199,7 @@ class SRWM_Admin {
             'srwm_btn_primary_bg', 'srwm_btn_primary_text', 'srwm_btn_secondary_bg', 'srwm_btn_secondary_text',
             'srwm_success_bg', 'srwm_success_text', 'srwm_border_color', 'srwm_input_bg',
             'srwm_input_border', 'srwm_input_focus_border', 'srwm_progress_bg', 'srwm_progress_fill',
-            'srwm_shadow_color', 'srwm_border_radius', 'srwm_font_size'
+            'srwm_border_radius', 'srwm_font_size'
         );
         
         foreach ($styling_options as $option) {
@@ -262,8 +262,8 @@ class SRWM_Admin {
         
         // Reset styling options to defaults
         $default_styling = array(
-            'srwm_container_bg' => '#f8f9fa',
-            'srwm_header_bg' => '#ffffff',
+            'srwm_container_bg' => '#ffffff',
+            'srwm_header_bg' => '#f8f9fa',
             'srwm_header_text' => '#333333',
             'srwm_body_text' => '#666666',
             'srwm_btn_primary_bg' => '#007cba',
@@ -272,13 +272,12 @@ class SRWM_Admin {
             'srwm_btn_secondary_text' => '#ffffff',
             'srwm_success_bg' => '#d4edda',
             'srwm_success_text' => '#155724',
-            'srwm_border_color' => '#dee2e6',
+            'srwm_border_color' => '#e9ecef',
             'srwm_input_bg' => '#ffffff',
             'srwm_input_border' => '#ced4da',
             'srwm_input_focus_border' => '#007cba',
             'srwm_progress_bg' => '#e9ecef',
             'srwm_progress_fill' => '#007cba',
-            'srwm_shadow_color' => '#000000',
             'srwm_border_radius' => '8',
             'srwm_font_size' => 'medium'
         );
@@ -6601,6 +6600,98 @@ class SRWM_Admin {
                     align-items: center;
                     gap: 10px;
                 }
+                
+                .srwm-two-column-layout {
+                    display: flex;
+                    gap: 30px;
+                    margin-bottom: 20px;
+                }
+                
+                .srwm-column {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .srwm-column h3 {
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                    padding-bottom: 8px;
+                    border-bottom: 2px solid #e1e5e9;
+                    color: #23282d;
+                    font-size: 16px;
+                }
+                
+                .srwm-color-option {
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    background: #f9f9f9;
+                    border-radius: 6px;
+                    border-left: 4px solid #007cba;
+                }
+                
+                .srwm-color-option label {
+                    display: block;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: #23282d;
+                }
+                
+                .srwm-color-option .description {
+                    margin-top: 5px;
+                    margin-bottom: 0;
+                    font-size: 12px;
+                    color: #666;
+                }
+                
+                .srwm-layout-options {
+                    margin-top: 20px;
+                    padding: 20px;
+                    background: #f9f9f9;
+                    border-radius: 6px;
+                    border: 1px solid #e1e5e9;
+                }
+                
+                .srwm-layout-options h3 {
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                    color: #23282d;
+                    font-size: 16px;
+                }
+                
+                .srwm-option-row {
+                    display: flex;
+                    gap: 30px;
+                }
+                
+                .srwm-option {
+                    flex: 1;
+                }
+                
+                .srwm-option label {
+                    display: block;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: #23282d;
+                }
+                
+                .srwm-option .description {
+                    margin-top: 5px;
+                    margin-bottom: 0;
+                    font-size: 12px;
+                    color: #666;
+                }
+                
+                @media (max-width: 768px) {
+                    .srwm-two-column-layout {
+                        flex-direction: column;
+                        gap: 20px;
+                    }
+                    
+                    .srwm-option-row {
+                        flex-direction: column;
+                        gap: 20px;
+                    }
+                }
                 .srwm-settings-section h2 {
                     margin-top: 0;
                     color: #23282d;
@@ -6822,289 +6913,225 @@ class SRWM_Admin {
                 
                 <div class="srwm-settings-section">
                     <h2><?php _e('Waitlist Styling & Colors', 'smart-restock-waitlist'); ?></h2>
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row"><?php _e('Container Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_container_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_container_bg', '#f8f9fa')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_container_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_container_bg', '#f8f9fa')); ?>" 
-                                       class="srwm-hex-input" placeholder="#f8f9fa">
-                                <p class="description">
-                                    <?php _e('Background color for the main waitlist container', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
+                    
+                    <div class="srwm-two-column-layout">
+                        <!-- Left Column -->
+                        <div class="srwm-column">
+                            <h3><?php _e('Main Colors', 'smart-restock-waitlist'); ?></h3>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Container Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_container_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_container_bg', '#ffffff')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_container_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_container_bg', '#ffffff')); ?>" 
+                                           class="srwm-hex-input" placeholder="#ffffff">
+                                </div>
+                                <p class="description"><?php _e('Main container background', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Header Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_header_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_header_bg', '#f8f9fa')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_header_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_header_bg', '#f8f9fa')); ?>" 
+                                           class="srwm-hex-input" placeholder="#f8f9fa">
+                                </div>
+                                <p class="description"><?php _e('Header section background', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Header Text Color', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_header_text" 
+                                           value="<?php echo esc_attr(get_option('srwm_header_text', '#333333')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_header_text_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_header_text', '#333333')); ?>" 
+                                           class="srwm-hex-input" placeholder="#333333">
+                                </div>
+                                <p class="description"><?php _e('Titles and headings', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Body Text Color', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_body_text" 
+                                           value="<?php echo esc_attr(get_option('srwm_body_text', '#666666')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_body_text_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_body_text', '#666666')); ?>" 
+                                           class="srwm-hex-input" placeholder="#666666">
+                                </div>
+                                <p class="description"><?php _e('Description text', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Border Color', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_border_color" 
+                                           value="<?php echo esc_attr(get_option('srwm_border_color', '#e9ecef')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_border_color_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_border_color', '#e9ecef')); ?>" 
+                                           class="srwm-hex-input" placeholder="#e9ecef">
+                                </div>
+                                <p class="description"><?php _e('Container borders', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Primary Button Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_btn_primary_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_btn_primary_bg', '#007cba')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_btn_primary_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_btn_primary_bg', '#007cba')); ?>" 
+                                           class="srwm-hex-input" placeholder="#007cba">
+                                </div>
+                                <p class="description"><?php _e('Join Waitlist button', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Primary Button Text', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_btn_primary_text" 
+                                           value="<?php echo esc_attr(get_option('srwm_btn_primary_text', '#ffffff')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_btn_primary_text_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_btn_primary_text', '#ffffff')); ?>" 
+                                           class="srwm-hex-input" placeholder="#ffffff">
+                                </div>
+                                <p class="description"><?php _e('Button text color', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
                         
-                        <tr>
-                            <th scope="row"><?php _e('Header Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_header_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_header_bg', '#ffffff')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_header_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_header_bg', '#ffffff')); ?>" 
-                                       class="srwm-hex-input" placeholder="#ffffff">
-                                <p class="description">
-                                    <?php _e('Background color for the waitlist header section', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Header Text Color', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_header_text" 
-                                       value="<?php echo esc_attr(get_option('srwm_header_text', '#333333')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_header_text_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_header_text', '#333333')); ?>" 
-                                       class="srwm-hex-input" placeholder="#333333">
-                                <p class="description">
-                                    <?php _e('Text color for the waitlist header and titles', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Body Text Color', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_body_text" 
-                                       value="<?php echo esc_attr(get_option('srwm_body_text', '#666666')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_body_text_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_body_text', '#666666')); ?>" 
-                                       class="srwm-hex-input" placeholder="#666666">
-                                <p class="description">
-                                    <?php _e('Text color for body text and descriptions', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Primary Button Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_btn_primary_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_primary_bg', '#007cba')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_btn_primary_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_primary_bg', '#007cba')); ?>" 
-                                       class="srwm-hex-input" placeholder="#007cba">
-                                <p class="description">
-                                    <?php _e('Background color for primary buttons (Join Waitlist, Submit)', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Primary Button Text', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_btn_primary_text" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_primary_text', '#ffffff')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_btn_primary_text_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_primary_text', '#ffffff')); ?>" 
-                                       class="srwm-hex-input" placeholder="#ffffff">
-                                <p class="description">
-                                    <?php _e('Text color for primary buttons', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Secondary Button Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_btn_secondary_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_secondary_bg', '#6c757d')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_btn_secondary_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_secondary_bg', '#6c757d')); ?>" 
-                                       class="srwm-hex-input" placeholder="#6c757d">
-                                <p class="description">
-                                    <?php _e('Background color for secondary buttons (Cancel, Remove)', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Secondary Button Text', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_btn_secondary_text" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_secondary_text', '#ffffff')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_btn_secondary_text_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_btn_secondary_text', '#ffffff')); ?>" 
-                                       class="srwm-hex-input" placeholder="#ffffff">
-                                <p class="description">
-                                    <?php _e('Text color for secondary buttons', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Success Status Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_success_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_success_bg', '#d4edda')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_success_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_success_bg', '#d4edda')); ?>" 
-                                       class="srwm-hex-input" placeholder="#d4edda">
-                                <p class="description">
-                                    <?php _e('Background color for success messages and active status', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Success Status Text', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_success_text" 
-                                       value="<?php echo esc_attr(get_option('srwm_success_text', '#155724')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_success_text_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_success_text', '#155724')); ?>" 
-                                       class="srwm-hex-input" placeholder="#155724">
-                                <p class="description">
-                                    <?php _e('Text color for success messages and active status', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Border Color', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_border_color" 
-                                       value="<?php echo esc_attr(get_option('srwm_border_color', '#dee2e6')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_border_color_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_border_color', '#dee2e6')); ?>" 
-                                       class="srwm-hex-input" placeholder="#dee2e6">
-                                <p class="description">
-                                    <?php _e('Border color for containers and form elements', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Input Field Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_input_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_bg', '#ffffff')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_input_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_bg', '#ffffff')); ?>" 
-                                       class="srwm-hex-input" placeholder="#ffffff">
-                                <p class="description">
-                                    <?php _e('Background color for input fields and text areas', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Input Field Border', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_input_border" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_border', '#ced4da')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_input_border_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_border', '#ced4da')); ?>" 
-                                       class="srwm-hex-input" placeholder="#ced4da">
-                                <p class="description">
-                                    <?php _e('Border color for input fields when not focused', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Input Field Focus Border', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_input_focus_border" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_focus_border', '#007cba')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_input_focus_border_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_input_focus_border', '#007cba')); ?>" 
-                                       class="srwm-hex-input" placeholder="#007cba">
-                                <p class="description">
-                                    <?php _e('Border color for input fields when focused', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Progress Bar Background', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_progress_bg" 
-                                       value="<?php echo esc_attr(get_option('srwm_progress_bg', '#e9ecef')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_progress_bg_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_progress_bg', '#e9ecef')); ?>" 
-                                       class="srwm-hex-input" placeholder="#e9ecef">
-                                <p class="description">
-                                    <?php _e('Background color for progress bars and queue visualization', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Progress Bar Fill', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_progress_fill" 
-                                       value="<?php echo esc_attr(get_option('srwm_progress_fill', '#007cba')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_progress_fill_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_progress_fill', '#007cba')); ?>" 
-                                       class="srwm-hex-input" placeholder="#007cba">
-                                <p class="description">
-                                    <?php _e('Fill color for progress bars and queue visualization', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Shadow Color', 'smart-restock-waitlist'); ?></th>
-                            <td>
-                                <input type="color" name="srwm_shadow_color" 
-                                       value="<?php echo esc_attr(get_option('srwm_shadow_color', '#000000')); ?>" 
-                                       class="srwm-color-picker">
-                                <input type="text" name="srwm_shadow_color_hex" 
-                                       value="<?php echo esc_attr(get_option('srwm_shadow_color', '#000000')); ?>" 
-                                       class="srwm-hex-input" placeholder="#000000">
-                                <p class="description">
-                                    <?php _e('Shadow color for containers and cards (usually black with opacity)', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Border Radius', 'smart-restock-waitlist'); ?></th>
-                            <td>
+                        <!-- Right Column -->
+                        <div class="srwm-column">
+                            <h3><?php _e('Form & Status Colors', 'smart-restock-waitlist'); ?></h3>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Input Field Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_input_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_bg', '#ffffff')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_input_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_bg', '#ffffff')); ?>" 
+                                           class="srwm-hex-input" placeholder="#ffffff">
+                                </div>
+                                <p class="description"><?php _e('Email input background', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Input Field Border', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_input_border" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_border', '#ced4da')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_input_border_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_border', '#ced4da')); ?>" 
+                                           class="srwm-hex-input" placeholder="#ced4da">
+                                </div>
+                                <p class="description"><?php _e('Input border color', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Input Focus Border', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_input_focus_border" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_focus_border', '#007cba')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_input_focus_border_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_input_focus_border', '#007cba')); ?>" 
+                                           class="srwm-hex-input" placeholder="#007cba">
+                                </div>
+                                <p class="description"><?php _e('Focused input border', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Success Status Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_success_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_success_bg', '#d4edda')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_success_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_success_bg', '#d4edda')); ?>" 
+                                           class="srwm-hex-input" placeholder="#d4edda">
+                                </div>
+                                <p class="description"><?php _e('Success message background', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Success Status Text', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_success_text" 
+                                           value="<?php echo esc_attr(get_option('srwm_success_text', '#155724')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_success_text_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_success_text', '#155724')); ?>" 
+                                           class="srwm-hex-input" placeholder="#155724">
+                                </div>
+                                <p class="description"><?php _e('Success message text', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Progress Bar Background', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_progress_bg" 
+                                           value="<?php echo esc_attr(get_option('srwm_progress_bg', '#e9ecef')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_progress_bg_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_progress_bg', '#e9ecef')); ?>" 
+                                           class="srwm-hex-input" placeholder="#e9ecef">
+                                </div>
+                                <p class="description"><?php _e('Progress bar track', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-color-option">
+                                <label><?php _e('Progress Bar Fill', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-color-group">
+                                    <input type="color" name="srwm_progress_fill" 
+                                           value="<?php echo esc_attr(get_option('srwm_progress_fill', '#007cba')); ?>" 
+                                           class="srwm-color-picker">
+                                    <input type="text" name="srwm_progress_fill_hex" 
+                                           value="<?php echo esc_attr(get_option('srwm_progress_fill', '#007cba')); ?>" 
+                                           class="srwm-hex-input" placeholder="#007cba">
+                                </div>
+                                <p class="description"><?php _e('Progress bar fill', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Layout Options -->
+                    <div class="srwm-layout-options">
+                        <h3><?php _e('Layout Options', 'smart-restock-waitlist'); ?></h3>
+                        <div class="srwm-option-row">
+                            <div class="srwm-option">
+                                <label><?php _e('Border Radius', 'smart-restock-waitlist'); ?></label>
                                 <input type="number" name="srwm_border_radius" 
                                        value="<?php echo esc_attr(get_option('srwm_border_radius', '8')); ?>" 
                                        min="0" max="50" class="small-text"> px
-                                <p class="description">
-                                    <?php _e('Border radius for containers, buttons, and form elements (0-50px)', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row"><?php _e('Font Size', 'smart-restock-waitlist'); ?></th>
-                            <td>
+                                <p class="description"><?php _e('Rounded corners (0-50px)', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-option">
+                                <label><?php _e('Font Size', 'smart-restock-waitlist'); ?></label>
                                 <select name="srwm_font_size">
                                     <option value="small" <?php selected(get_option('srwm_font_size', 'medium'), 'small'); ?>><?php _e('Small (12px)', 'smart-restock-waitlist'); ?></option>
                                     <option value="medium" <?php selected(get_option('srwm_font_size', 'medium'), 'medium'); ?>><?php _e('Medium (14px)', 'smart-restock-waitlist'); ?></option>
                                     <option value="large" <?php selected(get_option('srwm_font_size', 'medium'), 'large'); ?>><?php _e('Large (16px)', 'smart-restock-waitlist'); ?></option>
                                     <option value="xlarge" <?php selected(get_option('srwm_font_size', 'medium'), 'xlarge'); ?>><?php _e('Extra Large (18px)', 'smart-restock-waitlist'); ?></option>
                                 </select>
-                                <p class="description">
-                                    <?php _e('Base font size for the waitlist interface', 'smart-restock-waitlist'); ?>
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
+                                <p class="description"><?php _e('Base font size', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="srwm-settings-section">
