@@ -248,6 +248,11 @@ class SRWM_Admin {
                     'export_error' => __('Failed to export report.', 'smart-restock-waitlist')
                 )
             ));
+            
+            wp_localize_script('srwm-dashboard', 'srwm_dashboard_vars', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('srwm_dashboard_nonce')
+            ));
         }
         
         // Add notification-specific scripts

@@ -402,7 +402,7 @@
             data: {
                 action: 'srwm_get_stat_card_details',
                 stat_type: statType,
-                nonce: srwm_dashboard_vars.nonce
+                nonce: srwm_dashboard.nonce
             },
             success: function(response) {
                 console.log('SRWM Dashboard: Stat details response:', response);
@@ -463,10 +463,11 @@
             recentActivity.forEach(function(activity) {
                 const status = activity.notified == 1 ? 'Notified' : 'Waiting';
                 const statusClass = activity.notified == 1 ? 'srwm-status-notified' : 'srwm-status-waiting';
+                const productName = activity.product_name || `Product ID: ${activity.product_id}`;
                 activityRows += `
                     <tr>
                         <td>${activity.email}</td>
-                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${productName}</td>
                         <td>${activity.date_added}</td>
                         <td><span class="srwm-status ${statusClass}">${status}</span></td>
                     </tr>
@@ -522,9 +523,10 @@
         let productRows = '';
         if (topProducts.length > 0) {
             topProducts.forEach(function(product) {
+                const productName = product.product_name || `Product ID: ${product.product_id}`;
                 productRows += `
                     <tr>
-                        <td>Product ID: ${product.product_id}</td>
+                        <td>${productName}</td>
                         <td>${product.waitlist_count}</td>
                         <td>${product.active_count}</td>
                         <td><span class="srwm-status srwm-status-waiting">Active</span></td>
@@ -582,9 +584,10 @@
         if (recentActivity.length > 0) {
             recentActivity.forEach(function(activity) {
                 const date = new Date(activity.timestamp).toLocaleDateString();
+                const productName = activity.product_name || `Product ID: ${activity.product_id}`;
                 activityRows += `
                     <tr>
-                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${productName}</td>
                         <td>${date}</td>
                         <td>${activity.quantity} units</td>
                         <td>${activity.method}</td>
@@ -667,11 +670,12 @@
                     minute: '2-digit',
                     hour12: false 
                 });
+                const productName = activity.product_name || `Product ID: ${activity.product_id}`;
                 activityRows += `
                     <tr>
                         <td>${time}</td>
                         <td>${activity.email}</td>
-                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${productName}</td>
                         <td><span class="srwm-status srwm-status-waiting">Added</span></td>
                     </tr>
                 `;
@@ -764,10 +768,11 @@
                     minute: '2-digit',
                     hour12: false 
                 });
+                const productName = activity.product_name || `Product ID: ${activity.product_id}`;
                 activityRows += `
                     <tr>
                         <td>${time}</td>
-                        <td>Product ID: ${activity.product_id}</td>
+                        <td>${productName}</td>
                         <td>${activity.quantity}</td>
                         <td>${activity.method}</td>
                     </tr>
