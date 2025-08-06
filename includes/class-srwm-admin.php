@@ -1962,8 +1962,27 @@ class SRWM_Admin {
         /* Enhanced Stats Grid */
         .srwm-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 28px;
+        }
+        
+        /* Responsive grid for smaller screens */
+        @media (max-width: 1400px) {
+            .srwm-stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 1100px) {
+            .srwm-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .srwm-stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .srwm-stat-card {

@@ -1187,9 +1187,9 @@ class SmartRestockWaitlistManager {
             $analytics = SRWM_Analytics::get_instance($this->license_manager);
             $csv_data = $analytics->export_analytics_csv();
             
-            wp_die(json_encode(array('success' => true, 'data' => $csv_data)));
+            wp_send_json_success($csv_data);
         } catch (Exception $e) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Error generating report.', 'smart-restock-waitlist'))));
+            wp_send_json_error(__('Error generating report.', 'smart-restock-waitlist'));
         }
     }
     

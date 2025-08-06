@@ -393,6 +393,8 @@
                 nonce: srwm_dashboard.nonce
             },
             success: function(response) {
+                console.log('SRWM Dashboard: Export response:', response);
+                
                 if (response.success) {
                     showMessage('success', srwm_dashboard.messages.export_success);
                     
@@ -401,8 +403,11 @@
                     link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data);
                     link.download = 'srwm-dashboard-report-' + new Date().toISOString().split('T')[0] + '.csv';
                     link.click();
+                    
+                    console.log('SRWM Dashboard: Export download triggered');
                 } else {
-                    showMessage('error', srwm_dashboard.messages.export_error);
+                    console.error('SRWM Dashboard: Export failed:', response.data);
+                    showMessage('error', response.data || srwm_dashboard.messages.export_error);
                 }
             },
             error: function() {
