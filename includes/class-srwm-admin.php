@@ -421,7 +421,7 @@ class SRWM_Admin {
                     </div>
                     
                     <div class="srwm-stats-grid">
-                        <div class="srwm-stat-card">
+                        <div class="srwm-stat-card" data-stat="total_waitlist_customers">
                             <div class="srwm-stat-header">
                                 <div class="srwm-stat-icon">
                                     <span class="dashicons dashicons-groups"></span>
@@ -441,7 +441,7 @@ class SRWM_Admin {
                             </div>
                         </div>
                         
-                        <div class="srwm-stat-card">
+                        <div class="srwm-stat-card" data-stat="waitlist_products">
                             <div class="srwm-stat-header">
                                 <div class="srwm-stat-icon">
                                     <span class="dashicons dashicons-cart"></span>
@@ -503,7 +503,7 @@ class SRWM_Admin {
                         </div>
                         <?php endif; ?>
                         
-                        <div class="srwm-stat-card">
+                        <div class="srwm-stat-card" data-stat="avg_restock_time">
                             <div class="srwm-stat-header">
                                 <div class="srwm-stat-icon">
                                     <span class="dashicons dashicons-clock"></span>
