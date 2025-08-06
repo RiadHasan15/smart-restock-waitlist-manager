@@ -300,15 +300,37 @@ class SRWM_Admin {
      * Render dashboard page
      */
     public function render_dashboard_page() {
-        $total_waitlist_customers = $this->get_total_waitlist_customers();
-        $waitlist_products = $this->get_waitlist_products();
-        $supplier_products = $this->get_supplier_products();
-        
-        // Get analytics data for charts
-        $analytics = SRWM_Analytics::get_instance($this->license_manager);
-        $analytics_data = $analytics->get_analytics_data();
+        try {
+            $total_waitlist_customers = $this->get_total_waitlist_customers();
+            $waitlist_products = $this->get_waitlist_products();
+            $supplier_products = $this->get_supplier_products();
+            
+            // Get analytics data for charts
+            $analytics = SRWM_Analytics::get_instance($this->license_manager);
+            $analytics_data = $analytics->get_analytics_data();
+        } catch (Exception $e) {
+            // Fallback values if there's an error
+            $total_waitlist_customers = 0;
+            $waitlist_products = array();
+            $supplier_products = array();
+            $analytics_data = array(
+                'avg_restock_time' => 0,
+                'total_restocks' => 0,
+                'avg_waitlist_size' => 0
+            );
+            
+            // Log the error for debugging
+            error_log('Dashboard data loading error: ' . $e->getMessage());
+        }
         ?>
         <div class="wrap srwm-dashboard">
+            <?php if (empty($total_waitlist_customers) && empty($waitlist_products) && empty($supplier_products)): ?>
+            <div class="notice notice-info">
+                <p><strong><?php _e('Welcome to Smart Restock & Waitlist Manager!', 'smart-restock-waitlist'); ?></strong></p>
+                <p><?php _e('No data found yet. Start by adding products to your waitlist or configuring your settings.', 'smart-restock-waitlist'); ?></p>
+            </div>
+            <?php endif; ?>
+            
             <div class="srwm-dashboard-header">
                 <h1><?php _e('Smart Restock & Waitlist Dashboard', 'smart-restock-waitlist'); ?></h1>
                 <div class="srwm-dashboard-actions">
@@ -8533,26 +8555,53 @@ class SRWM_Admin {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_results(
-            "SELECT p.ID as product_id, p.post_title as name, pm.meta_value as sku,
-                    wc.stock_quantity as stock, COUNT(w.id) as waitlist_count
-             FROM {$wpdb->posts} p
-             LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
-             LEFT JOIN {$wpdb->prefix}wc_product_meta_lookup wc ON p.ID = wc.product_id
-             INNER JOIN $table w ON p.ID = w.product_id
-             WHERE p.post_type = 'product' AND p.post_status = 'publish'
-             GROUP BY p.ID
-             ORDER BY waitlist_count DESC",
-            ARRAY_A
-        );
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return array();
+        }
+        
+        // Check if WooCommerce is active and tables exist
+        $wc_table = $wpdb->prefix . 'wc_product_meta_lookup';
+        $wc_table_exists = $wpdb->get_var("SHOW TABLES LIKE '$wc_table'") == $wc_table;
+        
+        if ($wc_table_exists) {
+            $query = "SELECT p.ID as product_id, p.post_title as name, pm.meta_value as sku,
+                            wc.stock_quantity as stock, COUNT(w.id) as waitlist_count
+                     FROM {$wpdb->posts} p
+                     LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
+                     LEFT JOIN $wc_table wc ON p.ID = wc.product_id
+                     INNER JOIN $table w ON p.ID = w.product_id
+                     WHERE p.post_type = 'product' AND p.post_status = 'publish'
+                     GROUP BY p.ID
+                     ORDER BY waitlist_count DESC";
+        } else {
+            // Fallback query without WooCommerce tables
+            $query = "SELECT p.ID as product_id, p.post_title as name, pm.meta_value as sku,
+                            'N/A' as stock, COUNT(w.id) as waitlist_count
+                     FROM {$wpdb->posts} p
+                     LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
+                     INNER JOIN $table w ON p.ID = w.product_id
+                     WHERE p.post_type = 'product' AND p.post_status = 'publish'
+                     GROUP BY p.ID
+                     ORDER BY waitlist_count DESC";
+        }
+        
+        $result = $wpdb->get_results($query, ARRAY_A);
+        return $result ?: array();
     }
     
     /**
      * Get products with supplier alerts
      */
     private function get_supplier_products() {
-        $supplier = SRWM_Supplier::get_instance();
-        return $supplier->get_products_with_suppliers();
+        try {
+            $supplier = SRWM_Supplier::get_instance();
+            return $supplier->get_products_with_suppliers();
+        } catch (Exception $e) {
+            // Log error and return empty array
+            error_log('Supplier products error: ' . $e->getMessage());
+            return array();
+        }
     }
     
     /**
@@ -8563,7 +8612,13 @@ class SRWM_Admin {
         
         $table = $wpdb->prefix . 'srwm_waitlist';
         
-        return $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        return $result ?: 0;
     }
     
     /**

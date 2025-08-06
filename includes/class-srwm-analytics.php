@@ -29,15 +29,29 @@ class SRWM_Analytics {
      * Get comprehensive analytics data
      */
     public function get_analytics_data() {
-        return array(
-            'total_restocks' => $this->get_total_restocks(),
-            'avg_waitlist_size' => $this->get_average_waitlist_size(),
-            'avg_restock_time' => $this->get_average_restock_time(),
-            'top_products' => $this->get_top_products_by_demand(),
-            'supplier_performance' => $this->get_supplier_performance(),
-            'monthly_stats' => $this->get_monthly_statistics(),
-            'conversion_rate' => $this->get_conversion_rate()
-        );
+        try {
+            return array(
+                'total_restocks' => $this->get_total_restocks(),
+                'avg_waitlist_size' => $this->get_average_waitlist_size(),
+                'avg_restock_time' => $this->get_average_restock_time(),
+                'top_products' => $this->get_top_products_by_demand(),
+                'supplier_performance' => $this->get_supplier_performance(),
+                'monthly_stats' => $this->get_monthly_statistics(),
+                'conversion_rate' => $this->get_conversion_rate()
+            );
+        } catch (Exception $e) {
+            // Return default values if there's an error
+            error_log('Analytics data error: ' . $e->getMessage());
+            return array(
+                'total_restocks' => 0,
+                'avg_waitlist_size' => 0,
+                'avg_restock_time' => 0,
+                'top_products' => array(),
+                'supplier_performance' => array(),
+                'monthly_stats' => array(),
+                'conversion_rate' => 0
+            );
+        }
     }
     
     /**
@@ -48,7 +62,13 @@ class SRWM_Analytics {
         
         $table = $wpdb->prefix . 'srwm_restock_logs';
         
-        return $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
+        
+        $result = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        return $result ?: 0;
     }
     
     /**
@@ -58,6 +78,11 @@ class SRWM_Analytics {
         global $wpdb;
         
         $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        // Check if table exists
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
+            return 0;
+        }
         
         $result = $wpdb->get_var(
             "SELECT AVG(waitlist_count) FROM (
