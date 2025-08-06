@@ -271,22 +271,32 @@
             loadChartData(days);
         });
 
-        // Chart refresh button
-        $('.srwm-btn-refresh-chart').on('click', function() {
+        // Dashboard refresh button
+        $('#srwm-refresh-dashboard').on('click', function() {
             const $button = $(this);
             const $icon = $button.find('.dashicons');
+            
+            console.log('SRWM Dashboard: Refresh button clicked');
             
             // Add loading state
             $button.prop('disabled', true);
             $icon.removeClass('dashicons-update').addClass('dashicons-update-alt');
             $icon.css('animation', 'spin 1s linear infinite');
             
-            // Reload chart data
+            // Reload chart data and refresh statistics
             loadChartData().always(function() {
+                // Also refresh statistics cards
+                refreshStatistics();
+                
                 // Remove loading state
                 $button.prop('disabled', false);
                 $icon.removeClass('dashicons-update-alt').addClass('dashicons-update');
                 $icon.css('animation', '');
+                
+                // Show success message
+                showMessage('success', 'Dashboard data refreshed successfully!');
+                
+                console.log('SRWM Dashboard: Refresh completed');
             });
         });
 
@@ -461,6 +471,84 @@
         $('.srwm-tooltip').fadeOut(200, function() {
             $(this).remove();
         });
+    }
+
+    /**
+     * Refresh statistics cards with real data
+     */
+    function refreshStatistics() {
+        console.log('SRWM Dashboard: Refreshing statistics...');
+        
+        $.ajax({
+            url: srwm_dashboard.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'srwm_get_dashboard_data',
+                nonce: srwm_dashboard.nonce
+            },
+            success: function(response) {
+                console.log('SRWM Dashboard: Statistics response:', response);
+                
+                if (response.success && response.data) {
+                    const data = response.data;
+                    
+                    // Update statistics cards
+                    updateStatCard('total_waitlist_customers', data.total_waitlist_customers || 0);
+                    updateStatCard('waitlist_products', data.waitlist_products || 0);
+                    updateStatCard('avg_restock_time', data.avg_restock_time || 0);
+                    
+                    // Update additional stats if available
+                    if (data.today_waitlists !== undefined) {
+                        updateStatCard('today_waitlists', data.today_waitlists);
+                    }
+                    if (data.today_restocks !== undefined) {
+                        updateStatCard('today_restocks', data.today_restocks);
+                    }
+                    if (data.pending_notifications !== undefined) {
+                        updateStatCard('pending_notifications', data.pending_notifications);
+                    }
+                    if (data.low_stock_products !== undefined) {
+                        updateStatCard('low_stock_products', data.low_stock_products);
+                    }
+                    
+                    console.log('SRWM Dashboard: Statistics updated successfully');
+                } else {
+                    console.error('SRWM Dashboard: Failed to refresh statistics:', response.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('SRWM Dashboard: Error refreshing statistics:', error);
+            }
+        });
+    }
+    
+    /**
+     * Update individual stat card
+     */
+    function updateStatCard(statType, value) {
+        // Find the stat card by data attribute
+        const $card = $(`.srwm-stat-card[data-stat="${statType}"]`);
+        
+        if ($card.length > 0) {
+            const $statNumber = $card.find('.srwm-stat-number');
+            
+            // Format the value based on type
+            let formattedValue = value;
+            if (statType === 'avg_restock_time') {
+                formattedValue = parseFloat(value).toFixed(1);
+            } else {
+                formattedValue = parseInt(value).toLocaleString();
+            }
+            
+            // Update with animation
+            $statNumber.fadeOut(200, function() {
+                $(this).text(formattedValue).fadeIn(200);
+            });
+            
+            console.log(`SRWM Dashboard: Updated ${statType} to ${formattedValue}`);
+        } else {
+            console.warn(`SRWM Dashboard: Stat card not found for ${statType}`);
+        }
     }
 
     /**
