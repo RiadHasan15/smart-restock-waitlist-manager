@@ -46,15 +46,13 @@ class SRWM_Pro_CSV_Upload {
         }
         
         // Debug: Log request information
-        error_log('CSV Upload Debug: REQUEST_METHOD = ' . $_SERVER['REQUEST_METHOD']);
-        error_log('CSV Upload Debug: $_POST = ' . print_r($_POST, true));
-        error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
+
         
         // Handle the upload form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_csv_submit'])) {
             // Debug: Check if this is a test submission
             if (isset($_POST['debug_form'])) {
-                error_log('CSV Upload Debug: Form submitted with debug_form = ' . $_POST['debug_form']);
+    
             }
             
             $this->process_csv_upload($token);
@@ -707,7 +705,7 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Parse CSV data
                 function parseCSVData(csvText) {
-                    console.log('Parsing CSV text:', csvText.substring(0, 500) + '...');
+            
                     
                     const lines = csvText.split('\n').filter(line => line.trim());
                     const data = [];
@@ -720,7 +718,7 @@ class SRWM_Pro_CSV_Upload {
                     const headerLine = lines[0];
                     const header = parseCSVLine(headerLine).map(h => h.trim().replace(/"/g, ''));
                     
-                    console.log('Parsed header:', header);
+            
                     
                     for (let i = 1; i < lines.length; i++) {
                         if (lines[i].trim()) {
@@ -735,7 +733,7 @@ class SRWM_Pro_CSV_Upload {
                         }
                     }
                     
-                    console.log('Parsed data sample:', data.slice(0, 2));
+            
                     return { header, data };
                 }
                 
@@ -764,7 +762,7 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Validate CSV data
                 function validateCSVData(csvData) {
-                    console.log('Validating CSV data:', csvData);
+            
                     
                     const validation = {
                         valid: true,
@@ -783,8 +781,7 @@ class SRWM_Pro_CSV_Upload {
                     }
                     
                     // Log the first row to see what columns we have
-                    console.log('First row data:', csvData.data[0]);
-                    console.log('Available columns:', Object.keys(csvData.data[0]));
+                    
                     
                     csvData.data.forEach((row, index) => {
                         let rowValid = true;
@@ -820,7 +817,7 @@ class SRWM_Pro_CSV_Upload {
                     });
                     
                     validation.valid = validation.errors.length === 0;
-                    console.log('Validation result:', validation);
+            
                     return validation;
                 }
                 
@@ -908,7 +905,7 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Show preview section
                 function showPreviewSection(csvData, validation, hasWarnings = false) {
-                    console.log('Showing preview section...');
+            
                     
                     const previewSection = document.getElementById('srwm-preview-section');
                     const previewContent = document.getElementById('srwm-preview-content');
@@ -971,16 +968,16 @@ class SRWM_Pro_CSV_Upload {
                     
                     // Add click event
                     previewBtn.onclick = function() {
-                        console.log('Preview button clicked!');
+                
                         showPreviewModal(csvData, validation);
                     };
                     
-                    console.log('Preview section displayed');
+            
                 }
                 
                 // Show preview modal
                 function showPreviewModal(csvData, validation) {
-                    console.log('Showing preview modal...');
+            
                     
                     // Remove existing modal
                     const existingModal = document.querySelector('.srwm-preview-modal');
@@ -1199,7 +1196,7 @@ class SRWM_Pro_CSV_Upload {
                         }
                     }, 10);
                     
-                    console.log('Preview modal created and displayed');
+            
                 }
                 
                 // Generate preview table
@@ -1241,21 +1238,21 @@ class SRWM_Pro_CSV_Upload {
                 
                 // Close preview modal
                 function closePreviewModal() {
-                    console.log('Closing preview modal...');
+            
                     const modal = document.querySelector('.srwm-preview-modal');
                     if (modal) {
                         modal.querySelector('.srwm-preview-content').style.transform = 'scale(0.9)';
                         modal.querySelector('.srwm-preview-content').style.opacity = '0';
                         setTimeout(() => {
                             modal.remove();
-                            console.log('Preview modal removed');
+                    
                         }, 300);
                     }
                 }
                 
                 // Proceed with upload
                 function proceedWithUpload() {
-                    console.log('Proceeding with upload...');
+            
                     closePreviewModal();
                     // The form will be submitted normally
                 }
@@ -1606,7 +1603,7 @@ class SRWM_Pro_CSV_Upload {
      */
     private function process_csv_upload($token) {
         // Debug: Log upload information
-        error_log('CSV Upload Debug: $_FILES = ' . print_r($_FILES, true));
+
         
 
         
@@ -1772,12 +1769,12 @@ class SRWM_Pro_CSV_Upload {
             
             if (!$header || count($header) < 2) {
                 fclose($handle);
-                error_log('CSV Upload Debug: Invalid header - ' . print_r($header, true));
+        
                 return false;
             }
             
             // Debug: Log header
-            error_log('CSV Upload Debug: Header = ' . print_r($header, true));
+    
             
             // Find column indexes - try multiple possible column names
             $sku_index = false;
@@ -1801,7 +1798,7 @@ class SRWM_Pro_CSV_Upload {
             
             if ($sku_index === false || $quantity_index === false) {
                 fclose($handle);
-                error_log('CSV Upload Debug: SKU index = ' . ($sku_index !== false ? $sku_index : 'false') . ', Quantity index = ' . ($quantity_index !== false ? $quantity_index : 'false'));
+        
                 return false;
             }
             
@@ -1818,9 +1815,9 @@ class SRWM_Pro_CSV_Upload {
             }
             
             fclose($handle);
-            error_log('CSV Upload Debug: Processed ' . $row_count . ' rows');
+    
         } else {
-            error_log('CSV Upload Debug: Failed to open file: ' . $file_path);
+
         }
         
         return $data;

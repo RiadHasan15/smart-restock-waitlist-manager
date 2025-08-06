@@ -3869,7 +3869,7 @@ class SRWM_Admin {
             // Load approvals
             function loadApprovals() {
                 try {
-                    console.log('Starting to load approvals...');
+            
                     
                     // Show loading state
                     $('#srwm-approvals-container').html('<div class="srwm-loading"><span class="spinner is-active"></span> Loading approvals...</div>');
@@ -3885,7 +3885,7 @@ class SRWM_Admin {
                     
                     if (tokenFilter) {
                         ajaxData.token = tokenFilter;
-                        console.log('Filtering by token:', tokenFilter);
+    
                     }
                     
                     $.ajax({
@@ -3895,14 +3895,14 @@ class SRWM_Admin {
                         data: ajaxData,
                         timeout: 30000, // 30 second timeout
                         success: function(response) {
-                            console.log('CSV Approvals Response:', response);
+    
                             
                             try {
                                 if (response && response.success) {
-                                    console.log('Calling displayApprovals with:', response.data);
+
                                     displayApprovals(response.data);
                                 } else {
-                                    console.log('Response not successful, showing error');
+  
                                     const errorMessage = response && response.message ? response.message : 'Unknown error occurred';
                                     showError('Failed to load approvals: ' + errorMessage);
                                 }
@@ -3954,9 +3954,7 @@ class SRWM_Admin {
             
             // Display approvals
             function displayApprovals(approvals) {
-                console.log('Displaying approvals:', approvals);
-                console.log('Approvals type:', typeof approvals);
-                console.log('Approvals length:', approvals ? approvals.length : 'null');
+
                 
                 if (!approvals || approvals.length === 0) {
                     $('#srwm-approvals-container').html('<div class="srwm-no-approvals">No pending approvals</div>');
@@ -3971,19 +3969,19 @@ class SRWM_Admin {
                 }
                 */
                 
-                console.log('Starting to generate HTML for approvals...');
+
                 
                 let html = '';
                 let processedCount = 0;
                 
                 approvals.forEach(function(approval, index) {
                     try {
-                        console.log('Processing approval:', approval);
+    
                         
                         let uploadData = [];
                         try {
                             uploadData = JSON.parse(approval.upload_data);
-                            console.log('Parsed upload data:', uploadData);
+                            
                         } catch (error) {
                             console.error('Error parsing upload data:', error);
                             uploadData = [];
@@ -4067,7 +4065,7 @@ class SRWM_Admin {
                     html += '</div>';
                     
                     processedCount++;
-                    console.log('Successfully processed approval ' + processedCount + ' of ' + approvals.length);
+                    
                     
                 } catch (error) {
                     console.error('Error processing approval:', error);
@@ -4081,11 +4079,10 @@ class SRWM_Admin {
                 }
                 });
                 
-                console.log('Generated HTML length:', html.length);
-                console.log('HTML preview:', html.substring(0, 500));
+
                 
                 $('#srwm-approvals-container').html(html);
-                console.log('HTML set to container');
+                
             }
             
             // Helper functions
@@ -4196,13 +4193,13 @@ class SRWM_Admin {
                 try {
                     const ctx = document.getElementById('uploadTrendsChart');
                     if (!ctx) {
-                        console.log('Chart canvas not found, skipping chart update');
+        
                         return;
                     }
                     
                     // Check if Chart.js is loaded
                     if (typeof Chart === 'undefined') {
-                        console.log('Chart.js not loaded, skipping chart update');
+        
                         return;
                     }
                 
@@ -4285,7 +4282,7 @@ class SRWM_Admin {
                     }
                 });
                 
-                console.log('Chart created successfully');
+
             } catch (error) {
                 console.error('Error creating chart:', error);
             }
@@ -4459,9 +4456,7 @@ class SRWM_Admin {
             });
             
             // Load approvals on page load
-            console.log('Page loaded, checking container...');
-            console.log('Container exists:', $('#srwm-approvals-container').length > 0);
-            console.log('Container HTML:', $('#srwm-approvals-container').html());
+
             
             loadApprovals();
             
@@ -7799,7 +7794,7 @@ class SRWM_Admin {
                             // Tab switching functionality
                 $('.srwm-tab-button').on('click', function() {
                     const tabId = $(this).data('tab');
-                    console.log('Tab clicked:', tabId);
+    
                     
                     // Remove active class from all tabs and buttons
                     $('.srwm-tab-button').removeClass('active');
@@ -7810,8 +7805,7 @@ class SRWM_Admin {
                     const targetTab = $('#' + tabId + '-tab');
                     targetTab.addClass('active');
                     
-                    console.log('Target tab found:', targetTab.length > 0);
-                    console.log('Target tab content:', targetTab.html().substring(0, 100) + '...');
+                    
                     
                     // Load content based on tab
                     if (tabId === 'quick-restock') {
@@ -7840,8 +7834,7 @@ class SRWM_Admin {
             }
             
             // Debug: Check if Quick Restock tab content exists
-            console.log('Quick Restock tab exists:', $('#quick-restock-tab').length > 0);
-            console.log('Quick Restock tab content length:', $('#quick-restock-tab').html().length);
+            
             
             // Search and filter functionality
             $('#supplier-search').on('input', debounce(loadSuppliers, 300));
@@ -7932,7 +7925,7 @@ class SRWM_Admin {
             $(document).on('click', '.srwm-pagination-btn, .srwm-page-number', function() {
                 const page = $(this).data('page');
                 if (page) {
-                    console.log('Pagination clicked, loading page:', page);
+    
                     
                     // Determine which pagination was clicked based on the active tab
                     const activeTab = $('.srwm-tab-button.active').attr('data-tab');
@@ -8299,7 +8292,7 @@ class SRWM_Admin {
                 const searchTerm = $('#upload-links-search').val();
                 const statusFilter = $('#upload-links-status-filter').val();
                 
-                console.log('Loading upload links with params:', { page, searchTerm, statusFilter });
+
                 
                 $.ajax({
                     url: ajaxurl,
@@ -8313,7 +8306,7 @@ class SRWM_Admin {
                         status: statusFilter
                     },
                     success: function(response) {
-                        console.log('Upload links AJAX response:', response);
+        
                         if (response.success) {
                             const data = response.data;
                             displayUploadLinks(data.links, data.pagination);
@@ -8464,9 +8457,7 @@ class SRWM_Admin {
             }
             
             function copyLinkToClipboard(token) {
-                console.log('Copy link clicked for token:', token);
                 const uploadUrl = '<?php echo site_url(); ?>/?srwm_csv_upload=1&token=' + token;
-                console.log('Generated URL:', uploadUrl);
                 
                 navigator.clipboard.writeText(uploadUrl).then(function() {
                     showNotification('Upload link copied to clipboard!', 'success');
@@ -8483,13 +8474,13 @@ class SRWM_Admin {
             }
             
             function viewLinkDetails(token) {
-                console.log('View details clicked for token:', token);
+
                 // TODO: Implement link details modal
                 showNotification('Link details feature coming soon!', 'info');
             }
             
             function deleteUploadLink(token) {
-                console.log('Delete link clicked for token:', token);
+
                 if (confirm('Are you sure you want to delete this upload link? This action cannot be undone.')) {
                     $.ajax({
                         url: ajaxurl,
