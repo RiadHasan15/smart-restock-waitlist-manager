@@ -722,7 +722,6 @@ class SRWM_Admin {
                         </div>
                     </div>
                     
-                    <?php if (!empty($waitlist_products)): ?>
                     <div class="srwm-table-container">
                         <table class="srwm-modern-table srwm-interactive-table" id="srwm-waitlist-table">
                             <thead>
