@@ -30,7 +30,7 @@
         initEventHandlers();
         initRealtimeUpdates();
         initTooltips();
-        initEnhancedUX();
+        // Enhanced UX features temporarily disabled to fix conflicts
     }
 
     /**
@@ -491,102 +491,7 @@
     window.srwm_init_charts = initCharts;
     window.srwm_init_realtime_updates = initRealtimeUpdates;
     
-    /**
-     * Initialize Enhanced UX Features
-     */
-    function initEnhancedUX() {
-        initTabSwitching();
-        initPeriodSelector();
-        initStatCardInteractions();
-        initFloatingActionButton();
-        initAutoRefresh();
-        initSmartNotifications();
-    }
-
-    /**
-     * Initialize tab switching
-     */
-    function initTabSwitching() {
-        $('.srwm-tab-button').on('click', function() {
-            const tab = $(this).data('tab');
-            switchTab(tab);
-        });
-    }
-
-    /**
-     * Switch between dashboard tabs
-     */
-    function switchTab(tabName) {
-        // Update tab buttons
-        $('.srwm-tab-button').removeClass('active');
-        $(`.srwm-tab-button[data-tab="${tabName}"]`).addClass('active');
-        
-        // Show/hide content sections
-        $('.srwm-tab-content').removeClass('active');
-        $(`.srwm-tab-content[data-tab="${tabName}"]`).addClass('active');
-        
-        // Load tab-specific data
-        loadTabData(tabName);
-    }
-
-    /**
-     * Load tab-specific data
-     */
-    function loadTabData(tabName) {
-        switch(tabName) {
-            case 'analytics':
-                loadChartData();
-                break;
-            case 'reports':
-                loadReportData();
-                break;
-            case 'actions':
-                loadActionData();
-                break;
-        }
-    }
-
-    /**
-     * Initialize period selector
-     */
-    function initPeriodSelector() {
-        $('#srwm-dashboard-period').on('change', function() {
-            const period = $(this).val();
-            updateDashboardPeriod(period);
-        });
-    }
-
-    /**
-     * Update dashboard period
-     */
-    function updateDashboardPeriod(period) {
-        // Show loading state
-        $('.srwm-dashboard-content').addClass('srwm-loading');
-        
-        // Update charts and data based on period
-        loadChartData(period);
-        
-        // Update URL parameter
-        const url = new URL(window.location);
-        url.searchParams.set('period', period);
-        window.history.replaceState({}, '', url);
-    }
-
-    /**
-     * Initialize stat card interactions
-     */
-    function initStatCardInteractions() {
-        $('.srwm-stat-card').on('click', function() {
-            showCardDetails($(this));
-        });
-    }
-
-    /**
-     * Show stat card details modal
-     */
-    function showCardDetails(card) {
-        const metric = card.data('metric') || 'Metric';
-        const value = card.find('.srwm-stat-number').text();
+    // Enhanced UX functions temporarily disabled to fix conflicts
         
         // Create and show modal
         const modal = $(`
@@ -623,164 +528,14 @@
         });
     }
 
-    /**
-     * Initialize floating action button
-     */
-    function initFloatingActionButton() {
-        const fab = $(`
-            <button class="srwm-fab" title="Quick Actions">
-                <span class="dashicons dashicons-plus"></span>
-            </button>
-        `);
-        
-        $('body').append(fab);
-        
-        fab.on('click', function() {
-            showQuickActionsMenu();
-        });
-    }
+    // Floating action button temporarily disabled
 
-    /**
-     * Show quick actions menu
-     */
-    function showQuickActionsMenu() {
-        const menu = $(`
-            <div class="srwm-quick-actions-menu">
-                <div class="srwm-quick-action-item" data-action="add-waitlist">
-                    <span class="dashicons dashicons-plus-alt"></span>
-                    <span>Add to Waitlist</span>
-                </div>
-                <div class="srwm-quick-action-item" data-action="export-data">
-                    <span class="dashicons dashicons-download"></span>
-                    <span>Export Data</span>
-                </div>
-                <div class="srwm-quick-action-item" data-action="refresh">
-                    <span class="dashicons dashicons-update"></span>
-                    <span>Refresh</span>
-                </div>
-            </div>
-        `);
-        
-        $('body').append(menu);
-        
-        // Handle action clicks
-        menu.find('.srwm-quick-action-item').on('click', function() {
-            const action = $(this).data('action');
-            handleQuickAction(action);
-            menu.remove();
-        });
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => menu.remove(), 5000);
-    }
+    // Quick actions menu temporarily disabled
 
-    /**
-     * Handle quick actions
-     */
-    function handleQuickAction(action) {
-        switch(action) {
-            case 'add-waitlist':
-                window.location.href = 'admin.php?page=smart-restock-waitlist-settings';
-                break;
-            case 'export-data':
-                $('#srwm-export-report').click();
-                break;
-            case 'refresh':
-                $('#srwm-refresh-dashboard').click();
-                break;
-        }
-    }
+    // Quick action handler temporarily disabled
 
-    /**
-     * Initialize auto-refresh
-     */
-    function initAutoRefresh() {
-        let refreshInterval;
-        
-        // Start auto-refresh every 30 seconds
-        function startAutoRefresh() {
-            refreshInterval = setInterval(() => {
-                refreshDashboardData();
-            }, 30000);
-        }
-        
-        // Stop auto-refresh
-        function stopAutoRefresh() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-        }
-        
-        // Start auto-refresh when page becomes visible
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                startAutoRefresh();
-            }
-        });
-        
-        // Start initially
-        startAutoRefresh();
-    }
+    // Auto-refresh temporarily disabled
 
-    /**
-     * Initialize smart notifications
-     */
-    function initSmartNotifications() {
-        // Check for important updates
-        setInterval(() => {
-            checkForUpdates();
-        }, 60000); // Check every minute
-    }
-
-    /**
-     * Check for updates
-     */
-    function checkForUpdates() {
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'srwm_check_updates',
-                nonce: srwm_dashboard_nonce
-            },
-            success: function(response) {
-                if (response.success && response.data.updates) {
-                    showSmartNotification(response.data.updates);
-                }
-            }
-        });
-    }
-
-    /**
-     * Show smart notification
-     */
-    function showSmartNotification(updates) {
-        const notification = $(`
-            <div class="srwm-smart-notification">
-                <div class="srwm-notification-icon">
-                    <span class="dashicons dashicons-bell"></span>
-                </div>
-                <div class="srwm-notification-content">
-                    <h4>New Updates</h4>
-                    <p>${updates.message}</p>
-                </div>
-                <button class="srwm-notification-close">&times;</button>
-            </div>
-        `);
-        
-        $('body').append(notification);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            notification.fadeOut(() => notification.remove());
-        }, 5000);
-        
-        // Manual close
-        notification.find('.srwm-notification-close').on('click', function() {
-            notification.remove();
-        });
-    }
+    // Smart notifications temporarily disabled
 
 })(jQuery);
