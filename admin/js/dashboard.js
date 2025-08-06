@@ -14,7 +14,6 @@
      * Initialize dashboard functionality
      */
     $(document).ready(function() {
-        console.log('Dashboard JS loaded, srwm_dashboard:', typeof srwm_dashboard !== 'undefined' ? 'defined' : 'undefined');
         initDashboard();
     });
 
@@ -22,15 +21,11 @@
      * Initialize dashboard
      */
     function initDashboard() {
-        console.log('Initializing dashboard...');
-        
         // Only initialize if we're on the dashboard page
         if (!$('.srwm-dashboard').length) {
-            console.log('Dashboard container not found');
             return;
         }
         
-        console.log('Dashboard container found, initializing components...');
         initCharts();
         initEventHandlers();
         initRealtimeUpdates();
@@ -41,19 +36,14 @@
      * Initialize charts
      */
     function initCharts() {
-        console.log('Initializing charts...');
-        console.log('Chart.js available:', typeof Chart !== 'undefined' ? 'yes' : 'no');
-        
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not loaded, cannot initialize charts');
             showMessage('error', 'Chart library not loaded. Please refresh the page.');
             return;
         }
         
         // Waitlist Growth Chart
         const waitlistCtx = document.getElementById('waitlistChart');
-        console.log('Waitlist chart canvas:', waitlistCtx ? 'found' : 'not found');
         if (waitlistCtx) {
             waitlistChart = new Chart(waitlistCtx, {
                 type: 'line',
@@ -96,7 +86,6 @@
 
         // Restock Activity Chart
         const restockCtx = document.getElementById('restockChart');
-        console.log('Restock chart canvas:', restockCtx ? 'found' : 'not found');
         if (restockCtx) {
             restockChart = new Chart(restockCtx, {
                 type: 'bar',
@@ -136,7 +125,6 @@
         }
 
         // Load initial chart data
-        console.log('Loading initial chart data...');
         loadChartData();
     }
 
@@ -146,53 +134,37 @@
     function loadChartData(days = 7) {
         // Check if srwm_dashboard is available
         if (typeof srwm_dashboard === 'undefined') {
-            console.error('srwm_dashboard variables not available');
             showMessage('error', 'Dashboard configuration not loaded');
             return $.Deferred().reject('srwm_dashboard not available');
         }
-        
-        console.log('Making AJAX request to:', srwm_dashboard.ajax_url);
-        console.log('Action:', 'srwm_get_dashboard_data');
-        console.log('Nonce:', srwm_dashboard.nonce);
         
         return $.ajax({
             url: srwm_dashboard.ajax_url,
             type: 'POST',
             timeout: 10000, // 10 second timeout
             data: {
-                action: 'srwm_get_dashboard_data', // Use real dashboard endpoint
+                action: 'srwm_get_dashboard_data',
                 nonce: srwm_dashboard.nonce,
                 days: days
             },
             success: function(response) {
-                console.log('AJAX success response received:', response);
-                
                 // Ensure response is an object
                 if (typeof response === 'string') {
                     try {
                         response = JSON.parse(response);
-                        console.log('Parsed response:', response);
                     } catch (e) {
-                        console.error('Failed to parse response:', e);
                         showMessage('error', 'Invalid response format');
                         return;
                     }
                 }
                 
                 if (response.success) {
-                    console.log('Updating charts with data:', response.data);
                     updateCharts(response.data);
                 } else {
-                    console.error('AJAX returned error:', response.message);
                     showMessage('error', response.message || 'Failed to load chart data');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Dashboard AJAX error:', {xhr, status, error});
-                console.error('Response text:', xhr.responseText);
-                console.error('Status:', status);
-                console.error('Error:', error);
-                
                 if (status === 'timeout') {
                     showMessage('error', 'Request timed out. Please try again.');
                 } else {
