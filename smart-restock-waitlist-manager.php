@@ -1623,7 +1623,7 @@ class SmartRestockWaitlistManager {
                 
                 // TODO: Implement actual WhatsApp API integration
                 // For now, just log that it would be sent
-                error_log("WhatsApp notification would be sent to {$supplier_email}: {$whatsapp_content}");
+                // WhatsApp notification would be sent here
             }
         }
         
@@ -1638,7 +1638,7 @@ class SmartRestockWaitlistManager {
                 
                 // TODO: Implement actual SMS API integration
                 // For now, just log that it would be sent
-                error_log("SMS notification would be sent to {$supplier_email}: {$sms_content}");
+                // SMS notification would be sent here
             }
         }
         
@@ -1764,7 +1764,7 @@ class SmartRestockWaitlistManager {
         
         // Check if table exists
         $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
-        error_log('CSV Approvals AJAX: Table exists = ' . ($table_exists ? 'yes' : 'no'));
+
         
         if (!$table_exists) {
             wp_die(json_encode(array('success' => false, 'message' => 'CSV approvals table does not exist')));
@@ -1788,11 +1788,7 @@ class SmartRestockWaitlistManager {
             ");
         }
         
-        error_log('CSV Approvals AJAX: Found ' . count($approvals) . ' approvals');
-        
 
-        
-        error_log('CSV Approvals AJAX: Response = ' . json_encode(array('success' => true, 'data' => $approvals)));
         
         wp_die(json_encode(array('success' => true, 'data' => $approvals)));
     }
@@ -1987,7 +1983,7 @@ class SmartRestockWaitlistManager {
             dbDelta($sql_approvals);
             
             // Log table creation for debugging
-            error_log('SRWM: CSV approvals table created successfully');
+    
         }
     }
     
