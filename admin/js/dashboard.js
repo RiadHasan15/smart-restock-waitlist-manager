@@ -311,6 +311,17 @@
             const statType = $(this).find('h3').text().toLowerCase();
             handleStatCardClick(statType);
         });
+        
+        // Demo button interactions
+        $(document).on('click', '.view-waitlist[data-product-id^="demo"]', function() {
+            const productId = $(this).data('product-id');
+            showMessage('info', 'Demo: View waitlist for ' + productId + ' (This would show actual waitlist data)');
+        });
+        
+        $(document).on('click', '.restock-product[data-product-id^="demo"]', function() {
+            const productId = $(this).data('product-id');
+            showMessage('info', 'Demo: Restock product ' + productId + ' (This would trigger restock process)');
+        });
 
         // Activity item interactions
         $(document).on('click', '.srwm-activity-item', function() {
@@ -882,10 +893,30 @@
      * Show message
      */
     function showMessage(type, message) {
-        const messageClass = type === 'success' ? 'notice-success' : 'notice-error';
+        let messageClass;
+        let icon;
+        
+        switch(type) {
+            case 'success':
+                messageClass = 'notice-success';
+                icon = 'dashicons-yes-alt';
+                break;
+            case 'error':
+                messageClass = 'notice-error';
+                icon = 'dashicons-dismiss';
+                break;
+            case 'info':
+                messageClass = 'notice-info';
+                icon = 'dashicons-info';
+                break;
+            default:
+                messageClass = 'notice-info';
+                icon = 'dashicons-info';
+        }
+        
         const notice = $(`
             <div class="notice ${messageClass} is-dismissible">
-                <p>${message}</p>
+                <p><span class="dashicons ${icon}"></span> ${message}</p>
             </div>
         `);
         
