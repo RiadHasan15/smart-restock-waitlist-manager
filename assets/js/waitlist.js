@@ -48,12 +48,10 @@ jQuery(document).ready(function($) {
                         response = JSON.parse(response);
                     }
                     
-                    console.log('AJAX Response:', response);
-                    
                     if (response.success) {
                         showSuccessMessage($message, response.message);
                         
-                        // Reload the entire waitlist section to ensure proper display
+                        // Use the reload approach to get the properly structured HTML
                         reloadWaitlistSection($form);
                         
                         animateSuccess($form);
@@ -61,7 +59,6 @@ jQuery(document).ready(function($) {
                         showErrorMessage($message, response.message);
                     }
                 } catch (e) {
-                    console.error('AJAX Error:', e);
                     showErrorMessage($message, 'An unexpected error occurred. Please try again.');
                 }
             },
@@ -294,9 +291,6 @@ jQuery(document).ready(function($) {
     function updateWaitlistDisplay($form, response) {
         const $container = $form.closest('.srwm-waitlist-container');
         
-        console.log('updateWaitlistDisplay called with response:', response);
-        console.log('Container found:', $container.length > 0);
-        
         // Hide form container
         $form.closest('.srwm-waitlist-form-container').fadeOut(300, function() {
             // Build success HTML with dynamic data
@@ -412,8 +406,6 @@ jQuery(document).ready(function($) {
         const $container = $form.closest('.srwm-waitlist-container');
         const productId = $form.find('input[name="product_id"]').val();
         
-        console.log('Reloading waitlist section for product:', productId);
-        
         // Show loading state
         $container.addClass('loading');
         
@@ -435,7 +427,6 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         // Replace the entire container content
                         $container.html(response.html);
-                        console.log('Waitlist section reloaded successfully');
                     } else {
                         console.error('Failed to reload waitlist section:', response.message);
                     }
