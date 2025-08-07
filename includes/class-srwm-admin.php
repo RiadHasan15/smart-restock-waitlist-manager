@@ -6248,6 +6248,7 @@ If you no longer wish to receive these emails, please contact us.';
             
             // Load products via AJAX
             function loadProducts() {
+                console.log('SRWM: Loading products...');
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
@@ -6256,18 +6257,24 @@ If you no longer wish to receive these emails, please contact us.';
                         nonce: '<?php echo wp_create_nonce('srwm_get_products_for_po'); ?>'
                     },
                     beforeSend: function() {
+                        console.log('SRWM: AJAX request started');
                         $('#po-products-grid').html('<div class="srwm-loading"><i class="fas fa-spinner fa-spin"></i> <?php _e('Loading products...', 'smart-restock-waitlist'); ?></div>');
                     },
                     success: function(response) {
+                        console.log('SRWM: AJAX response received:', response);
                         if (response.success) {
                             allProducts = response.data.products;
+                            console.log('SRWM: Products loaded:', allProducts.length);
                             renderProductsGrid();
                         } else {
-                            $('#po-products-grid').html('<div class="srwm-error"><?php _e('Failed to load products', 'smart-restock-waitlist'); ?></div>');
+                            console.log('SRWM: AJAX failed with message:', response.data);
+                            $('#po-products-grid').html('<div class="srwm-error"><?php _e('Failed to load products', 'smart-restock-waitlist'); ?>: ' + (response.data || 'Unknown error') + '</div>');
                         }
                     },
-                    error: function() {
-                        $('#po-products-grid').html('<div class="srwm-error"><?php _e('Error loading products', 'smart-restock-waitlist'); ?></div>');
+                    error: function(xhr, status, error) {
+                        console.log('SRWM: AJAX error:', status, error);
+                        console.log('SRWM: XHR response:', xhr.responseText);
+                        $('#po-products-grid').html('<div class="srwm-error"><?php _e('Error loading products', 'smart-restock-waitlist'); ?>: ' + error + '</div>');
                     }
                 });
             }
