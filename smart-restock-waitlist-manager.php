@@ -4605,6 +4605,13 @@ Best regards,
             wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
         }
         
+        // Check if updated_at column exists, if not add it
+        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $table LIKE 'updated_at'");
+        if (empty($column_exists)) {
+            error_log('SRWM: updated_at column does not exist, adding it');
+            $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+        }
+        
         $result = $wpdb->update(
             $table,
             array(
