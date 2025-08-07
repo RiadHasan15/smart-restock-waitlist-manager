@@ -4080,9 +4080,6 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
         }
         
-        // For now, we'll create a simple HTML file that can be printed as PDF
-        // In a full implementation, you'd use a PDF library like TCPDF or DOMPDF
-        
         $product = wc_get_product($po->product_id);
         $product_name = $product ? $product->get_name() : __('Product not found', 'smart-restock-waitlist');
         $product_sku = $product ? $product->get_sku() : '';
@@ -4093,7 +4090,7 @@ class SmartRestockWaitlistManager {
         ));
         $supplier_name = $supplier ? $supplier->supplier_name : __('Unknown Supplier', 'smart-restock-waitlist');
         
-        // Create a professional HTML file
+        // Create a print-optimized HTML file that opens in new window for PDF generation
         $html_content = '
         <!DOCTYPE html>
         <html>
@@ -4109,71 +4106,53 @@ class SmartRestockWaitlistManager {
                     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
                     line-height: 1.6; 
                     color: #1f2937; 
-                    background: #f8fafc;
-                    padding: 40px 20px;
+                    background: white;
+                    padding: 20px;
                 }
                 
                 .container {
                     max-width: 800px;
                     margin: 0 auto;
                     background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                    border: 2px solid #e5e7eb;
+                    border-radius: 8px;
                     overflow: hidden;
                 }
                 
                 .header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: #1f2937;
                     color: white;
-                    padding: 40px;
+                    padding: 30px;
                     text-align: center;
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .header::before {
-                    content: "";
-                    position: absolute;
-                    top: -50%;
-                    right: -50%;
-                    width: 200px;
-                    height: 200px;
-                    background: rgba(255, 255, 255, 0.1);
-                    border-radius: 50%;
-                }
-                
-                .header-content {
-                    position: relative;
-                    z-index: 1;
                 }
                 
                 .po-title {
-                    font-size: 14px;
+                    font-size: 12px;
                     font-weight: 500;
                     text-transform: uppercase;
                     letter-spacing: 2px;
                     opacity: 0.9;
-                    margin-bottom: 10px;
+                    margin-bottom: 8px;
                 }
                 
                 .po-number {
-                    font-size: 36px;
+                    font-size: 28px;
                     font-weight: 700;
-                    margin-bottom: 15px;
+                    margin-bottom: 10px;
                     letter-spacing: -1px;
                 }
                 
                 .po-date {
-                    font-size: 16px;
+                    font-size: 14px;
                     opacity: 0.9;
                 }
                 
                 .content {
-                    padding: 40px;
+                    padding: 30px;
                 }
                 
                 .section {
-                    margin-bottom: 40px;
+                    margin-bottom: 30px;
                 }
                 
                 .section:last-child {
@@ -4183,76 +4162,77 @@ class SmartRestockWaitlistManager {
                 .section-header {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    margin-bottom: 20px;
-                    padding-bottom: 12px;
+                    gap: 10px;
+                    margin-bottom: 15px;
+                    padding-bottom: 8px;
                     border-bottom: 2px solid #e5e7eb;
                 }
                 
                 .section-icon {
-                    width: 32px;
-                    height: 32px;
-                    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-                    border-radius: 8px;
+                    width: 24px;
+                    height: 24px;
+                    background: #3b82f6;
+                    border-radius: 4px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: white;
-                    font-size: 14px;
+                    font-size: 12px;
                 }
                 
                 .section-title {
-                    font-size: 18px;
+                    font-size: 16px;
                     font-weight: 600;
                     color: #1f2937;
                 }
                 
                 .info-grid {
-                    display: grid;
-                    gap: 16px;
+                    display: table;
+                    width: 100%;
+                    border-collapse: collapse;
                 }
                 
                 .info-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px;
-                    background: #f8fafc;
-                    border-radius: 8px;
-                    border: 1px solid #e5e7eb;
+                    display: table-row;
                 }
                 
                 .info-label {
-                    font-size: 13px;
+                    display: table-cell;
+                    font-size: 12px;
                     font-weight: 600;
                     color: #6b7280;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    padding: 8px 12px 8px 0;
+                    border-bottom: 1px solid #f3f4f6;
+                    width: 30%;
                 }
                 
                 .info-value {
+                    display: table-cell;
                     font-size: 14px;
                     font-weight: 500;
                     color: #1f2937;
-                    text-align: right;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f3f4f6;
                 }
                 
                 .quantity-badge {
-                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    background: #10b981;
                     color: white;
-                    padding: 6px 12px;
-                    border-radius: 20px;
+                    padding: 4px 8px;
+                    border-radius: 12px;
                     font-weight: 600;
-                    font-size: 13px;
+                    font-size: 12px;
                 }
                 
                 .status-badge {
                     display: inline-flex;
                     align-items: center;
-                    gap: 6px;
-                    padding: 6px 12px;
-                    border-radius: 20px;
-                    font-size: 12px;
+                    gap: 4px;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
                     font-weight: 600;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
@@ -4279,9 +4259,9 @@ class SmartRestockWaitlistManager {
                 }
                 
                 .urgency-badge {
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 12px;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
                     font-weight: 600;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
@@ -4305,39 +4285,58 @@ class SmartRestockWaitlistManager {
                 .notes-section {
                     background: #f8fafc;
                     border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    padding: 20px;
+                    border-radius: 6px;
+                    padding: 15px;
                 }
                 
                 .notes-content {
-                    font-size: 14px;
-                    line-height: 1.6;
+                    font-size: 13px;
+                    line-height: 1.5;
                     color: #374151;
                 }
                 
                 .footer {
                     background: #f8fafc;
-                    padding: 20px 40px;
+                    padding: 15px 30px;
                     text-align: center;
                     border-top: 1px solid #e5e7eb;
-                    font-size: 12px;
+                    font-size: 11px;
                     color: #6b7280;
                 }
                 
+                .print-button {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    z-index: 1000;
+                }
+                
+                .print-button:hover {
+                    background: #2563eb;
+                }
+                
                 @media print {
-                    body { background: white; padding: 0; }
-                    .container { box-shadow: none; border-radius: 0; }
+                    .print-button { display: none; }
+                    body { padding: 0; }
+                    .container { border: none; }
                 }
             </style>
         </head>
         <body>
+            <button class="print-button" onclick="window.print()">🖨️ Print/Save as PDF</button>
+            
             <div class="container">
                 <div class="header">
-                    <div class="header-content">
-                        <div class="po-title">Purchase Order</div>
-                        <div class="po-number">' . esc_html($po->po_number) . '</div>
-                        <div class="po-date">' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
-                    </div>
+                    <div class="po-title">Purchase Order</div>
+                    <div class="po-number">' . esc_html($po->po_number) . '</div>
+                    <div class="po-date">' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
                 </div>
                 
                 <div class="content">
@@ -4404,7 +4403,7 @@ class SmartRestockWaitlistManager {
                                 <div class="info-label">Order Status</div>
                                 <div class="info-value">
                                     <span class="status-badge status-' . esc_attr($po->status) . '">
-                                        <span style="width: 8px; height: 8px; background: currentColor; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
+                                        <span style="width: 6px; height: 6px; background: currentColor; border-radius: 50%; display: inline-block; margin-right: 4px;"></span>
                                         ' . esc_html(ucfirst($po->status)) . '
                                     </span>
                                 </div>
@@ -4443,7 +4442,8 @@ class SmartRestockWaitlistManager {
         
         wp_send_json_success(array(
             'download_url' => $file_url,
-            'filename' => $filename
+            'filename' => $filename,
+            'po_number' => $po->po_number
         ));
     }
     
