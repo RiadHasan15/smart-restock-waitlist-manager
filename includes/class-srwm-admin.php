@@ -2496,6 +2496,107 @@ class SRWM_Admin {
             font-size: 18px;
         }
         
+        /* Additional PO Modal Styles */
+        .srwm-waitlist-info {
+            font-size: 11px;
+            color: #dc2626;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        
+        .srwm-no-products {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .srwm-error {
+            text-align: center;
+            padding: 40px;
+            color: #dc2626;
+            font-size: 14px;
+        }
+        
+        .srwm-pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+        
+        .srwm-pagination-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .srwm-pagination-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+        
+        .srwm-pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .srwm-pagination-dots {
+            padding: 8px 4px;
+            color: #6b7280;
+        }
+        
+        .srwm-review-section {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .srwm-review-section h4 {
+            margin: 0 0 16px 0;
+            color: #111827;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .srwm-review-products {
+            margin-bottom: 20px;
+        }
+        
+        .srwm-review-product {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #fff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-review-product-name {
+            font-weight: 500;
+            color: #111827;
+        }
+        
+        .srwm-review-product-quantity {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+        
+        .srwm-review-supplier p {
+            margin: 8px 0;
+            color: #374151;
+        }
+        
+        .srwm-quantity-input input.error {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
@@ -5339,7 +5440,58 @@ If you no longer wish to receive these emails, please contact us.';
             $product_obj->sku = $product->get_sku();
             $product_obj->stock_quantity = $product->get_stock_quantity();
             $product_obj->threshold = get_post_meta($product->get_id(), '_srwm_threshold', true) ?: get_option('srwm_global_threshold', 5);
+            $product_obj->category = $this->get_product_category($product->get_id());
+            $product_obj->waitlist_count = $this->get_waitlist_count($product->get_id());
             $results[] = $product_obj;
+        }
+        
+        return $results;
+    }
+    
+    /**
+     * Get product category
+     */
+    private function get_product_category($product_id) {
+        $terms = get_the_terms($product_id, 'product_cat');
+        if ($terms && !is_wp_error($terms)) {
+            return $terms[0]->name;
+        }
+        return '';
+    }
+    
+    /**
+     * Get waitlist count for product
+     */
+    private function get_waitlist_count($product_id) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE product_id = %d",
+            $product_id
+        )) ?: 0;
+    }
+    
+    /**
+     * Get product categories for filter
+     */
+    private function get_product_categories() {
+        $categories = get_terms(array(
+            'taxonomy' => 'product_cat',
+            'hide_empty' => true,
+        ));
+        
+        $results = array();
+        if ($categories && !is_wp_error($categories)) {
+            foreach ($categories as $category) {
+                $results[] = $category->name;
+            }
         }
         
         return $results;
@@ -5905,6 +6057,16 @@ If you no longer wish to receive these emails, please contact us.';
                                 <div class="srwm-filter-group">
                                     <select id="po-category-filter" class="srwm-select">
                                         <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
+                                        <?php 
+                                        $categories = $this->get_product_categories();
+                                        if ($categories) {
+                                            foreach ($categories as $category): 
+                                        ?>
+                                            <option value="<?php echo esc_attr($category); ?>"><?php echo esc_html($category); ?></option>
+                                        <?php 
+                                            endforeach;
+                                        }
+                                        ?>
                                     </select>
                                     <select id="po-stock-filter" class="srwm-select">
                                         <option value=""><?php _e('All Stock Levels', 'smart-restock-waitlist'); ?></option>
@@ -6029,7 +6191,7 @@ If you no longer wish to receive these emails, please contact us.';
                             <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>
                         </button>
                     </div>
-                    <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
+                    <button type="button" class="srwm-btn srwm-btn-secondary srwm-modal-close">
                         <?php _e('Cancel', 'smart-restock-waitlist'); ?>
                     </button>
                 </div>
@@ -6064,6 +6226,13 @@ If you no longer wish to receive these emails, please contact us.';
         
         <script>
         jQuery(document).ready(function($) {
+            // Global variables
+            var currentStep = 1;
+            var selectedProducts = [];
+            var allProducts = [];
+            var currentPage = 1;
+            var productsPerPage = 12;
+            
             // Ensure modals are hidden on page load
             $('#srwm-po-modal, #srwm-po-details-modal').hide();
             
@@ -6083,41 +6252,357 @@ If you no longer wish to receive these emails, please contact us.';
             // PO Generation Modal
             $('#srwm-generate-po, #srwm-generate-first-po, #srwm-quick-generate-po').on('click', function() {
                 $('#srwm-po-modal').show().addClass('srwm-modal-active');
+                loadProducts(); // Load products when modal opens
             });
             
             // Close modal
             $('.srwm-modal-close, .srwm-modal').on('click', function(e) {
                 if (e.target === this) {
                     $(this).closest('.srwm-modal').hide().removeClass('srwm-modal-active');
+                    resetModal(); // Reset modal state
                 }
             });
             
-            // Auto-calculate suggested quantity
-            $('#po-product').on('change', function() {
-                var selectedOption = $(this).find('option:selected');
-                var stock = parseInt(selectedOption.data('stock')) || 0;
-                var threshold = parseInt(selectedOption.data('threshold')) || 5;
-                var waitlistCount = 0; // This would be loaded via AJAX
+            // Load products via AJAX
+            function loadProducts() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_products_for_po',
+                        nonce: '<?php echo wp_create_nonce('srwm_get_products_for_po'); ?>'
+                    },
+                    beforeSend: function() {
+                        $('#po-products-grid').html('<div class="srwm-loading"><i class="fas fa-spinner fa-spin"></i> <?php _e('Loading products...', 'smart-restock-waitlist'); ?></div>');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            allProducts = response.data.products;
+                            renderProductsGrid();
+                        } else {
+                            $('#po-products-grid').html('<div class="srwm-error"><?php _e('Failed to load products', 'smart-restock-waitlist'); ?></div>');
+                        }
+                    },
+                    error: function() {
+                        $('#po-products-grid').html('<div class="srwm-error"><?php _e('Error loading products', 'smart-restock-waitlist'); ?></div>');
+                    }
+                });
+            }
+            
+            // Render products grid
+            function renderProductsGrid() {
+                var filteredProducts = filterProducts(allProducts);
+                var startIndex = (currentPage - 1) * productsPerPage;
+                var endIndex = startIndex + productsPerPage;
+                var pageProducts = filteredProducts.slice(startIndex, endIndex);
                 
-                // Calculate suggested quantity
-                var suggestedQuantity = Math.max(10, (threshold - stock) * 2 + waitlistCount);
-                $('#po-quantity').val(suggestedQuantity);
+                var html = '';
+                if (pageProducts.length === 0) {
+                    html = '<div class="srwm-no-products"><?php _e('No products found matching your criteria', 'smart-restock-waitlist'); ?></div>';
+                } else {
+                    pageProducts.forEach(function(product) {
+                        var isSelected = selectedProducts.some(function(p) { return p.id === product.id; });
+                        var stockStatus = getStockStatus(product.stock_quantity, product.threshold);
+                        
+                        html += '<div class="srwm-product-card ' + (isSelected ? 'selected' : '') + '" data-product-id="' + product.id + '">';
+                        html += '<input type="checkbox" ' + (isSelected ? 'checked' : '') + '>';
+                        html += '<div class="srwm-product-info">';
+                        html += '<div class="srwm-product-name">' + product.name + '</div>';
+                        html += '<div class="srwm-product-sku">SKU: ' + product.sku + '</div>';
+                        html += '<div class="srwm-product-meta">';
+                        html += '<span>Stock: ' + product.stock_quantity + '</span>';
+                        html += '<span class="srwm-stock-status ' + stockStatus.class + '">' + stockStatus.text + '</span>';
+                        html += '</div>';
+                        if (product.waitlist_count > 0) {
+                            html += '<div class="srwm-waitlist-info">Waitlist: ' + product.waitlist_count + '</div>';
+                        }
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                }
+                
+                $('#po-products-grid').html(html);
+                renderPagination(filteredProducts.length);
+            }
+            
+            // Filter products
+            function filterProducts(products) {
+                var searchTerm = $('#po-product-search').val().toLowerCase();
+                var categoryFilter = $('#po-category-filter').val();
+                var stockFilter = $('#po-stock-filter').val();
+                
+                return products.filter(function(product) {
+                    var matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                       product.sku.toLowerCase().includes(searchTerm);
+                    var matchesCategory = !categoryFilter || product.category === categoryFilter;
+                    var matchesStock = !stockFilter || matchesStockFilter(product, stockFilter);
+                    
+                    return matchesSearch && matchesCategory && matchesStock;
+                });
+            }
+            
+            // Check if product matches stock filter
+            function matchesStockFilter(product, filter) {
+                switch(filter) {
+                    case 'low':
+                        return product.stock_quantity <= product.threshold && product.stock_quantity > 0;
+                    case 'out':
+                        return product.stock_quantity <= 0;
+                    case 'waitlist':
+                        return product.waitlist_count > 0;
+                    default:
+                        return true;
+                }
+            }
+            
+            // Get stock status
+            function getStockStatus(stock, threshold) {
+                if (stock <= 0) {
+                    return { class: 'srwm-stock-out', text: 'Out of Stock' };
+                } else if (stock <= threshold) {
+                    return { class: 'srwm-stock-low', text: 'Low Stock' };
+                } else {
+                    return { class: 'srwm-stock-ok', text: 'In Stock' };
+                }
+            }
+            
+            // Render pagination
+            function renderPagination(totalProducts) {
+                var totalPages = Math.ceil(totalProducts / productsPerPage);
+                var html = '';
+                
+                if (totalPages > 1) {
+                    html += '<button class="srwm-pagination-btn" ' + (currentPage === 1 ? 'disabled' : '') + ' data-page="' + (currentPage - 1) + '">Previous</button>';
+                    
+                    for (var i = 1; i <= totalPages; i++) {
+                        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                            html += '<button class="srwm-pagination-btn ' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
+                        } else if (i === currentPage - 3 || i === currentPage + 3) {
+                            html += '<span class="srwm-pagination-dots">...</span>';
+                        }
+                    }
+                    
+                    html += '<button class="srwm-pagination-btn" ' + (currentPage === totalPages ? 'disabled' : '') + ' data-page="' + (currentPage + 1) + '">Next</button>';
+                }
+                
+                $('#po-products-pagination').html(html);
+            }
+            
+            // Product selection
+            $(document).on('change', '.srwm-product-card input[type="checkbox"]', function() {
+                var productId = parseInt($(this).closest('.srwm-product-card').data('product-id'));
+                var product = allProducts.find(function(p) { return p.id === productId; });
+                
+                if ($(this).is(':checked')) {
+                    if (!selectedProducts.some(function(p) { return p.id === productId; })) {
+                        selectedProducts.push(product);
+                    }
+                    $(this).closest('.srwm-product-card').addClass('selected');
+                } else {
+                    selectedProducts = selectedProducts.filter(function(p) { return p.id !== productId; });
+                    $(this).closest('.srwm-product-card').removeClass('selected');
+                }
+                
+                updateStepButtons();
             });
+            
+            // Bulk actions
+            $('#po-select-all').on('click', function() {
+                var visibleProducts = $('#po-products-grid .srwm-product-card:visible');
+                visibleProducts.find('input[type="checkbox"]').prop('checked', true).trigger('change');
+            });
+            
+            $('#po-clear-selection').on('click', function() {
+                $('.srwm-product-card input[type="checkbox"]').prop('checked', false).trigger('change');
+            });
+            
+            // Search and filters
+            $('#po-product-search, #po-category-filter, #po-stock-filter').on('input change', function() {
+                currentPage = 1;
+                renderProductsGrid();
+            });
+            
+            // Pagination
+            $(document).on('click', '.srwm-pagination-btn', function() {
+                if (!$(this).prop('disabled')) {
+                    currentPage = parseInt($(this).data('page'));
+                    renderProductsGrid();
+                }
+            });
+            
+            // Step navigation
+            $('#srwm-po-next-step').on('click', function() {
+                if (canProceedToNextStep()) {
+                    currentStep++;
+                    updateStepDisplay();
+                }
+            });
+            
+            $('#srwm-po-prev-step').on('click', function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateStepDisplay();
+                }
+            });
+            
+            // Check if can proceed to next step
+            function canProceedToNextStep() {
+                switch(currentStep) {
+                    case 1:
+                        return selectedProducts.length > 0;
+                    case 2:
+                        return validateQuantities();
+                    case 3:
+                        return validateSupplierForm();
+                    default:
+                        return true;
+                }
+            }
+            
+            // Validate quantities
+            function validateQuantities() {
+                var valid = true;
+                $('.srwm-quantity-input input').each(function() {
+                    var quantity = parseInt($(this).val());
+                    if (isNaN(quantity) || quantity <= 0) {
+                        valid = false;
+                        $(this).addClass('error');
+                    } else {
+                        $(this).removeClass('error');
+                    }
+                });
+                return valid;
+            }
+            
+            // Validate supplier form
+            function validateSupplierForm() {
+                return $('#po-supplier').val() !== '';
+            }
+            
+            // Update step display
+            function updateStepDisplay() {
+                // Update step indicators
+                $('.srwm-step').removeClass('active completed');
+                for (var i = 1; i <= 4; i++) {
+                    if (i < currentStep) {
+                        $('.srwm-step[data-step="' + i + '"]').addClass('completed');
+                    } else if (i === currentStep) {
+                        $('.srwm-step[data-step="' + i + '"]').addClass('active');
+                    }
+                }
+                
+                // Show/hide step content
+                $('.srwm-po-step-content').removeClass('active');
+                $('.srwm-po-step-content[data-step="' + currentStep + '"]').addClass('active');
+                
+                // Update buttons
+                updateStepButtons();
+                
+                // Load step-specific content
+                loadStepContent();
+            }
+            
+            // Update step buttons
+            function updateStepButtons() {
+                $('#srwm-po-prev-step').toggle(currentStep > 1);
+                $('#srwm-po-next-step').toggle(currentStep < 4);
+                $('#srwm-generate-po-submit').toggle(currentStep === 4);
+                
+                // Update next button text
+                if (currentStep === 1) {
+                    $('#srwm-po-next-step').text('<?php _e('Next', 'smart-restock-waitlist'); ?> (' + selectedProducts.length + ' selected)');
+                } else {
+                    $('#srwm-po-next-step').text('<?php _e('Next', 'smart-restock-waitlist'); ?>');
+                }
+            }
+            
+            // Load step-specific content
+            function loadStepContent() {
+                switch(currentStep) {
+                    case 2:
+                        renderSelectedProducts();
+                        break;
+                    case 4:
+                        renderReviewContent();
+                        break;
+                }
+            }
+            
+            // Render selected products for quantity setting
+            function renderSelectedProducts() {
+                var html = '';
+                selectedProducts.forEach(function(product) {
+                    var suggestedQuantity = Math.max(10, (product.threshold - product.stock_quantity) * 2 + product.waitlist_count);
+                    
+                    html += '<div class="srwm-selected-product" data-product-id="' + product.id + '">';
+                    html += '<div class="srwm-selected-product-info">';
+                    html += '<div class="srwm-selected-product-name">' + product.name + '</div>';
+                    html += '<div class="srwm-selected-product-sku">SKU: ' + product.sku + '</div>';
+                    html += '<div class="srwm-suggested-quantity">Suggested: ' + suggestedQuantity + ' (based on stock: ' + product.stock_quantity + ', threshold: ' + product.threshold + ', waitlist: ' + product.waitlist_count + ')</div>';
+                    html += '</div>';
+                    html += '<div class="srwm-quantity-input">';
+                    html += '<label>Quantity:</label>';
+                    html += '<input type="number" min="1" value="' + suggestedQuantity + '" data-product-id="' + product.id + '">';
+                    html += '</div>';
+                    html += '</div>';
+                });
+                
+                $('#po-selected-products').html(html);
+            }
+            
+            // Render review content
+            function renderReviewContent() {
+                var html = '<div class="srwm-review-section">';
+                html += '<h4><?php _e('Selected Products', 'smart-restock-waitlist'); ?></h4>';
+                html += '<div class="srwm-review-products">';
+                
+                selectedProducts.forEach(function(product) {
+                    var quantity = $('input[data-product-id="' + product.id + '"]').val();
+                    html += '<div class="srwm-review-product">';
+                    html += '<span class="srwm-review-product-name">' + product.name + '</span>';
+                    html += '<span class="srwm-review-product-quantity">Qty: ' + quantity + '</span>';
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+                html += '<h4><?php _e('Supplier Details', 'smart-restock-waitlist'); ?></h4>';
+                html += '<div class="srwm-review-supplier">';
+                html += '<p><strong><?php _e('Supplier:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-supplier option:selected').text() + '</p>';
+                html += '<p><strong><?php _e('Delivery Date:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-delivery-date').val() + '</p>';
+                if ($('#po-notes').val()) {
+                    html += '<p><strong><?php _e('Notes:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-notes').val() + '</p>';
+                }
+                html += '</div>';
+                html += '</div>';
+                
+                $('#po-review-content').html(html);
+            }
             
             // Generate PO
             $('#srwm-generate-po-submit').on('click', function() {
-                var formData = $('#srwm-po-form').serialize();
+                var formData = {
+                    products: selectedProducts.map(function(product) {
+                        return {
+                            id: product.id,
+                            quantity: parseInt($('input[data-product-id="' + product.id + '"]').val())
+                        };
+                    }),
+                    supplier_id: $('#po-supplier').val(),
+                    delivery_date: $('#po-delivery-date').val(),
+                    notes: $('#po-notes').val(),
+                    send_notification: $('#po-send-notification').is(':checked')
+                };
                 
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     data: {
                         action: 'srwm_generate_po',
-                        form_data: formData,
+                        form_data: JSON.stringify(formData),
                         nonce: '<?php echo wp_create_nonce('srwm_generate_po'); ?>'
                     },
                     beforeSend: function() {
-                        $('#srwm-generate-po-submit').prop('disabled', true).text('<?php _e('Generating...', 'smart-restock-waitlist'); ?>');
+                        $('#srwm-generate-po-submit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Generating...', 'smart-restock-waitlist'); ?>');
                     },
                     success: function(response) {
                         if (response.success) {
@@ -6131,12 +6616,21 @@ If you no longer wish to receive these emails, please contact us.';
                         alert('<?php _e('An error occurred while generating the purchase order', 'smart-restock-waitlist'); ?>');
                     },
                     complete: function() {
-                        $('#srwm-generate-po-submit').prop('disabled', false).html('<span class="dashicons dashicons-plus"></span><?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>');
+                        $('#srwm-generate-po-submit').prop('disabled', false).html('<i class="fas fa-check"></i> <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>');
                     }
                 });
             });
             
-            // Enhanced Search functionality
+            // Reset modal
+            function resetModal() {
+                currentStep = 1;
+                selectedProducts = [];
+                currentPage = 1;
+                updateStepDisplay();
+                $('#po-products-grid').html('<div class="srwm-loading"><i class="fas fa-spinner fa-spin"></i> <?php _e('Loading products...', 'smart-restock-waitlist'); ?></div>');
+            }
+            
+            // Enhanced Search functionality for PO table
             $('#po-search').on('input', function() {
                 var searchTerm = $(this).val().toLowerCase();
                 $('.srwm-data-table tbody tr').each(function() {
@@ -6145,7 +6639,7 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
-            // Enhanced Status filter
+            // Enhanced Status filter for PO table
             $('#po-status-filter').on('change', function() {
                 var status = $(this).val().toLowerCase();
                 $('.srwm-data-table tbody tr').each(function() {
@@ -6158,7 +6652,7 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
-            // Sort functionality
+            // Sort functionality for PO table
             $('#po-sort-filter').on('change', function() {
                 var sortBy = $(this).val();
                 var tbody = $('.srwm-data-table tbody');
