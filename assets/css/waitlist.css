@@ -351,6 +351,17 @@
     /* Background and border will be set dynamically */
 }
 
+/* Ensure hidden elements don't take up space */
+.srwm-waitlist-form-container:not(:visible),
+.srwm-waitlist-form-container[style*="display: none"],
+.srwm-waitlist-form-container[style*="display:none"] {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
 .srwm-waitlist-form-container::before {
     content: '';
     position: absolute;

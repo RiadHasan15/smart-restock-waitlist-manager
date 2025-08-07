@@ -287,8 +287,11 @@ jQuery(document).ready(function($) {
     
     /**
      * Update waitlist display after successful submission
+     * This function is deprecated - using reloadWaitlistSection instead
      */
     function updateWaitlistDisplay($form, response) {
+        // This function is no longer used - the reloadWaitlistSection approach is used instead
+        return;
         const $container = $form.closest('.srwm-waitlist-container');
         
         // Hide form container
@@ -427,6 +430,12 @@ jQuery(document).ready(function($) {
                     if (response.success) {
                         // Replace the entire container content
                         $container.html(response.html);
+                        
+                        // Re-initialize visual effects after content replacement
+                        setTimeout(function() {
+                            animateCountNumbers();
+                            initProgressBars();
+                        }, 100);
                     } else {
                         console.error('Failed to reload waitlist section:', response.message);
                     }
