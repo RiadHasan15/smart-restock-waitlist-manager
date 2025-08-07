@@ -1019,6 +1019,9 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_generate_bulk_quick_restock_links', array($this, 'ajax_generate_bulk_quick_restock_links'));
         add_action('wp_ajax_srwm_get_quick_restock_links', array($this, 'ajax_get_quick_restock_links'));
         add_action('wp_ajax_srwm_delete_quick_restock_link', array($this, 'ajax_delete_quick_restock_link'));
+        
+        // Purchase Order AJAX handlers
+        add_action('wp_ajax_srwm_get_products_for_po', array($this, 'ajax_get_products_for_po'));
     }
     
     /**
@@ -3091,6 +3094,72 @@ class SmartRestockWaitlistManager {
         }
         
         wp_send_json_success(__('Upload link deleted successfully!', 'smart-restock-waitlist'));
+    }
+    
+    /**
+     * AJAX: Get products for purchase order
+     */
+    public function ajax_get_products_for_po() {
+        check_ajax_referer('srwm_get_products_for_po', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
+        }
+        
+        $products = wc_get_products(array(
+            'limit' => -1,
+            'status' => 'publish'
+        ));
+        
+        $results = array();
+        foreach ($products as $product) {
+            $product_obj = new stdClass();
+            $product_obj->id = $product->get_id();
+            $product_obj->name = $product->get_name();
+            $product_obj->sku = $product->get_sku();
+            $product_obj->stock_quantity = $product->get_stock_quantity();
+            $product_obj->threshold = get_post_meta($product->get_id(), '_srwm_threshold', true) ?: get_option('srwm_global_threshold', 5);
+            $product_obj->category = $this->get_product_category_for_po($product->get_id());
+            $product_obj->waitlist_count = $this->get_waitlist_count_for_po($product->get_id());
+            $results[] = $product_obj;
+        }
+        
+        wp_die(json_encode(array(
+            'success' => true,
+            'data' => array(
+                'products' => $results
+            )
+        )));
+    }
+    
+    /**
+     * Get product category for PO
+     */
+    private function get_product_category_for_po($product_id) {
+        $terms = get_the_terms($product_id, 'product_cat');
+        if ($terms && !is_wp_error($terms)) {
+            return $terms[0]->name;
+        }
+        return '';
+    }
+    
+    /**
+     * Get waitlist count for PO
+     */
+    private function get_waitlist_count_for_po($product_id) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_waitlist';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE product_id = %d",
+            $product_id
+        )) ?: 0;
     }
     
     /**
