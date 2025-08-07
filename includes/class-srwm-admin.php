@@ -4208,7 +4208,17 @@ class SRWM_Admin {
             width: 100%;
             border-collapse: collapse;
             background: transparent;
+            table-layout: fixed;
         }
+        
+        /* Column widths for PO table */
+        .srwm-modern-table th:nth-child(1) { width: 15%; } /* PO Number */
+        .srwm-modern-table th:nth-child(2) { width: 20%; } /* Product */
+        .srwm-modern-table th:nth-child(3) { width: 20%; } /* Supplier */
+        .srwm-modern-table th:nth-child(4) { width: 10%; } /* Quantity */
+        .srwm-modern-table th:nth-child(5) { width: 15%; } /* Status */
+        .srwm-modern-table th:nth-child(6) { width: 12%; } /* Date Created */
+        .srwm-modern-table th:nth-child(7) { width: 8%; }  /* Actions */
         
         .srwm-modern-table th {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -4231,6 +4241,166 @@ class SRWM_Admin {
         .srwm-modern-table tr:hover {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.02), rgba(124, 58, 237, 0.02));
             transform: scale(1.001);
+        }
+        
+        /* Purchase Order Table Specific Styles */
+        .srwm-modern-table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+            font-size: 13px;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+        }
+        
+        .srwm-modern-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        /* PO Number styling */
+        .srwm-po-number strong {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        /* Product info styling */
+        .srwm-product-info .srwm-product-name {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-product-info .srwm-product-sku {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Supplier info styling */
+        .srwm-supplier-info .srwm-supplier-name {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-supplier-info .srwm-supplier-email {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Quantity badge styling */
+        .srwm-quantity-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        /* Status select styling */
+        .srwm-status-select {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .srwm-status-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Date info styling */
+        .srwm-date-info .srwm-date {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .srwm-date-info .srwm-time {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Action buttons styling */
+        .srwm-action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+        
+        .srwm-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            min-width: 32px;
+            height: 32px;
+        }
+        
+        .srwm-btn-small {
+            padding: 4px 8px;
+            font-size: 11px;
+            min-width: 28px;
+            height: 28px;
+        }
+        
+        .srwm-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .srwm-btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .srwm-btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .srwm-btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .srwm-btn i {
+            font-size: 12px;
+        }
+        
+        .srwm-btn-small i {
+            font-size: 10px;
         }
         
         .srwm-product-info strong {
@@ -6906,7 +7076,7 @@ If you no longer wish to receive these emails, please contact us.';
                             </div>
                             
                             <div class="srwm-table-container">
-                                <table class="srwm-data-table">
+                                <table class="srwm-modern-table">
                                     <thead>
                                         <tr>
                                             <th><?php _e('PO Number', 'smart-restock-waitlist'); ?></th>
