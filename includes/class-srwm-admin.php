@@ -4216,9 +4216,9 @@ class SRWM_Admin {
         .srwm-modern-table th:nth-child(2) { width: 20%; } /* Product */
         .srwm-modern-table th:nth-child(3) { width: 20%; } /* Supplier */
         .srwm-modern-table th:nth-child(4) { width: 10%; } /* Quantity */
-        .srwm-modern-table th:nth-child(5) { width: 15%; } /* Status */
-        .srwm-modern-table th:nth-child(6) { width: 12%; } /* Date Created */
-        .srwm-modern-table th:nth-child(7) { width: 8%; }  /* Actions */
+        .srwm-modern-table th:nth-child(5) { width: 10%; } /* Date Created */
+        .srwm-modern-table th:nth-child(6) { width: 15%; } /* Status */
+        .srwm-modern-table th:nth-child(7) { width: 10%; } /* Actions */
         
         .srwm-modern-table th {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -7158,8 +7158,8 @@ If you no longer wish to receive these emails, please contact us.';
                                             <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
                                             <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
                                             <th><?php _e('Quantity', 'smart-restock-waitlist'); ?></th>
-                                            <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
                                             <th><?php _e('Date Created', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
                                             <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
                                         </tr>
                                     </thead>
@@ -7191,18 +7191,18 @@ If you no longer wish to receive these emails, please contact us.';
                                                     <span class="srwm-quantity-badge"><?php echo esc_html($po->quantity); ?></span>
                                                 </td>
                                                 <td>
+                                                    <div class="srwm-date-info">
+                                                        <div class="srwm-date"><?php echo esc_html(date('M j, Y', strtotime($po->created_at))); ?></div>
+                                                        <div class="srwm-time"><?php echo esc_html(date('g:i A', strtotime($po->created_at))); ?></div>
+                                                    </div>
+                                                </td>
+                                                <td>
                                                     <select class="srwm-status-select update-po-status" data-po-id="<?php echo $po->id; ?>" data-original-value="<?php echo esc_attr($po->display_status); ?>">
                                                         <option value="pending" <?php selected($po->display_status, 'pending'); ?>><?php _e('⏳ Pending', 'smart-restock-waitlist'); ?></option>
                                                         <option value="confirmed" <?php selected($po->display_status, 'confirmed'); ?>><?php _e('✅ Confirmed', 'smart-restock-waitlist'); ?></option>
                                                         <option value="shipped" <?php selected($po->display_status, 'shipped'); ?>><?php _e('🚚 Shipped', 'smart-restock-waitlist'); ?></option>
                                                         <option value="completed" <?php selected($po->display_status, 'completed'); ?>><?php _e('🎉 Completed', 'smart-restock-waitlist'); ?></option>
                                                     </select>
-                                                </td>
-                                                <td>
-                                                    <div class="srwm-date-info">
-                                                        <div class="srwm-date"><?php echo esc_html(date('M j, Y', strtotime($po->created_at))); ?></div>
-                                                        <div class="srwm-time"><?php echo esc_html(date('g:i A', strtotime($po->created_at))); ?></div>
-                                                    </div>
                                                 </td>
                                                 <td>
                                                     <div class="srwm-action-buttons">
@@ -8406,7 +8406,15 @@ If you no longer wish to receive these emails, please contact us.';
             $('.update-po-status').on('change', function() {
                 var poId = $(this).data('po-id');
                 var newStatus = $(this).val();
+                var originalStatus = $(this).data('original-value');
                 var select = $(this);
+                
+                // Show confirmation dialog
+                if (!confirm('<?php _e('Are you sure you want to change the status from', 'smart-restock-waitlist'); ?> "' + originalStatus + '" <?php _e('to', 'smart-restock-waitlist'); ?> "' + newStatus + '"?\n\n<?php _e('This action cannot be undone.', 'smart-restock-waitlist'); ?>')) {
+                    // Revert to original value if user cancels
+                    select.val(originalStatus);
+                    return;
+                }
                 
                 // Add loading state
                 select.prop('disabled', true);
@@ -8424,6 +8432,8 @@ If you no longer wish to receive these emails, please contact us.';
                         console.log('SRWM: Status update response:', response);
                         if (response.success) {
                             showNotification('<?php _e('PO status updated successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                            // Update the original value for future confirmations
+                            select.data('original-value', newStatus);
                             // Update the status badge in the table
                             var statusBadge = select.closest('tr').find('.srwm-status-badge');
                             statusBadge.removeClass().addClass('srwm-status-badge srwm-status-' + newStatus);
