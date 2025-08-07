@@ -290,8 +290,8 @@ jQuery(document).ready(function($) {
         
         // Hide form container
         $form.closest('.srwm-waitlist-form-container').fadeOut(300, function() {
-            // Show success status
-            const successHtml = `
+            // Build success HTML with dynamic data
+            let successHtml = `
                 <div class="srwm-waitlist-status">
                     <div class="srwm-status-card active">
                         <div class="srwm-status-icon">
@@ -299,29 +299,87 @@ jQuery(document).ready(function($) {
                         </div>
                         <div class="srwm-status-content">
                             <h4>You're on the waitlist!</h4>
-                            <p>We'll notify you as soon as this product is back in stock.</p>
+                            <p>We'll notify you as soon as this product is back in stock.</p>`;
+            
+            // Add queue position if available
+            if (response.customer_position && response.customer_position > 0) {
+                const progressWidth = Math.min(100, (response.customer_position / Math.max(1, response.waitlist_count)) * 100);
+                const peopleAhead = response.customer_position - 1;
+                
+                successHtml += `
                             <div class="srwm-queue-position">
                                 <div class="srwm-queue-info">
                                     <span class="srwm-queue-label">Your position:</span>
-                                    <span class="srwm-queue-number">#1</span>
+                                    <span class="srwm-queue-number">#${response.customer_position}</span>
                                 </div>
                                 <div class="srwm-queue-progress">
                                     <div class="srwm-progress-bar">
-                                        <div class="srwm-progress-fill" style="width: 100%"></div>
+                                        <div class="srwm-progress-fill" style="width: ${progressWidth}%"></div>
                                     </div>
-                                    <small>You're first in line!</small>
+                                    <small>${peopleAhead} people ahead of you</small>
+                                </div>
+                            </div>`;
+            }
+            
+            successHtml += `
+                        </div>
+                    </div>`;
+            
+            // Add social proof if more than 1 person on waitlist
+            if (response.waitlist_count > 1) {
+                const queueFillWidth = Math.min(100, (response.waitlist_count / 100) * 100);
+                const peopleText = response.waitlist_count === 1 ? 'person is waiting' : 'people are waiting';
+                
+                successHtml += `
+                    <div class="srwm-waitlist-preview">
+                        <div class="srwm-preview-header">
+                            <div class="srwm-preview-icon">
+                                <span class="dashicons dashicons-groups"></span>
+                            </div>
+                            <div class="srwm-preview-content">
+                                <div class="srwm-preview-count">
+                                    <span class="srwm-count-number" data-count="${response.waitlist_count}">0</span>
+                                    <span class="srwm-count-label">
+                                        ${response.waitlist_count} ${peopleText}
+                                    </span>
+                                </div>
+                                <div class="srwm-preview-subtitle">
+                                    You're part of an exclusive group!
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            `;
+                        
+                        <div class="srwm-queue-visualization">
+                            <div class="srwm-queue-bar">
+                                <div class="srwm-queue-fill" style="width: ${queueFillWidth}%"></div>
+                            </div>
+                            <div class="srwm-queue-stats">
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">⚡</span>
+                                    Fast notifications
+                                </span>
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">🎯</span>
+                                    Priority access
+                                </span>
+                                <span class="srwm-stat-item">
+                                    <span class="srwm-stat-icon">🔒</span>
+                                    Secure & private
+                                </span>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            
+            successHtml += `
+                </div>`;
             
             $container.find('.srwm-waitlist-header').after(successHtml);
             
-            // Animate the new status card
+            // Animate the new status card and count numbers
             setTimeout(function() {
                 $container.find('.srwm-status-card').addClass('animate-in');
+                animateCountNumbers();
             }, 100);
         });
     }
