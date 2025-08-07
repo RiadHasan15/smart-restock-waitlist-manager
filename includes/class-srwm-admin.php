@@ -220,7 +220,6 @@ class SRWM_Admin {
             register_setting('srwm_notifications', 'srwm_sms_template');
         }
     }
-    }
     
 
     
