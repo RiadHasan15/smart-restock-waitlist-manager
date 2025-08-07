@@ -3100,36 +3100,87 @@ class SmartRestockWaitlistManager {
      * AJAX: Get products for purchase order
      */
     public function ajax_get_products_for_po() {
-        check_ajax_referer('srwm_get_products_for_po', 'nonce');
+        // Add error logging for debugging
+        error_log('SRWM: ajax_get_products_for_po called');
         
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions.', 'smart-restock-waitlist'))));
-        }
-        
-        $products = wc_get_products(array(
-            'limit' => -1,
-            'status' => 'publish'
+        // Simple test response first
+        wp_send_json_success(array(
+            'products' => array(
+                array(
+                    'id' => 1,
+                    'name' => 'Test Product',
+                    'sku' => 'TEST001',
+                    'stock_quantity' => 10,
+                    'threshold' => 5,
+                    'category' => 'Test Category',
+                    'waitlist_count' => 0
+                )
+            )
         ));
         
-        $results = array();
-        foreach ($products as $product) {
-            $product_obj = new stdClass();
-            $product_obj->id = $product->get_id();
-            $product_obj->name = $product->get_name();
-            $product_obj->sku = $product->get_sku();
-            $product_obj->stock_quantity = $product->get_stock_quantity();
-            $product_obj->threshold = get_post_meta($product->get_id(), '_srwm_threshold', true) ?: get_option('srwm_global_threshold', 5);
-            $product_obj->category = $this->get_product_category_for_po($product->get_id());
-            $product_obj->waitlist_count = $this->get_waitlist_count_for_po($product->get_id());
-            $results[] = $product_obj;
+        /*
+        try {
+            check_ajax_referer('srwm_get_products_for_po', 'nonce');
+        } catch (Exception $e) {
+            error_log('SRWM: Nonce check failed - ' . $e->getMessage());
+            wp_send_json_error(__('Security check failed.', 'smart-restock-waitlist'));
+            return;
         }
         
-        wp_die(json_encode(array(
-            'success' => true,
-            'data' => array(
+        if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Insufficient permissions for user');
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+            return;
+        }
+        
+        // Check if WooCommerce is active
+        if (!function_exists('wc_get_products')) {
+            error_log('SRWM: WooCommerce not active');
+            wp_send_json_error(__('WooCommerce is not active.', 'smart-restock-waitlist'));
+            return;
+        }
+        
+        try {
+            error_log('SRWM: Getting products from WooCommerce');
+            $products = wc_get_products(array(
+                'limit' => -1,
+                'status' => 'publish'
+            ));
+            
+            error_log('SRWM: Products retrieved - count: ' . (is_array($products) ? count($products) : 'not array'));
+            
+            if (!$products || !is_array($products)) {
+                error_log('SRWM: No products found or invalid response');
+                wp_send_json_error(__('No products found.', 'smart-restock-waitlist'));
+                return;
+            }
+            
+            $results = array();
+            foreach ($products as $product) {
+                if ($product && is_object($product)) {
+                    $product_obj = new stdClass();
+                    $product_obj->id = $product->get_id();
+                    $product_obj->name = $product->get_name();
+                    $product_obj->sku = $product->get_sku();
+                    $product_obj->stock_quantity = $product->get_stock_quantity();
+                    $product_obj->threshold = get_post_meta($product->get_id(), '_srwm_threshold', true) ?: get_option('srwm_global_threshold', 5);
+                    $product_obj->category = $this->get_product_category_for_po($product->get_id());
+                    $product_obj->waitlist_count = $this->get_waitlist_count_for_po($product->get_id());
+                    $results[] = $product_obj;
+                }
+            }
+            
+            error_log('SRWM: Processed ' . count($results) . ' products');
+            
+            wp_send_json_success(array(
                 'products' => $results
-            )
-        )));
+            ));
+            
+        } catch (Exception $e) {
+            error_log('SRWM: Exception in ajax_get_products_for_po - ' . $e->getMessage());
+            wp_send_json_error(__('Error loading products: ', 'smart-restock-waitlist') . $e->getMessage());
+        }
+        */
     }
     
     /**
