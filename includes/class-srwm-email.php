@@ -29,7 +29,13 @@ class SRWM_Email {
      * Send restock notification to customer
      */
     public function send_restock_notification($customer, $product) {
-        $template = get_option('srwm_email_template_waitlist', $this->get_default_waitlist_template());
+        $template = get_option('srwm_email_template_waitlist');
+        
+        // If no custom template is set, use the professional default
+        if (empty($template)) {
+            $admin = new SRWM_Admin($this->license_manager);
+            $template = $admin->get_default_restock_email_template();
+        }
         
         $placeholders = array(
             '{customer_name}' => $customer->customer_name ?: __('Customer', 'smart-restock-waitlist'),
@@ -45,7 +51,11 @@ class SRWM_Email {
         );
         
         $message = $this->replace_placeholders($template, $placeholders);
-        $message = $this->wrap_email_content($message);
+        
+        // Don't wrap if it's already a complete HTML email
+        if (strpos($message, '<!DOCTYPE html>') === false) {
+            $message = $this->wrap_email_content($message);
+        }
         
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -59,7 +69,13 @@ class SRWM_Email {
      * Send supplier notification
      */
     public function send_supplier_notification($product, $supplier_data, $current_stock, $waitlist_count) {
-        $template = get_option('srwm_email_template_supplier', $this->get_default_supplier_template());
+        $template = get_option('srwm_email_template_supplier');
+        
+        // If no custom template is set, use the professional default
+        if (empty($template)) {
+            $admin = new SRWM_Admin($this->license_manager);
+            $template = $admin->get_default_supplier_email_template();
+        }
         
         $placeholders = array(
             '{supplier_name}' => $supplier_data['name'] ?: __('Supplier', 'smart-restock-waitlist'),
@@ -83,7 +99,11 @@ class SRWM_Email {
         );
         
         $message = $this->replace_placeholders($template, $placeholders);
-        $message = $this->wrap_email_content($message);
+        
+        // Don't wrap if it's already a complete HTML email
+        if (strpos($message, '<!DOCTYPE html>') === false) {
+            $message = $this->wrap_email_content($message);
+        }
         
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -117,7 +137,11 @@ class SRWM_Email {
         $subject = $this->replace_placeholders($subject, $placeholders);
         
         $message = $this->replace_placeholders($template, $placeholders);
-        $message = $this->wrap_email_content($message);
+        
+        // Don't wrap if it's already a complete HTML email
+        if (strpos($message, '<!DOCTYPE html>') === false) {
+            $message = $this->wrap_email_content($message);
+        }
         
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',

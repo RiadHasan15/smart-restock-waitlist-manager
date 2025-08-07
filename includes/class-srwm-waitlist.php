@@ -460,6 +460,9 @@ class SRWM_Waitlist {
         if ($result) {
             do_action('srwm_customer_added_to_waitlist', $product_id, $email, $name);
             
+            // Send confirmation email to customer
+            self::send_waitlist_confirmation_email($product_id, $email, $name);
+            
             // Check if supplier notification is needed
             self::check_supplier_notification($product_id);
             
@@ -467,6 +470,91 @@ class SRWM_Waitlist {
         }
         
         return false;
+    }
+    
+    /**
+     * Send waitlist confirmation email
+     */
+    private static function send_waitlist_confirmation_email($product_id, $email, $name) {
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            return false;
+        }
+        
+        // Get email template
+        $template = get_option('srwm_email_template_waitlist');
+        
+        // If no custom template is set, use the professional default
+        if (empty($template)) {
+            $admin = new SRWM_Admin();
+            $template = $admin->get_default_waitlist_email_template();
+        }
+        
+        $placeholders = array(
+            '{customer_name}' => $name ?: __('Customer', 'smart-restock-waitlist'),
+            '{product_name}' => $product->get_name(),
+            '{product_url}' => $product->get_permalink(),
+            '{site_name}' => get_bloginfo('name'),
+            '{site_url}' => get_site_url()
+        );
+        
+        $subject = self::replace_placeholders(
+            get_option('srwm_waitlist_email_subject', __('Welcome to the Waitlist!', 'smart-restock-waitlist')),
+            $placeholders
+        );
+        
+        $message = self::replace_placeholders($template, $placeholders);
+        
+        // Don't wrap if it's already a complete HTML email
+        if (strpos($message, '<!DOCTYPE html>') === false) {
+            $message = self::wrap_email_content($message);
+        }
+        
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
+        );
+        
+        return wp_mail($email, $subject, $message, $headers);
+    }
+    
+    /**
+     * Replace placeholders in text
+     */
+    private static function replace_placeholders($text, $placeholders) {
+        foreach ($placeholders as $placeholder => $value) {
+            $text = str_replace($placeholder, $value, $text);
+        }
+        return $text;
+    }
+    
+    /**
+     * Wrap email content in basic HTML template
+     */
+    private static function wrap_email_content($content) {
+        $template = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>' . get_bloginfo('name') . '</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
+                <h2 style="color: #0073aa; margin-top: 0;">' . get_bloginfo('name') . '</h2>
+                <div style="background-color: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                    ' . $content . '
+                </div>
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
+                    <p>' . sprintf(__('This email was sent from %s', 'smart-restock-waitlist'), get_bloginfo('name')) . '</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+        
+        return $template;
     }
     
     /**

@@ -4571,7 +4571,7 @@ class SRWM_Admin {
     /**
      * Get default waitlist email template
      */
-    private function get_default_waitlist_email_template() {
+    public function get_default_waitlist_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
         
@@ -4671,7 +4671,7 @@ class SRWM_Admin {
     /**
      * Get default restock email template
      */
-    private function get_default_restock_email_template() {
+    public function get_default_restock_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
         
@@ -4769,7 +4769,7 @@ class SRWM_Admin {
     /**
      * Get default supplier email template
      */
-    private function get_default_supplier_email_template() {
+    public function get_default_supplier_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
         
