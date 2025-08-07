@@ -59,10 +59,21 @@ class SRWM_Email {
         
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
+            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+            'MIME-Version: 1.0'
         );
         
-        return wp_mail($customer->customer_email, $subject, $message, $headers);
+        // Force HTML email
+        add_filter('wp_mail_content_type', function() {
+            return 'text/html';
+        });
+        
+        $result = wp_mail($customer->customer_email, $subject, $message, $headers);
+        
+        // Remove the filter
+        remove_all_filters('wp_mail_content_type');
+        
+        return $result;
     }
     
     /**

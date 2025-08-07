@@ -4693,96 +4693,67 @@ class SRWM_Admin {
     public function get_default_restock_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
         
-        return '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Back in Stock - ' . $site_name . '</title>
-    <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; }
-        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); padding: 40px 30px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
-        .content { padding: 40px 30px; }
-        .announcement { font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px; }
-        .product-info { background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #4caf50; }
-        .product-name { font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 10px; }
-        .product-description { color: #666666; font-size: 16px; line-height: 1.5; }
-        .status-badge { display: inline-block; background-color: #e8f5e8; color: #2e7d32; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin: 15px 0; }
-        .urgency-notice { background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
-        .urgency-notice h3 { color: #e65100; margin: 0 0 15px 0; font-size: 18px; }
-        .urgency-notice p { margin: 0; color: #666666; line-height: 1.5; }
-        .cta-button { text-align: center; margin: 40px 0; }
-        .cta-button a { display: inline-block; background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }
-        .footer p { margin: 0; color: #666666; font-size: 14px; }
-        .social-links { margin-top: 20px; }
-        .social-links a { display: inline-block; margin: 0 10px; color: #4caf50; text-decoration: none; }
-        .social-links a:hover { text-decoration: underline; }
-        @media only screen and (max-width: 600px) {
-            .header { padding: 30px 20px; }
-            .header h1 { font-size: 24px; }
-            .content { padding: 30px 20px; }
-            .footer { padding: 20px; }
-            .cta-button a { padding: 15px 30px; font-size: 16px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="header">
-            <h1>🎉 Great News! Product Back in Stock</h1>
-        </div>
-        
-        <div class="content">
-            <div class="announcement">
-                Hi <strong>{customer_name}</strong>,
-                <br><br>
-                Excellent news! The product you\'ve been waiting for is now back in stock and ready for purchase.
+        return '
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); padding: 40px 30px; text-align: center;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🎉 Great News! Product Back in Stock</h1>
             </div>
             
-            <div class="product-info">
-                <div class="product-name">{product_name}</div>
-                <div class="product-description">
-                    This product is now available for immediate purchase. Don\'t miss out on this opportunity!
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+                <div style="font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px;">
+                    Hi <strong>{customer_name}</strong>,
+                    <br><br>
+                    Excellent news! The product you\'ve been waiting for is now back in stock and ready for purchase.
                 </div>
-                <div class="status-badge">✅ Now Available</div>
+                
+                <!-- Product Info -->
+                <div style="background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #4caf50;">
+                    <div style="font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 10px;">{product_name}</div>
+                    <div style="color: #666666; font-size: 16px; line-height: 1.5;">
+                        This product is now available for immediate purchase. Don\'t miss out on this opportunity!
+                    </div>
+                    <div style="display: inline-block; background-color: #e8f5e8; color: #2e7d32; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin: 15px 0;">✅ Now Available</div>
+                </div>
+                
+                <!-- Urgency Notice -->
+                <div style="background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800;">
+                    <h3 style="color: #e65100; margin: 0 0 15px 0; font-size: 18px;">⏰ Limited Time Offer</h3>
+                    <p style="margin: 0; color: #666666; line-height: 1.5;">Due to high demand, we recommend purchasing soon to secure your item. Stock levels may be limited.</p>
+                </div>
+                
+                <!-- CTA Button -->
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="{product_url}" style="display: inline-block; background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        🛒 Purchase Now
+                    </a>
+                </div>
+                
+                <!-- Support Info -->
+                <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px; text-align: center;">
+                    <p><strong>Questions?</strong> Our customer support team is here to help!</p>
+                    <p>Email us at <a href="mailto:' . $admin_email . '" style="color: #4caf50;">' . $admin_email . '</a></p>
+                </div>
             </div>
             
-            <div class="urgency-notice">
-                <h3>⏰ Limited Time Offer</h3>
-                <p>Due to high demand, we recommend purchasing soon to secure your item. Stock levels may be limited.</p>
+            <!-- Footer -->
+            <div style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+                <p style="margin: 0; color: #666666; font-size: 14px;"><strong>' . $site_name . '</strong></p>
+                <p style="margin: 0; color: #666666; font-size: 14px;">Thank you for your patience and loyalty!</p>
+                <div style="margin-top: 20px;">
+                    <a href="' . $site_url . '" style="display: inline-block; margin: 0 10px; color: #4caf50; text-decoration: none;">Visit Website</a> |
+                    <a href="mailto:' . $admin_email . '" style="display: inline-block; margin: 0 10px; color: #4caf50; text-decoration: none;">Contact Support</a>
+                </div>
+                <p style="margin-top: 20px; font-size: 12px; color: #999999;">
+                    This email was sent to you because you joined the waitlist for {product_name}.<br>
+                    If you no longer wish to receive these emails, please contact us.
+                </p>
             </div>
-            
-            <div class="cta-button">
-                <a href="{product_link}">
-                    🛒 Purchase Now
-                </a>
-            </div>
-            
-            <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px; text-align: center;">
-                <p><strong>Questions?</strong> Our customer support team is here to help!</p>
-                <p>Email us at <a href="mailto:' . get_option('admin_email') . '" style="color: #4caf50;">' . get_option('admin_email') . '</a></p>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>' . $site_name . '</strong></p>
-            <p>Thank you for your patience and loyalty!</p>
-            <div class="social-links">
-                <a href="' . $site_url . '">Visit Website</a> |
-                <a href="mailto:' . get_option('admin_email') . '">Contact Support</a>
-            </div>
-            <p style="margin-top: 20px; font-size: 12px; color: #999999;">
-                This email was sent to you because you joined the waitlist for {product_name}.<br>
-                If you no longer wish to receive these emails, please contact us.
-            </p>
-        </div>
-    </div>
-</body>
-</html>';
+                </div>';
+    }
     }
     
     /**
