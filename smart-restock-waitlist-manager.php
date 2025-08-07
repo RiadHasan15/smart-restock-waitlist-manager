@@ -3922,78 +3922,134 @@ class SmartRestockWaitlistManager {
         
         // Generate HTML for modal
         $html = '
-        <div class="srwm-po-details">
-            <div class="srwm-po-header">
-                <h2>' . esc_html($po->po_number) . '</h2>
-                <span class="srwm-status-badge srwm-status-' . esc_attr($po->status) . '">
-                    <i class="fas fa-circle"></i>
-                    ' . esc_html(ucfirst($po->status)) . '
-                </span>
+        <div class="srwm-po-details-modern">
+            <div class="srwm-po-overview">
+                <div class="srwm-po-main-info">
+                    <div class="srwm-po-number-display">
+                        <div class="srwm-po-number-label">' . __('Purchase Order', 'smart-restock-waitlist') . '</div>
+                        <div class="srwm-po-number-value">' . esc_html($po->po_number) . '</div>
+                    </div>
+                    <div class="srwm-po-meta">
+                        <div class="srwm-po-meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>' . esc_html(date('M j, Y', strtotime($po->created_at))) . '</span>
+                        </div>
+                        <div class="srwm-po-meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span>' . esc_html(date('g:i A', strtotime($po->created_at))) . '</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="srwm-po-content">
-                <div class="srwm-po-section">
-                    <h3>' . __('Product Information', 'smart-restock-waitlist') . '</h3>
-                    <div class="srwm-po-info-grid">
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Product Name', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($product_name) . '</span>
+            <div class="srwm-po-content-modern">
+                <div class="srwm-po-grid">
+                    <!-- Product Information Card -->
+                    <div class="srwm-po-card">
+                        <div class="srwm-po-card-header">
+                            <div class="srwm-po-card-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <h3>' . __('Product Information', 'smart-restock-waitlist') . '</h3>
                         </div>
-                        <div class="srwm-po-info-item">
-                            <label>' . __('SKU', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($product_sku) . '</span>
-                        </div>
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Quantity', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($po->quantity) . '</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="srwm-po-section">
-                    <h3>' . __('Supplier Information', 'smart-restock-waitlist') . '</h3>
-                    <div class="srwm-po-info-grid">
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Supplier Name', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($supplier_name) . '</span>
-                        </div>
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Email', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($po->supplier_email) . '</span>
+                        <div class="srwm-po-card-content">
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Product Name', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">' . esc_html($product_name) . '</div>
+                            </div>
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('SKU', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">' . esc_html($product_sku) . '</div>
+                            </div>
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Quantity', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">
+                                    <span class="srwm-quantity-display">' . esc_html($po->quantity) . '</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="srwm-po-section">
-                    <h3>' . __('Order Details', 'smart-restock-waitlist') . '</h3>
-                    <div class="srwm-po-info-grid">
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Created Date', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html(date('F j, Y g:i A', strtotime($po->created_at))) . '</span>
+                    
+                    <!-- Supplier Information Card -->
+                    <div class="srwm-po-card">
+                        <div class="srwm-po-card-header">
+                            <div class="srwm-po-card-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h3>' . __('Supplier Information', 'smart-restock-waitlist') . '</h3>
                         </div>
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Expected Delivery', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html($po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : __('Not specified', 'smart-restock-waitlist')) . '</span>
+                        <div class="srwm-po-card-content">
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Supplier Name', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">' . esc_html($supplier_name) . '</div>
+                            </div>
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Email Address', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">
+                                    <a href="mailto:' . esc_attr($po->supplier_email) . '" class="srwm-email-link">' . esc_html($po->supplier_email) . '</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="srwm-po-info-item">
-                            <label>' . __('Urgency', 'smart-restock-waitlist') . '</label>
-                            <span>' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</span>
+                    </div>
+                    
+                    <!-- Order Details Card -->
+                    <div class="srwm-po-card">
+                        <div class="srwm-po-card-header">
+                            <div class="srwm-po-card-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h3>' . __('Order Details', 'smart-restock-waitlist') . '</h3>
+                        </div>
+                        <div class="srwm-po-card-content">
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Expected Delivery', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">
+                                    ' . ($po->delivery_date ? '<span class="srwm-delivery-date">' . esc_html(date('M j, Y', strtotime($po->delivery_date))) . '</span>' : '<span class="srwm-no-date">' . __('Not specified', 'smart-restock-waitlist') . '</span>') . '
+                                </div>
+                            </div>
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Urgency Level', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">
+                                    <span class="srwm-urgency-badge srwm-urgency-' . esc_attr($po->urgency ?: 'normal') . '">' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</span>
+                                </div>
+                            </div>
+                            <div class="srwm-po-info-item-modern">
+                                <div class="srwm-po-info-label">' . __('Order Status', 'smart-restock-waitlist') . '</div>
+                                <div class="srwm-po-info-value">
+                                    <span class="srwm-status-badge srwm-status-' . esc_attr($po->status) . '">
+                                        <i class="fas fa-circle"></i>
+                                        ' . esc_html(ucfirst($po->status)) . '
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 ' . ($po->notes ? '
-                <div class="srwm-po-section">
-                    <h3>' . __('Notes', 'smart-restock-waitlist') . '</h3>
-                    <div class="srwm-po-notes">
-                        ' . esc_html($po->notes) . '
+                <!-- Notes Card -->
+                <div class="srwm-po-card srwm-po-notes-card">
+                    <div class="srwm-po-card-header">
+                        <div class="srwm-po-card-icon">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        <h3>' . __('Additional Notes', 'smart-restock-waitlist') . '</h3>
+                    </div>
+                    <div class="srwm-po-card-content">
+                        <div class="srwm-po-notes-content">
+                            ' . esc_html($po->notes) . '
+                        </div>
                     </div>
                 </div>
                 ' : '') . '
             </div>
         </div>';
         
-        wp_send_json_success(array('html' => $html));
+        wp_send_json_success(array(
+            'html' => $html,
+            'status' => $po->status,
+            'status_text' => ucfirst($po->status)
+        ));
     }
     
     /**
@@ -4037,88 +4093,342 @@ class SmartRestockWaitlistManager {
         ));
         $supplier_name = $supplier ? $supplier->supplier_name : __('Unknown Supplier', 'smart-restock-waitlist');
         
-        // Create a simple HTML file
+        // Create a professional HTML file
         $html_content = '
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>' . esc_html($po->po_number) . '</title>
+            <title>' . esc_html($po->po_number) . ' - Purchase Order</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-                .po-number { font-size: 24px; font-weight: bold; color: #333; }
-                .section { margin-bottom: 30px; }
-                .section h3 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-                .info-grid { display: table; width: 100%; }
-                .info-item { display: table-row; }
-                .info-label { display: table-cell; font-weight: bold; padding: 5px 10px 5px 0; }
-                .info-value { display: table-cell; padding: 5px 0; }
-                .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+                @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+                
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                
+                body { 
+                    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+                    line-height: 1.6; 
+                    color: #1f2937; 
+                    background: #f8fafc;
+                    padding: 40px 20px;
+                }
+                
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }
+                
+                .header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 40px;
+                    text-align: center;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .header::before {
+                    content: "";
+                    position: absolute;
+                    top: -50%;
+                    right: -50%;
+                    width: 200px;
+                    height: 200px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 50%;
+                }
+                
+                .header-content {
+                    position: relative;
+                    z-index: 1;
+                }
+                
+                .po-title {
+                    font-size: 14px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-bottom: 10px;
+                }
+                
+                .po-number {
+                    font-size: 36px;
+                    font-weight: 700;
+                    margin-bottom: 15px;
+                    letter-spacing: -1px;
+                }
+                
+                .po-date {
+                    font-size: 16px;
+                    opacity: 0.9;
+                }
+                
+                .content {
+                    padding: 40px;
+                }
+                
+                .section {
+                    margin-bottom: 40px;
+                }
+                
+                .section:last-child {
+                    margin-bottom: 0;
+                }
+                
+                .section-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                    padding-bottom: 12px;
+                    border-bottom: 2px solid #e5e7eb;
+                }
+                
+                .section-icon {
+                    width: 32px;
+                    height: 32px;
+                    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 14px;
+                }
+                
+                .section-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #1f2937;
+                }
+                
+                .info-grid {
+                    display: grid;
+                    gap: 16px;
+                }
+                
+                .info-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    border: 1px solid #e5e7eb;
+                }
+                
+                .info-label {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .info-value {
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #1f2937;
+                    text-align: right;
+                }
+                
+                .quantity-badge {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    font-size: 13px;
+                }
+                
+                .status-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .status-pending {
+                    background: #fef3c7;
+                    color: #92400e;
+                }
+                
+                .status-confirmed {
+                    background: #dbeafe;
+                    color: #1e40af;
+                }
+                
+                .status-shipped {
+                    background: #d1fae5;
+                    color: #065f46;
+                }
+                
+                .status-completed {
+                    background: #d1e7dd;
+                    color: #0f5132;
+                }
+                
+                .urgency-badge {
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .urgency-normal {
+                    background: #dbeafe;
+                    color: #1e40af;
+                }
+                
+                .urgency-high {
+                    background: #fef3c7;
+                    color: #92400e;
+                }
+                
+                .urgency-urgent {
+                    background: #fee2e2;
+                    color: #991b1b;
+                }
+                
+                .notes-section {
+                    background: #f8fafc;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 12px;
+                    padding: 20px;
+                }
+                
+                .notes-content {
+                    font-size: 14px;
+                    line-height: 1.6;
+                    color: #374151;
+                }
+                
+                .footer {
+                    background: #f8fafc;
+                    padding: 20px 40px;
+                    text-align: center;
+                    border-top: 1px solid #e5e7eb;
+                    font-size: 12px;
+                    color: #6b7280;
+                }
+                
+                @media print {
+                    body { background: white; padding: 0; }
+                    .container { box-shadow: none; border-radius: 0; }
+                }
             </style>
         </head>
         <body>
-            <div class="header">
-                <h1>PURCHASE ORDER</h1>
-                <div class="po-number">' . esc_html($po->po_number) . '</div>
-                <div>Date: ' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
-            </div>
-            
-            <div class="section">
-                <h3>Product Information</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Product Name:</div>
-                        <div class="info-value">' . esc_html($product_name) . '</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">SKU:</div>
-                        <div class="info-value">' . esc_html($product_sku) . '</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Quantity:</div>
-                        <div class="info-value">' . esc_html($po->quantity) . '</div>
+            <div class="container">
+                <div class="header">
+                    <div class="header-content">
+                        <div class="po-title">Purchase Order</div>
+                        <div class="po-number">' . esc_html($po->po_number) . '</div>
+                        <div class="po-date">' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="section">
-                <h3>Supplier Information</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Supplier Name:</div>
-                        <div class="info-value">' . esc_html($supplier_name) . '</div>
+                
+                <div class="content">
+                    <!-- Product Information -->
+                    <div class="section">
+                        <div class="section-header">
+                            <div class="section-icon">📦</div>
+                            <div class="section-title">Product Information</div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Product Name</div>
+                                <div class="info-value">' . esc_html($product_name) . '</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">SKU</div>
+                                <div class="info-value">' . esc_html($product_sku) . '</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Quantity</div>
+                                <div class="info-value">
+                                    <span class="quantity-badge">' . esc_html($po->quantity) . '</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Email:</div>
-                        <div class="info-value">' . esc_html($po->supplier_email) . '</div>
+                    
+                    <!-- Supplier Information -->
+                    <div class="section">
+                        <div class="section-header">
+                            <div class="section-icon">👤</div>
+                            <div class="section-title">Supplier Information</div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Supplier Name</div>
+                                <div class="info-value">' . esc_html($supplier_name) . '</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Email Address</div>
+                                <div class="info-value">' . esc_html($po->supplier_email) . '</div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Order Details -->
+                    <div class="section">
+                        <div class="section-header">
+                            <div class="section-icon">📋</div>
+                            <div class="section-title">Order Details</div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Expected Delivery</div>
+                                <div class="info-value">' . esc_html($po->delivery_date ? date('M j, Y', strtotime($po->delivery_date)) : 'Not specified') . '</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Urgency Level</div>
+                                <div class="info-value">
+                                    <span class="urgency-badge urgency-' . esc_attr($po->urgency ?: 'normal') . '">' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Order Status</div>
+                                <div class="info-value">
+                                    <span class="status-badge status-' . esc_attr($po->status) . '">
+                                        <span style="width: 8px; height: 8px; background: currentColor; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
+                                        ' . esc_html(ucfirst($po->status)) . '
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ' . ($po->notes ? '
+                    <!-- Notes -->
+                    <div class="section">
+                        <div class="section-header">
+                            <div class="section-icon">📝</div>
+                            <div class="section-title">Additional Notes</div>
+                        </div>
+                        <div class="notes-section">
+                            <div class="notes-content">' . esc_html($po->notes) . '</div>
+                        </div>
+                    </div>
+                    ' : '') . '
                 </div>
-            </div>
-            
-            <div class="section">
-                <h3>Order Details</h3>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Expected Delivery:</div>
-                        <div class="info-value">' . esc_html($po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : 'Not specified') . '</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Urgency:</div>
-                        <div class="info-value">' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</div>
-                    </div>
+                
+                <div class="footer">
+                    <p>Generated on ' . esc_html(date('F j, Y g:i A')) . ' | ' . get_bloginfo('name') . '</p>
                 </div>
-            </div>
-            
-            ' . ($po->notes ? '
-            <div class="section">
-                <h3>Notes</h3>
-                <p>' . esc_html($po->notes) . '</p>
-            </div>
-            ' : '') . '
-            
-            <div class="footer">
-                <p>Generated on ' . esc_html(date('F j, Y g:i A')) . '</p>
             </div>
         </body>
         </html>';
