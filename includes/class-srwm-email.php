@@ -29,12 +29,12 @@ class SRWM_Email {
      * Send restock notification to customer
      */
     public function send_restock_notification($customer, $product) {
-        $template = get_option('srwm_restock_email_template');
+        $template = get_option('srwm_email_template_waitlist');
         
-        // If no custom template is set, use the professional default
+        // If no custom template is set, use the default
         if (empty($template)) {
             $admin = new SRWM_Admin($this->license_manager);
-            $template = $admin->get_default_restock_email_template();
+            $template = $admin->get_default_waitlist_email_template();
         }
         
         $placeholders = array(
@@ -46,7 +46,7 @@ class SRWM_Email {
         );
         
         $subject = $this->replace_placeholders(
-            get_option('srwm_restock_email_subject', __('{product_name} is back in stock!', 'smart-restock-waitlist')),
+            get_option('srwm_waitlist_email_subject', __('{product_name} is back in stock!', 'smart-restock-waitlist')),
             $placeholders
         );
         
