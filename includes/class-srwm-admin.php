@@ -98,6 +98,16 @@ class SRWM_Admin {
             );
         }
         
+        // Email Templates - available for all users (free and pro)
+        add_submenu_page(
+            'smart-restock-waitlist',
+            __('Email Templates', 'smart-restock-waitlist'),
+            __('Email Templates', 'smart-restock-waitlist'),
+            'manage_woocommerce',
+            'smart-restock-waitlist-templates',
+            array($this, 'render_templates_page')
+        );
+        
         // Pro features menu items - always check current license status
         if ($this->license_manager->is_pro_active()) {
             add_submenu_page(
@@ -107,15 +117,6 @@ class SRWM_Admin {
                 'manage_woocommerce',
                 'smart-restock-waitlist-notifications',
                 array($this, 'render_notifications_page')
-            );
-            
-            add_submenu_page(
-                'smart-restock-waitlist',
-                __('Email Templates', 'smart-restock-waitlist'),
-                __('Email Templates', 'smart-restock-waitlist'),
-                'manage_woocommerce',
-                'smart-restock-waitlist-templates',
-                array($this, 'render_templates_page')
             );
             
             add_submenu_page(
