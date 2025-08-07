@@ -5158,7 +5158,7 @@ If you no longer wish to receive these emails, please contact us.';
         </div>
         
         <!-- Enhanced PO Generation Modal -->
-        <div id="srwm-po-modal" class="srwm-modal">
+        <div id="srwm-po-modal" class="srwm-modal" style="display: none;">
             <div class="srwm-modal-content">
                 <div class="srwm-modal-header">
                     <h2><?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?></h2>
@@ -5239,7 +5239,7 @@ If you no longer wish to receive these emails, please contact us.';
         </div>
         
         <!-- PO Details Modal -->
-        <div id="srwm-po-details-modal" class="srwm-modal">
+        <div id="srwm-po-details-modal" class="srwm-modal" style="display: none;">
             <div class="srwm-modal-content srwm-modal-large">
                 <div class="srwm-modal-header">
                     <h2><?php _e('Purchase Order Details', 'smart-restock-waitlist'); ?></h2>
@@ -5266,15 +5266,18 @@ If you no longer wish to receive these emails, please contact us.';
         
         <script>
         jQuery(document).ready(function($) {
+            // Ensure modals are hidden on page load
+            $('#srwm-po-modal, #srwm-po-details-modal').hide();
+            
             // PO Generation Modal
             $('#srwm-generate-po, #srwm-generate-first-po').on('click', function() {
-                $('#srwm-po-modal').addClass('srwm-modal-active');
+                $('#srwm-po-modal').show().addClass('srwm-modal-active');
             });
             
             // Close modal
             $('.srwm-modal-close, .srwm-modal').on('click', function(e) {
                 if (e.target === this) {
-                    $(this).closest('.srwm-modal').removeClass('srwm-modal-active');
+                    $(this).closest('.srwm-modal').hide().removeClass('srwm-modal-active');
                 }
             });
             
@@ -5307,7 +5310,7 @@ If you no longer wish to receive these emails, please contact us.';
                     },
                     success: function(response) {
                         if (response.success) {
-                            $('#srwm-po-modal').removeClass('srwm-modal-active');
+                            $('#srwm-po-modal').hide().removeClass('srwm-modal-active');
                             location.reload(); // Refresh to show new PO
                         } else {
                             alert(response.data.message || '<?php _e('Failed to generate purchase order', 'smart-restock-waitlist'); ?>');
@@ -5359,7 +5362,7 @@ If you no longer wish to receive these emails, please contact us.';
                     success: function(response) {
                         if (response.success) {
                             $('#srwm-po-details-content').html(response.data.html);
-                            $('#srwm-po-details-modal').addClass('srwm-modal-active');
+                            $('#srwm-po-details-modal').show().addClass('srwm-modal-active');
                         }
                     }
                 });
