@@ -1042,9 +1042,6 @@ class SmartRestockWaitlistManager {
             $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
             $customer_position = SRWM_Waitlist::get_instance()->get_customer_queue_position($product_id, $email);
             
-            // Debug logging
-            error_log('SRWM Debug - Product ID: ' . $product_id . ', Waitlist Count: ' . $waitlist_count . ', Customer Position: ' . $customer_position);
-            
             wp_die(json_encode(array(
                 'success' => true, 
                 'message' => __('You have been added to the waitlist!', 'smart-restock-waitlist'),
