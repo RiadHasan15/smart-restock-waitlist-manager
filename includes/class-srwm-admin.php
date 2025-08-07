@@ -4600,22 +4600,15 @@ class SRWM_Admin {
         
         return 'Hi {customer_name},
 
-Welcome to the waitlist for {product_name}!
+Great news! {product_name} is back in stock and ready for purchase.
 
-You have been successfully added to our waitlist. We will notify you as soon as this product is back in stock.
+You can purchase it here: {product_url}
 
-Product: {product_name}
-Product URL: {product_url}
-
-What happens next:
-- You will be among the first to know when this product is back in stock
-- You will get early access to purchase before the general public
-- You may receive exclusive discounts and promotions
-- We only email you when there is important news about this product
+Due to high demand, we recommend purchasing soon to secure your item. Stock levels may be limited.
 
 If you have any questions, please contact our customer support team at ' . $admin_email . '.
 
-Thank you for choosing us!
+Thank you for your patience and loyalty!
 
 Best regards,
 ' . $site_name . '
@@ -7372,7 +7365,7 @@ If you no longer wish to receive these emails, please contact us.';
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
-                                <br><strong><?php _e('This email is sent when a customer joins the waitlist AND when a product comes back in stock.', 'smart-restock-waitlist'); ?></strong>
+                                <br><strong><?php _e('This email is sent when a product comes back in stock to notify waitlist customers.', 'smart-restock-waitlist'); ?></strong>
                             </p>
                         </td>
                     </tr>
