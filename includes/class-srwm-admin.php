@@ -19,7 +19,6 @@ class SRWM_Admin {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'init_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-        add_action('admin_post_srwm_save_settings', array($this, 'handle_settings_save'));
         
         // Clean up corrupted email templates
         add_action('init', array($this, 'cleanup_corrupted_templates'));
@@ -175,6 +174,26 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_social_proof_style');
         register_setting('srwm_settings', 'srwm_hide_header_after_submit');
         
+        // Styling options
+        register_setting('srwm_settings', 'srwm_container_bg');
+        register_setting('srwm_settings', 'srwm_header_bg');
+        register_setting('srwm_settings', 'srwm_header_text');
+        register_setting('srwm_settings', 'srwm_body_text');
+        register_setting('srwm_settings', 'srwm_btn_primary_bg');
+        register_setting('srwm_settings', 'srwm_btn_primary_text');
+        register_setting('srwm_settings', 'srwm_btn_secondary_bg');
+        register_setting('srwm_settings', 'srwm_btn_secondary_text');
+        register_setting('srwm_settings', 'srwm_success_bg');
+        register_setting('srwm_settings', 'srwm_success_text');
+        register_setting('srwm_settings', 'srwm_border_color');
+        register_setting('srwm_settings', 'srwm_input_bg');
+        register_setting('srwm_settings', 'srwm_input_border');
+        register_setting('srwm_settings', 'srwm_input_focus_border');
+        register_setting('srwm_settings', 'srwm_progress_bg');
+        register_setting('srwm_settings', 'srwm_progress_fill');
+        register_setting('srwm_settings', 'srwm_border_radius');
+        register_setting('srwm_settings', 'srwm_font_size');
+        
         // Pro settings
         if ($this->license_manager->is_pro_active()) {
             register_setting('srwm_settings', 'srwm_whatsapp_enabled');
@@ -201,154 +220,9 @@ class SRWM_Admin {
             register_setting('srwm_notifications', 'srwm_sms_template');
         }
     }
-    
-    /**
-     * Save settings with validation
-     */
-    private function save_settings() {
-        // Validate and sanitize general settings
-        $waitlist_enabled = isset($_POST['srwm_waitlist_enabled']) ? 'yes' : 'no';
-        $auto_disable_at_zero = isset($_POST['srwm_auto_disable_at_zero']) ? 'yes' : 'no';
-        
-        // Validate waitlist display threshold (free version)
-        $waitlist_display_threshold = isset($_POST['srwm_waitlist_display_threshold']) ? 
-            intval($_POST['srwm_waitlist_display_threshold']) : 5;
-        $waitlist_display_threshold = max(0, min(1000, $waitlist_display_threshold)); // Limit between 0 and 1000
-        
-        // Validate and sanitize email templates
-        $waitlist_email_template = isset($_POST['srwm_email_template_waitlist']) ? 
-            wp_kses_post($_POST['srwm_email_template_waitlist']) : '';
-        
-        // Set default email template if empty
-        if (empty($waitlist_email_template)) {
-            $waitlist_email_template = $this->get_default_waitlist_email_template();
-        }
-        
-        // Validate and sanitize registration email template
-        $registration_email_template = isset($_POST['srwm_email_template_registration']) ? 
-            wp_kses_post($_POST['srwm_email_template_registration']) : '';
-        
-        // Set default registration email template if empty
-        if (empty($registration_email_template)) {
-            $registration_email_template = $this->get_default_registration_email_template();
-        }
-        
-        // Save settings
-        update_option('srwm_waitlist_enabled', $waitlist_enabled);
-        update_option('srwm_auto_disable_at_zero', $auto_disable_at_zero);
-        update_option('srwm_waitlist_display_threshold', $waitlist_display_threshold);
-        update_option('srwm_email_template_waitlist', $waitlist_email_template);
-        update_option('srwm_email_template_registration', $registration_email_template);
-        
-        // Save styling options
-        $styling_options = array(
-            'srwm_container_bg', 'srwm_header_bg', 'srwm_header_text', 'srwm_body_text',
-            'srwm_btn_primary_bg', 'srwm_btn_primary_text', 'srwm_btn_secondary_bg', 'srwm_btn_secondary_text',
-            'srwm_success_bg', 'srwm_success_text', 'srwm_border_color', 'srwm_input_bg',
-            'srwm_input_border', 'srwm_input_focus_border', 'srwm_progress_bg', 'srwm_progress_fill',
-            'srwm_border_radius', 'srwm_font_size'
-        );
-        
-        foreach ($styling_options as $option) {
-            if (isset($_POST[$option])) {
-                $value = sanitize_text_field($_POST[$option]);
-                update_option($option, $value);
-            }
-        }
-        
-        // Save social proof display settings
-        $hide_social_proof = isset($_POST['srwm_hide_social_proof']) ? '1' : '0';
-        $social_proof_style = isset($_POST['srwm_social_proof_style']) ? 
-            sanitize_text_field($_POST['srwm_social_proof_style']) : 'full';
-        
-        // Validate social proof style
-        if (!in_array($social_proof_style, array('compact', 'full'))) {
-            $social_proof_style = 'full';
-        }
-        
-        update_option('srwm_hide_social_proof', $hide_social_proof);
-        update_option('srwm_social_proof_style', $social_proof_style);
-        
-        // Save header display setting
-        $hide_header_after_submit = isset($_POST['srwm_hide_header_after_submit']) ? '1' : '0';
-        update_option('srwm_hide_header_after_submit', $hide_header_after_submit);
-        
-        // Save Pro settings if license is active
-        if ($this->license_manager->is_pro_active()) {
-            $supplier_notifications = isset($_POST['srwm_supplier_notifications']) ? 'yes' : 'no';
-            $supplier_email_template = isset($_POST['srwm_email_template_supplier']) ? 
-                wp_kses_post($_POST['srwm_email_template_supplier']) : '';
-            
-            // Set default supplier email template if empty
-            if (empty($supplier_email_template)) {
-                $supplier_email_template = $this->get_default_supplier_email_template();
-            }
-            
-            update_option('srwm_supplier_notifications', $supplier_notifications);
-            update_option('srwm_email_template_supplier', $supplier_email_template);
-            
-            // Save company information
-            $company_name = isset($_POST['srwm_company_name']) ? 
-                sanitize_text_field($_POST['srwm_company_name']) : '';
-            $company_address = isset($_POST['srwm_company_address']) ? 
-                sanitize_textarea_field($_POST['srwm_company_address']) : '';
-            $company_phone = isset($_POST['srwm_company_phone']) ? 
-                sanitize_text_field($_POST['srwm_company_phone']) : '';
-            $company_email = isset($_POST['srwm_company_email']) ? 
-                sanitize_email($_POST['srwm_company_email']) : '';
-            
-            update_option('srwm_company_name', $company_name);
-            update_option('srwm_company_address', $company_address);
-            update_option('srwm_company_phone', $company_phone);
-            update_option('srwm_company_email', $company_email);
-            
-            // Save low stock threshold (Pro feature)
-            $low_stock_threshold = isset($_POST['srwm_low_stock_threshold']) ? 
-                intval($_POST['srwm_low_stock_threshold']) : 5;
-            $low_stock_threshold = max(0, min(1000, $low_stock_threshold));
-            update_option('srwm_low_stock_threshold', $low_stock_threshold);
-        }
-        
-        // Redirect to show success message
-        wp_redirect(add_query_arg('settings-updated', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
-        exit;
     }
     
-    /**
-     * Handle settings form submission
-     */
-    public function handle_settings_save() {
-        // Check nonce
-        if (!wp_verify_nonce($_POST['_wpnonce'], 'srwm_settings-options')) {
-            wp_die(__('Security check failed.', 'smart-restock-waitlist'));
-        }
-        
-        // Check permissions
-        if (!current_user_can('manage_woocommerce')) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'smart-restock-waitlist'));
-        }
-        
-        // Check if this is an email template reset
-        if (isset($_GET['action']) && $_GET['action'] === 'reset-email-templates') {
-            if (wp_verify_nonce($_GET['_wpnonce'], 'srwm_reset_email_templates')) {
-                $this->reset_email_templates();
-                wp_redirect(add_query_arg('email-templates-reset', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
-                exit;
-            }
-        }
-        
-        // Check if this is a force cleanup
-        if (isset($_GET['action']) && $_GET['action'] === 'force-cleanup') {
-            if (wp_verify_nonce($_GET['_wpnonce'], 'srwm_force_cleanup')) {
-                $this->cleanup_corrupted_templates();
-                wp_redirect(add_query_arg('force-cleanup', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
-                exit;
-            }
-        }
-        
-        // Save settings
-        $this->save_settings();
-    }
+
     
     /**
      * Reset email templates to defaults
@@ -409,6 +283,9 @@ class SRWM_Admin {
         update_option('srwm_hide_social_proof', '0');
         update_option('srwm_social_proof_style', 'full');
         update_option('srwm_hide_header_after_submit', '1');
+        
+        // Reset registration email template
+        update_option('srwm_email_template_registration', $this->get_default_registration_email_template());
         
         // Reset Pro settings if license is active
         if ($this->license_manager->is_pro_active()) {
@@ -7009,9 +6886,8 @@ If you no longer wish to receive these emails, please contact us.';
                 </div>
             <?php endif; ?>
             
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                <input type="hidden" name="action" value="srwm_save_settings">
-                <?php wp_nonce_field('srwm_settings-options'); ?>
+            <form method="post" action="options.php">
+                <?php settings_fields('srwm_settings'); ?>
                 
                 <div class="srwm-settings-section">
                     <h2><?php _e('General Settings', 'smart-restock-waitlist'); ?></h2>
