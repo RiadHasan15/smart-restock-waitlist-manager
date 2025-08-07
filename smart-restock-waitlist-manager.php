@@ -1026,6 +1026,8 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_download_po', array($this, 'ajax_download_po'));
         add_action('wp_ajax_srwm_resend_po', array($this, 'ajax_resend_po'));
         add_action('wp_ajax_srwm_update_po_status', array($this, 'ajax_update_po_status'));
+        add_action('wp_ajax_srwm_update_po_status_safe', array($this, 'ajax_update_po_status_safe'));
+        add_action('wp_ajax_srwm_test_ajax', array($this, 'ajax_test_ajax'));
     }
     
     /**
@@ -4537,9 +4539,18 @@ Best regards,
      * AJAX: Update PO status
      */
     public function ajax_update_po_status() {
+        // Prevent any output before JSON response
+        ob_clean();
+        
         // Add debugging
         error_log('SRWM: ajax_update_po_status called');
         error_log('SRWM: POST data: ' . print_r($_POST, true));
+        
+        // Check if nonce exists
+        if (!isset($_POST['nonce'])) {
+            error_log('SRWM: Nonce not provided');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
         
         // Check nonce
         if (!wp_verify_nonce($_POST['nonce'], 'srwm_update_po_status')) {
@@ -4613,6 +4624,114 @@ Best regards,
         } else {
             wp_send_json_error(__('Failed to update PO status. Database error: ' . $wpdb->last_error, 'smart-restock-waitlist'));
         }
+    }
+    
+    /**
+     * AJAX: Update PO status (with error handling)
+     */
+    public function ajax_update_po_status_safe() {
+        try {
+            // Prevent any output before JSON response
+            ob_clean();
+            
+            // Add debugging
+            error_log('SRWM: ajax_update_po_status_safe called');
+            error_log('SRWM: POST data: ' . print_r($_POST, true));
+            
+            // Check if nonce exists
+            if (!isset($_POST['nonce'])) {
+                error_log('SRWM: Nonce not provided');
+                wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+            }
+            
+            // Check nonce
+            if (!wp_verify_nonce($_POST['nonce'], 'srwm_update_po_status')) {
+                error_log('SRWM: Nonce verification failed');
+                wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+            }
+            
+            if (!current_user_can('manage_woocommerce')) {
+                error_log('SRWM: Insufficient permissions');
+                wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+            }
+            
+            $po_id = intval($_POST['po_id']);
+            $status = sanitize_text_field($_POST['status']);
+            
+            error_log('SRWM: PO ID: ' . $po_id . ', Status: ' . $status);
+            
+            if (!$po_id) {
+                error_log('SRWM: Invalid PO ID');
+                wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
+            }
+            
+            // Map frontend status values to database enum values
+            $status_mapping = array(
+                'pending' => 'draft',
+                'confirmed' => 'confirmed', 
+                'shipped' => 'sent',
+                'completed' => 'received'
+            );
+            
+            if (!array_key_exists($status, $status_mapping)) {
+                error_log('SRWM: Invalid status: ' . $status);
+                wp_send_json_error(__('Invalid status.', 'smart-restock-waitlist'));
+            }
+            
+            $db_status = $status_mapping[$status];
+            
+            global $wpdb;
+            $table = $wpdb->prefix . 'srwm_purchase_orders';
+            
+            // Check if table exists
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") == $table;
+            if (!$table_exists) {
+                error_log('SRWM: Purchase orders table does not exist');
+                wp_send_json_error(__('Purchase orders table not found.', 'smart-restock-waitlist'));
+            }
+            
+            // Check if PO exists
+            $po_exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM $table WHERE id = %d", $po_id));
+            if (!$po_exists) {
+                error_log('SRWM: PO with ID ' . $po_id . ' does not exist');
+                wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
+            }
+            
+            $result = $wpdb->update(
+                $table,
+                array(
+                    'status' => $db_status,
+                    'updated_at' => current_time('mysql')
+                ),
+                array('id' => $po_id),
+                array('%s', '%s'),
+                array('%d')
+            );
+            
+            error_log('SRWM: Update result: ' . ($result !== false ? 'success' : 'failed'));
+            error_log('SRWM: Last SQL error: ' . $wpdb->last_error);
+            
+            if ($result !== false) {
+                wp_send_json_success(__('PO status updated successfully.', 'smart-restock-waitlist'));
+            } else {
+                wp_send_json_error(__('Failed to update PO status. Database error: ' . $wpdb->last_error, 'smart-restock-waitlist'));
+            }
+            
+        } catch (Exception $e) {
+            error_log('SRWM: Exception in ajax_update_po_status: ' . $e->getMessage());
+            wp_send_json_error(__('An error occurred while updating the status. Please try again.', 'smart-restock-waitlist'));
+        }
+    }
+    
+    /**
+     * AJAX: Test AJAX functionality
+     */
+    public function ajax_test_ajax() {
+        // Prevent any output before JSON response
+        ob_clean();
+        
+        error_log('SRWM: Test AJAX called');
+        wp_send_json_success('AJAX is working correctly');
     }
     
 

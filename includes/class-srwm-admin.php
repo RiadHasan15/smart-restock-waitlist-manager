@@ -7014,6 +7014,10 @@ If you no longer wish to receive these emails, please contact us.';
                             <span class="dashicons dashicons-plus"></span>
                             <?php _e('Generate New PO', 'smart-restock-waitlist'); ?>
                         </button>
+                        <button class="srwm-btn srwm-btn-secondary" id="srwm-test-ajax" style="margin-left: 10px;">
+                            <span class="dashicons dashicons-admin-tools"></span>
+                            Test AJAX
+                        </button>
                     </div>
                 </div>
             </div>
@@ -8373,6 +8377,31 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
+            // Test AJAX functionality
+            $('#srwm-test-ajax').on('click', function() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_test_ajax',
+                        nonce: '<?php echo wp_create_nonce('srwm_test_ajax'); ?>'
+                    },
+                    success: function(response) {
+                        console.log('SRWM: Test AJAX response:', response);
+                        if (response.success) {
+                            showNotification('AJAX is working correctly!', 'success');
+                        } else {
+                            showNotification('AJAX test failed: ' + response.data, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('SRWM: Test AJAX error:', {xhr: xhr, status: status, error: error});
+                        console.log('SRWM: Test response text:', xhr.responseText);
+                        showNotification('AJAX test failed: ' + error, 'error');
+                    }
+                });
+            });
+            
             // Update PO Status
             $('.update-po-status').on('change', function() {
                 var poId = $(this).data('po-id');
@@ -8386,7 +8415,7 @@ If you no longer wish to receive these emails, please contact us.';
                     url: ajaxurl,
                     type: 'POST',
                     data: {
-                        action: 'srwm_update_po_status',
+                        action: 'srwm_update_po_status_safe',
                         po_id: poId,
                         status: newStatus,
                         nonce: '<?php echo wp_create_nonce('srwm_update_po_status'); ?>'
@@ -8408,10 +8437,23 @@ If you no longer wish to receive these emails, please contact us.';
                     },
                     error: function(xhr, status, error) {
                         console.log('SRWM: Status update error:', {xhr: xhr, status: status, error: error});
+                        console.log('SRWM: Response text:', xhr.responseText);
+                        
                         var errorMessage = '<?php _e('Error updating status. Please try again.', 'smart-restock-waitlist'); ?>';
-                        if (xhr.responseJSON && xhr.responseJSON.data) {
-                            errorMessage = xhr.responseJSON.data;
+                        
+                        // Try to parse JSON response
+                        try {
+                            if (xhr.responseJSON && xhr.responseJSON.data) {
+                                errorMessage = xhr.responseJSON.data;
+                            }
+                        } catch (e) {
+                            console.log('SRWM: Could not parse JSON response:', e);
+                            // Show raw response if JSON parsing fails
+                            if (xhr.responseText) {
+                                errorMessage = 'Server response: ' + xhr.responseText.substring(0, 200);
+                            }
                         }
+                        
                         showNotification(errorMessage, 'error');
                         // Revert select value
                         select.val(select.data('original-value'));
