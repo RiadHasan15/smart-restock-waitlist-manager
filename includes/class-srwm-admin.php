@@ -135,6 +135,8 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_waitlist_enabled');
         register_setting('srwm_settings', 'srwm_supplier_notifications');
         register_setting('srwm_settings', 'srwm_email_template_waitlist');
+        register_setting('srwm_settings', 'srwm_restock_email_template');
+        register_setting('srwm_settings', 'srwm_restock_email_subject');
         register_setting('srwm_settings', 'srwm_email_template_supplier');
         register_setting('srwm_settings', 'srwm_low_stock_threshold');
         register_setting('srwm_settings', 'srwm_auto_disable_at_zero');
@@ -193,11 +195,26 @@ class SRWM_Admin {
             $waitlist_email_template = $this->get_default_waitlist_email_template();
         }
         
+        // Validate and sanitize restock email template
+        $restock_email_template = isset($_POST['srwm_restock_email_template']) ? 
+            wp_kses_post($_POST['srwm_restock_email_template']) : '';
+        
+        // Set default restock email template if empty
+        if (empty($restock_email_template)) {
+            $restock_email_template = $this->get_default_restock_email_template();
+        }
+        
         // Save settings
         update_option('srwm_waitlist_enabled', $waitlist_enabled);
         update_option('srwm_auto_disable_at_zero', $auto_disable_at_zero);
         update_option('srwm_waitlist_display_threshold', $waitlist_display_threshold);
         update_option('srwm_email_template_waitlist', $waitlist_email_template);
+        update_option('srwm_restock_email_template', $restock_email_template);
+        
+        // Save restock email subject
+        if (isset($_POST['srwm_restock_email_subject'])) {
+            update_option('srwm_restock_email_subject', sanitize_text_field($_POST['srwm_restock_email_subject']));
+        }
         
         // Save styling options
         $styling_options = array(
@@ -300,6 +317,8 @@ class SRWM_Admin {
         update_option('srwm_auto_disable_at_zero', 'no');
         update_option('srwm_waitlist_display_threshold', 5);
         update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
+        update_option('srwm_restock_email_template', $this->get_default_restock_email_template());
+        update_option('srwm_restock_email_subject', __('{product_name} is back in stock!', 'smart-restock-waitlist'));
         
         // Reset styling options to defaults
         $default_styling = array(
@@ -7505,6 +7524,24 @@ class SRWM_Admin {
                                 $template = get_option('srwm_email_template_waitlist');
                                 if (empty($template)) {
                                     $template = $this->get_default_waitlist_email_template();
+                                }
+                                echo esc_textarea($template); 
+                            ?></textarea>
+                            <p class="description">
+                                <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Restock Notification Email', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <input type="text" name="srwm_restock_email_subject" value="<?php echo esc_attr(get_option('srwm_restock_email_subject', __('{product_name} is back in stock!', 'smart-restock-waitlist'))); ?>" class="large-text" placeholder="<?php _e('Email Subject', 'smart-restock-waitlist'); ?>">
+                            <br><br>
+                            <textarea name="srwm_restock_email_template" rows="8" cols="50" class="large-text"><?php 
+                                $template = get_option('srwm_restock_email_template');
+                                if (empty($template)) {
+                                    $template = $this->get_default_restock_email_template();
                                 }
                                 echo esc_textarea($template); 
                             ?></textarea>
