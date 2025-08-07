@@ -4563,6 +4563,18 @@ Best regards,
             
             $sent = wp_mail($po->supplier_email, $subject, $message, $alt_headers);
             error_log('SRWM: Alternative email method result: ' . ($sent ? 'success' : 'failed'));
+            
+            // If still failing, try with PHP mail() function directly
+            if (!$sent) {
+                error_log('SRWM: wp_mail still failed, trying PHP mail() directly');
+                
+                $from_header = 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>' . "\r\n";
+                $from_header .= 'Reply-To: ' . get_option('admin_email') . "\r\n";
+                $from_header .= 'Content-Type: text/plain; charset=UTF-8' . "\r\n";
+                
+                $sent = mail($po->supplier_email, $subject, $message, $from_header);
+                error_log('SRWM: PHP mail() result: ' . ($sent ? 'success' : 'failed'));
+            }
         }
         
         if ($sent) {
@@ -4580,17 +4592,30 @@ Best regards,
             
             wp_send_json_success(__('PO sent to supplier successfully.', 'smart-restock-waitlist'));
         } else {
-            error_log('SRWM: Failed to send email to supplier');
+            // Email failed, but we can still mark it as "attempted to send"
+            error_log('SRWM: Email failed, but marking PO as attempted to send');
+            
+            $update_result = $wpdb->update(
+                $table,
+                array('last_sent_at' => current_time('mysql')),
+                array('id' => $po_id),
+                array('%s'),
+                array('%d')
+            );
+            
+            error_log('SRWM: Update last_sent_at (failed email) result: ' . ($update_result !== false ? 'success' : 'failed'));
+            
+            // Run email diagnostics
+            $diagnostics = $this->run_email_diagnostics();
             
             // Provide more specific error information
-            $error_message = __('Failed to send PO to supplier. ', 'smart-restock-waitlist');
-            $error_message .= __('This could be due to:', 'smart-restock-waitlist') . "\n";
-            $error_message .= __('1. Email server configuration', 'smart-restock-waitlist') . "\n";
-            $error_message .= __('2. WordPress email settings', 'smart-restock-waitlist') . "\n";
-            $error_message .= __('3. Server email restrictions', 'smart-restock-waitlist') . "\n\n";
-            $error_message .= __('Please check your WordPress email configuration or contact your hosting provider.', 'smart-restock-waitlist');
+            $error_message = __('PO marked as sent but email delivery failed. ', 'smart-restock-waitlist');
+            $error_message .= __('Email diagnostics:', 'smart-restock-waitlist') . "\n\n";
+            $error_message .= $diagnostics;
+            $error_message .= "\n\n" . __('Please check your WordPress email configuration or contact your hosting provider.', 'smart-restock-waitlist');
             
-            wp_send_json_error($error_message);
+                        wp_send_json_error($error_message);
+        }
         }
     }
     
@@ -4860,6 +4885,67 @@ Best regards,
             error_log('SRWM: Exception in ajax_update_po_status: ' . $e->getMessage());
             wp_send_json_error(__('An error occurred while updating the status. Please try again.', 'smart-restock-waitlist'));
         }
+    }
+    
+    /**
+     * Run email diagnostics to identify issues
+     */
+    private function run_email_diagnostics() {
+        $diagnostics = array();
+        
+        // Check WordPress email settings
+        $admin_email = get_option('admin_email');
+        $site_name = get_bloginfo('name');
+        
+        $diagnostics[] = "WordPress Settings:";
+        $diagnostics[] = "- Admin Email: " . ($admin_email ?: 'Not set');
+        $diagnostics[] = "- Site Name: " . ($site_name ?: 'Not set');
+        
+        // Check if wp_mail function exists
+        $diagnostics[] = "\nFunction Availability:";
+        $diagnostics[] = "- wp_mail(): " . (function_exists('wp_mail') ? 'Available' : 'Not available');
+        $diagnostics[] = "- mail(): " . (function_exists('mail') ? 'Available' : 'Not available');
+        
+        // Check server environment
+        $diagnostics[] = "\nServer Environment:";
+        $diagnostics[] = "- PHP Version: " . PHP_VERSION;
+        $diagnostics[] = "- Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown');
+        
+        // Check if we're on localhost
+        $is_localhost = in_array($_SERVER['HTTP_HOST'], array('localhost', '127.0.0.1', '::1'));
+        $diagnostics[] = "- Localhost: " . ($is_localhost ? 'Yes (email may not work)' : 'No');
+        
+        // Check for common email plugins
+        $diagnostics[] = "\nEmail Plugins:";
+        $active_plugins = get_option('active_plugins');
+        $email_plugins = array(
+            'wp-mail-smtp/wp-mail-smtp.php' => 'WP Mail SMTP',
+            'easy-wp-smtp/easy-wp-smtp.php' => 'Easy WP SMTP',
+            'post-smtp/postman-smtp.php' => 'Post SMTP',
+            'mailgun/mailgun.php' => 'Mailgun',
+            'sendgrid-email-delivery-simplified/wpsendgrid.php' => 'SendGrid'
+        );
+        
+        foreach ($email_plugins as $plugin => $name) {
+            $diagnostics[] = "- $name: " . (in_array($plugin, $active_plugins) ? 'Active' : 'Not active');
+        }
+        
+        // Test basic email functionality
+        $diagnostics[] = "\nEmail Test Results:";
+        
+        // Test 1: Basic wp_mail
+        $test1 = wp_mail($admin_email, 'Test 1', 'Basic wp_mail test');
+        $diagnostics[] = "- Basic wp_mail: " . ($test1 ? 'Success' : 'Failed');
+        
+        // Test 2: wp_mail with headers
+        $test2 = wp_mail($admin_email, 'Test 2', 'wp_mail with headers test', array('Content-Type: text/plain; charset=UTF-8'));
+        $diagnostics[] = "- wp_mail with headers: " . ($test2 ? 'Success' : 'Failed');
+        
+        // Test 3: PHP mail()
+        $test3 = mail($admin_email, 'Test 3', 'PHP mail() test');
+        $diagnostics[] = "- PHP mail(): " . ($test3 ? 'Success' : 'Failed');
+        
+        return implode("\n", $diagnostics);
     }
     
     /**
