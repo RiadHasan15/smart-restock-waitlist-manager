@@ -4724,18 +4724,6 @@ Best regards,
             );
         }
         
-        // If update failed due to missing column, try without updated_at
-        if ($result === false && strpos($wpdb->last_error, 'updated_at') !== false) {
-            error_log('SRWM: Update failed due to missing updated_at column, trying without it');
-            $result = $wpdb->update(
-                $table,
-                array('status' => $db_status),
-                array('id' => $po_id),
-                array('%s'),
-                array('%d')
-            );
-        }
-        
         error_log('SRWM: Update result: ' . ($result !== false ? 'success' : 'failed'));
         error_log('SRWM: Last SQL error: ' . $wpdb->last_error);
         
