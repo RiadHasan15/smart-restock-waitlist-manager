@@ -1027,8 +1027,6 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_resend_po', array($this, 'ajax_resend_po'));
         add_action('wp_ajax_srwm_update_po_status', array($this, 'ajax_update_po_status'));
         add_action('wp_ajax_srwm_update_po_status_safe', array($this, 'ajax_update_po_status_safe'));
-        add_action('wp_ajax_srwm_test_email', array($this, 'ajax_test_email'));
-        add_action('wp_ajax_srwm_test_ajax', array($this, 'ajax_test_ajax'));
     }
     
     /**
@@ -4924,83 +4922,7 @@ Best regards,
         return implode("\n", $diagnostics);
     }
     
-    /**
-     * AJAX: Test email functionality
-     */
-    public function ajax_test_email() {
-        // Prevent any output before JSON response
-        ob_clean();
-        
-        error_log('SRWM: Test email called');
-        
-        // Check if nonce exists
-        if (!isset($_POST['nonce'])) {
-            error_log('SRWM: Test email - Nonce not provided');
-            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
-        }
-        
-        // Check nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'srwm_test_email')) {
-            error_log('SRWM: Test email - Nonce verification failed');
-            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
-        }
-        
-        if (!current_user_can('manage_woocommerce')) {
-            error_log('SRWM: Test email - Insufficient permissions');
-            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
-        }
-        
-        // Get admin email
-        $admin_email = get_option('admin_email');
-        $site_name = get_bloginfo('name');
-        
-        // Test email content
-        $subject = sprintf(__('Test Email from %s - Smart Restock Manager', 'smart-restock-waitlist'), $site_name);
-        $message = sprintf(__('This is a test email from the Smart Restock & Waitlist Manager plugin.
 
-If you receive this email, it means your WordPress email configuration is working correctly.
-
-Test Details:
-- Time: %s
-- Site: %s
-- Admin Email: %s
-
-Best regards,
-Smart Restock Manager', 'smart-restock-waitlist'), 
-            current_time('Y-m-d H:i:s'),
-            $site_name,
-            $admin_email
-        );
-        
-        $headers = array(
-            'From: ' . $site_name . ' <' . $admin_email . '>',
-            'Reply-To: ' . $admin_email,
-            'Content-Type: text/plain; charset=UTF-8'
-        );
-        
-        error_log('SRWM: Sending test email to: ' . $admin_email);
-        
-        $sent = wp_mail($admin_email, $subject, $message, $headers);
-        
-        error_log('SRWM: Test email result: ' . ($sent ? 'success' : 'failed'));
-        
-        if ($sent) {
-            wp_send_json_success(__('Test email sent successfully! Check your inbox.', 'smart-restock-waitlist'));
-        } else {
-            wp_send_json_error(__('Test email failed. Please check your WordPress email configuration.', 'smart-restock-waitlist'));
-        }
-    }
-    
-    /**
-     * AJAX: Test AJAX functionality
-     */
-    public function ajax_test_ajax() {
-        // Prevent any output before JSON response
-        ob_clean();
-        
-        error_log('SRWM: Test AJAX called');
-        wp_send_json_success('AJAX is working correctly');
-    }
     
 
     
