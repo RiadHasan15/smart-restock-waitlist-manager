@@ -2325,10 +2325,14 @@ class SRWM_Admin {
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 10000;
+        }
+        
+        .srwm-modal.srwm-modal-active {
+            display: flex;
         }
         
         .srwm-modal-content {
