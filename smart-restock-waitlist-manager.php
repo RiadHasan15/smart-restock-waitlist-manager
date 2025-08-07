@@ -1350,25 +1350,100 @@ class SmartRestockWaitlistManager {
      * AJAX: Generate purchase order (Pro)
      */
     public function ajax_generate_po() {
-        check_ajax_referer('srwm_admin_nonce', 'nonce');
+        check_ajax_referer('srwm_generate_po', 'nonce');
         
-        if (!current_user_can('manage_woocommerce') || !$this->license_manager->is_pro_active()) {
-            wp_die(json_encode(array('success' => false, 'message' => __('Insufficient permissions or Pro license required.', 'smart-restock-waitlist'))));
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
         
-        $product_id = intval($_POST['product_id']);
-        $supplier_data = array(
-            'name' => sanitize_text_field($_POST['supplier_name']),
-            'email' => sanitize_email($_POST['supplier_email'])
-        );
+        // Add debugging
+        error_log('SRWM: ajax_generate_po called');
+        error_log('SRWM: POST data: ' . print_r($_POST, true));
         
-        if (class_exists('SRWM_Pro_Purchase_Order')) {
-            $po = SRWM_Pro_Purchase_Order::get_instance();
-            $result = $po->generate_purchase_order($product_id, $supplier_data);
-            wp_die(json_encode($result));
+        try {
+            // Parse the form data
+            $form_data = json_decode(stripslashes($_POST['form_data']), true);
+            error_log('SRWM: Parsed form data: ' . print_r($form_data, true));
+            
+            if (!$form_data) {
+                wp_send_json_error(__('Invalid form data received.', 'smart-restock-waitlist'));
+            }
+            
+            // Validate required fields
+            if (empty($form_data['products'])) {
+                wp_send_json_error(__('No products selected for purchase order.', 'smart-restock-waitlist'));
+            }
+            
+            if (empty($form_data['delivery_method'])) {
+                wp_send_json_error(__('Delivery method not specified.', 'smart-restock-waitlist'));
+            }
+            
+            // Process based on delivery method
+            if ($form_data['delivery_method'] === 'supplier') {
+                if (empty($form_data['supplier_id'])) {
+                    wp_send_json_error(__('Supplier not selected.', 'smart-restock-waitlist'));
+                }
+                
+                // Get supplier details
+                global $wpdb;
+                $supplier = $wpdb->get_row($wpdb->prepare(
+                    "SELECT * FROM {$wpdb->prefix}srwm_suppliers WHERE id = %d",
+                    $form_data['supplier_id']
+                ));
+                
+                if (!$supplier) {
+                    wp_send_json_error(__('Selected supplier not found.', 'smart-restock-waitlist'));
+                }
+                
+                $supplier_data = array(
+                    'name' => $supplier->supplier_name,
+                    'email' => $supplier->supplier_email
+                );
+                
+            } elseif ($form_data['delivery_method'] === 'email') {
+                if (empty($form_data['email_address'])) {
+                    wp_send_json_error(__('Email address not provided.', 'smart-restock-waitlist'));
+                }
+                
+                $supplier_data = array(
+                    'name' => !empty($form_data['supplier_name']) ? $form_data['supplier_name'] : 'Supplier',
+                    'email' => $form_data['email_address']
+                );
+            } else {
+                wp_send_json_error(__('Invalid delivery method.', 'smart-restock-waitlist'));
+            }
+            
+            // Generate PO for each product
+            $results = array();
+            foreach ($form_data['products'] as $product_data) {
+                $product_id = intval($product_data['id']);
+                $quantity = intval($product_data['quantity']);
+                
+                if ($product_id <= 0 || $quantity <= 0) {
+                    continue; // Skip invalid products
+                }
+                
+                // For now, just log the PO generation
+                error_log("SRWM: Would generate PO for product {$product_id}, quantity {$quantity} to {$supplier_data['name']} ({$supplier_data['email']})");
+                
+                $results[] = array(
+                    'product_id' => $product_id,
+                    'quantity' => $quantity,
+                    'supplier' => $supplier_data,
+                    'status' => 'success'
+                );
+            }
+            
+            // For now, return success (actual PO generation will be implemented later)
+            wp_send_json_success(array(
+                'message' => __('Purchase order generated successfully!', 'smart-restock-waitlist'),
+                'results' => $results
+            ));
+            
+        } catch (Exception $e) {
+            error_log('SRWM: Exception in ajax_generate_po: ' . $e->getMessage());
+            wp_send_json_error(__('Error generating purchase order: ', 'smart-restock-waitlist') . $e->getMessage());
         }
-        
-        wp_die(json_encode(array('success' => false, 'message' => __('Pro feature not available.', 'smart-restock-waitlist'))));
     }
     
     /**

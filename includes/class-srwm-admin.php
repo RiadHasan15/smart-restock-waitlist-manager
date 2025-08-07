@@ -2816,6 +2816,95 @@ class SRWM_Admin {
             color: #111827 !important;
         }
         
+        /* Button Styling */
+        .srwm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        
+        .srwm-btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .srwm-btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-btn-secondary {
+            background: #6b7280;
+            color: #fff;
+        }
+        
+        .srwm-btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+        }
+        
+        .srwm-btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .srwm-btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .srwm-btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .srwm-btn-outline:hover {
+            background: #3b82f6;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .srwm-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .srwm-btn i {
+            font-size: 16px;
+        }
+        
+        /* Step Actions Styling */
+        .srwm-step-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .srwm-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
