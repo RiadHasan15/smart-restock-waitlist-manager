@@ -5534,6 +5534,312 @@ class SRWM_Admin {
                 opacity: 1;
             }
         }
+        
+        /* Modern PO Details Modal Styles */
+        .srwm-po-details-modern {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        .srwm-po-overview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .srwm-po-overview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+        
+        .srwm-po-main-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .srwm-po-number-display {
+            flex: 1;
+        }
+        
+        .srwm-po-number-label {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .srwm-po-number-value {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .srwm-po-meta {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .srwm-po-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .srwm-po-meta-item i {
+            font-size: 16px;
+        }
+        
+        .srwm-po-content-modern {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .srwm-po-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .srwm-po-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-po-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .srwm-po-card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .srwm-po-card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .srwm-po-card-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .srwm-po-card-content {
+            padding: 20px;
+        }
+        
+        .srwm-po-info-item-modern {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .srwm-po-info-item-modern:last-child {
+            border-bottom: none;
+        }
+        
+        .srwm-po-info-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 120px;
+        }
+        
+        .srwm-po-info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            text-align: right;
+            flex: 1;
+        }
+        
+        .srwm-quantity-display {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .srwm-email-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .srwm-email-link:hover {
+            text-decoration: underline;
+        }
+        
+        .srwm-delivery-date {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .srwm-no-date {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .srwm-urgency-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .srwm-urgency-normal {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .srwm-urgency-high {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .srwm-urgency-urgent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .srwm-po-notes-card {
+            grid-column: 1 / -1;
+        }
+        
+        .srwm-po-notes-content {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        /* Modal Header and Footer Enhancements */
+        .srwm-modal-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .srwm-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .srwm-modal-title h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .srwm-po-status-display {
+            display: flex;
+            align-items: center;
+        }
+        
+        .srwm-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .srwm-modal-footer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .srwm-modal-footer-primary {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .srwm-po-main-info {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .srwm-po-meta {
+                justify-content: center;
+            }
+            
+            .srwm-po-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .srwm-po-info-item-modern {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .srwm-po-info-value {
+                text-align: left;
+            }
+            
+            .srwm-modal-footer-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .srwm-modal-footer-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
         </style>
         <?php
     }
@@ -7039,24 +7345,44 @@ If you no longer wish to receive these emails, please contact us.';
         <div id="srwm-po-details-modal" class="srwm-modal" style="display: none;">
             <div class="srwm-modal-content srwm-modal-large">
                 <div class="srwm-modal-header">
-                    <h2><?php _e('Purchase Order Details', 'smart-restock-waitlist'); ?></h2>
-                    <span class="srwm-modal-close">&times;</span>
+                    <div class="srwm-modal-header-content">
+                        <div class="srwm-modal-title">
+                            <h2><?php _e('Purchase Order Details', 'smart-restock-waitlist'); ?></h2>
+                            <div class="srwm-po-status-display">
+                                <span class="srwm-status-badge" id="srwm-modal-status-badge">
+                                    <i class="fas fa-circle"></i>
+                                    <span id="srwm-modal-status-text">Pending</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="srwm-modal-actions">
+                            <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
+                                <i class="fas fa-times"></i>
+                                <?php _e('Close', 'smart-restock-waitlist'); ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="srwm-modal-body" id="srwm-po-details-content">
                     <!-- Content will be loaded dynamically -->
                 </div>
                 <div class="srwm-modal-footer">
-                    <button type="button" class="button button-secondary srwm-modal-close">
-                        <?php _e('Close', 'smart-restock-waitlist'); ?>
-                    </button>
-                    <button type="button" class="button button-primary" id="srwm-download-po">
-                        <span class="dashicons dashicons-download"></span>
-                        <?php _e('Download PDF', 'smart-restock-waitlist'); ?>
-                    </button>
-                    <button type="button" class="button button-secondary" id="srwm-resend-po">
-                        <span class="dashicons dashicons-email-alt"></span>
-                        <?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>
-                    </button>
+                    <div class="srwm-modal-footer-actions">
+                        <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
+                            <i class="fas fa-times"></i>
+                            <?php _e('Close', 'smart-restock-waitlist'); ?>
+                        </button>
+                        <div class="srwm-modal-footer-primary">
+                            <button type="button" class="srwm-btn srwm-btn-secondary" id="srwm-modal-resend-po">
+                                <i class="fas fa-envelope"></i>
+                                <?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>
+                            </button>
+                            <button type="button" class="srwm-btn srwm-btn-primary" id="srwm-modal-download-po">
+                                <i class="fas fa-download"></i>
+                                <?php _e('Download PDF', 'smart-restock-waitlist'); ?>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -7661,10 +7987,16 @@ If you no longer wish to receive these emails, please contact us.';
                 tbody.empty().append(rows);
             });
             
+            // Global variable to store current PO ID
+            var currentPoId = null;
+            
             // View PO Details
             $('.view-po').on('click', function() {
                 var poId = $(this).data('po-id');
                 var button = $(this);
+                
+                // Store current PO ID globally
+                currentPoId = poId;
                 
                 // Add loading state
                 button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
@@ -7680,6 +8012,13 @@ If you no longer wish to receive these emails, please contact us.';
                     success: function(response) {
                         if (response.success) {
                             $('#srwm-po-details-content').html(response.data.html);
+                            
+                            // Update modal status badge
+                            var status = response.data.status || 'pending';
+                            var statusText = response.data.status_text || 'Pending';
+                            $('#srwm-modal-status-badge').removeClass().addClass('srwm-status-badge srwm-status-' + status);
+                            $('#srwm-modal-status-text').text(statusText);
+                            
                             $('#srwm-po-details-modal').show().addClass('srwm-modal-active');
                         } else {
                             alert('<?php _e('Failed to load PO details. Please try again.', 'smart-restock-waitlist'); ?>');
@@ -7836,6 +8175,93 @@ If you no longer wish to receive these emails, please contact us.';
                     });
                 }, 5000);
             }
+            
+            // Modal Download PO
+            $('#srwm-modal-download-po').on('click', function() {
+                if (!currentPoId) {
+                    alert('<?php _e('No PO selected. Please try again.', 'smart-restock-waitlist'); ?>');
+                    return;
+                }
+                
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Generating...', 'smart-restock-waitlist'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_download_po',
+                        po_id: currentPoId,
+                        nonce: '<?php echo wp_create_nonce('srwm_download_po'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Create download link
+                            var link = document.createElement('a');
+                            link.href = response.data.download_url;
+                            link.download = response.data.filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // Show success notification
+                            showNotification('<?php _e('PO PDF downloaded successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                        } else {
+                            alert('<?php _e('Failed to generate PDF. Please try again.', 'smart-restock-waitlist'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error generating PDF. Please try again.', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-download"></i> <?php _e('Download PDF', 'smart-restock-waitlist'); ?>');
+                    }
+                });
+            });
+            
+            // Modal Resend PO
+            $('#srwm-modal-resend-po').on('click', function() {
+                if (!currentPoId) {
+                    alert('<?php _e('No PO selected. Please try again.', 'smart-restock-waitlist'); ?>');
+                    return;
+                }
+                
+                if (!confirm('<?php _e('Are you sure you want to resend this PO to the supplier?', 'smart-restock-waitlist'); ?>')) {
+                    return;
+                }
+                
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Sending...', 'smart-restock-waitlist'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_resend_po',
+                        po_id: currentPoId,
+                        nonce: '<?php echo wp_create_nonce('srwm_resend_po'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification('<?php _e('PO resent to supplier successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                        } else {
+                            alert('<?php _e('Failed to resend PO. Please try again.', 'smart-restock-waitlist'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error resending PO. Please try again.', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-envelope"></i> <?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>');
+                    }
+                });
+            });
             
             // Export POs
             $('#srwm-export-pos, #srwm-quick-export').on('click', function() {
