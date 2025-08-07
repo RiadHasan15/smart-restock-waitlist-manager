@@ -2912,25 +2912,30 @@ class SRWM_Admin {
         }
         
         .srwm-btn-primary {
-            background: #3b82f6;
-            color: #fff;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
         
         .srwm-btn-primary:hover {
-            background: #2563eb;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+            color: white;
         }
         
         .srwm-btn-secondary {
-            background: #6b7280;
-            color: #fff;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #4f46e5;
+            border: 2px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-btn-secondary:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+            color: #4f46e5;
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-btn-success {
@@ -4360,7 +4365,7 @@ class SRWM_Admin {
         }
         
         .srwm-product-info .srwm-product-sku {
-            color: #6b7280;
+            color: #4f46e5;
             font-size: 12px;
             font-weight: 500;
         }
@@ -4374,7 +4379,7 @@ class SRWM_Admin {
         }
         
         .srwm-supplier-info .srwm-supplier-email {
-            color: #6b7280;
+            color: #4f46e5;
             font-size: 12px;
             font-weight: 500;
         }
@@ -4405,8 +4410,8 @@ class SRWM_Admin {
         
         .srwm-status-select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
         /* Date info styling */
@@ -4418,7 +4423,7 @@ class SRWM_Admin {
         }
         
         .srwm-date-info .srwm-time {
-            color: #6b7280;
+            color: #4f46e5;
             font-size: 12px;
             font-weight: 500;
         }
@@ -4455,23 +4460,29 @@ class SRWM_Admin {
         }
         
         .srwm-btn-primary {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
         }
         
         .srwm-btn-primary:hover {
-            background: #2563eb;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         
         .srwm-btn-secondary {
-            background: #6b7280;
-            color: white;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #4f46e5;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-btn-secondary:hover {
-            background: #4b5563;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
             transform: translateY(-1px);
+            color: #4f46e5;
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-btn i {
@@ -5629,13 +5640,13 @@ class SRWM_Admin {
         }
         
         .srwm-status-select:hover {
-            border-color: #9ca3af;
+            border-color: #4f46e5;
         }
         
         .srwm-status-select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
         .srwm-status-select:disabled {
@@ -5677,21 +5688,29 @@ class SRWM_Admin {
         }
         
         .srwm-btn-primary {
-            background-color: #3b82f6;
-            color: #fff;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
         }
         
         .srwm-btn-primary:hover {
-            background-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         
         .srwm-btn-secondary {
-            background-color: #6b7280;
-            color: #fff;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #4f46e5;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
         
         .srwm-btn-secondary:hover {
-            background-color: #4b5563;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            transform: translateY(-1px);
+            color: #4f46e5;
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         /* PO Details Modal Styles */
