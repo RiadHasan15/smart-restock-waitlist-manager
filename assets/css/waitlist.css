@@ -354,12 +354,33 @@
 /* Ensure hidden elements don't take up space */
 .srwm-waitlist-form-container:not(:visible),
 .srwm-waitlist-form-container[style*="display: none"],
-.srwm-waitlist-form-container[style*="display:none"] {
+.srwm-waitlist-form-container[style*="display:none"],
+.srwm-waitlist-form-container.hidden,
+.srwm-waitlist-form-container.fade-out,
+.srwm-waitlist-form-container[style*="opacity: 0"],
+.srwm-waitlist-form-container[style*="visibility: hidden"] {
     display: none !important;
     height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+}
+
+/* Additional safety: hide any form elements that might be leftover */
+.srwm-waitlist-form-container.hidden .srwm-waitlist-form,
+.srwm-waitlist-form-container.hidden .srwm-form-fields,
+.srwm-waitlist-form-container[style*="display: none"] .srwm-waitlist-form,
+.srwm-waitlist-form-container[style*="display: none"] .srwm-form-fields {
+    display: none !important;
 }
 
 .srwm-waitlist-form-container::before {

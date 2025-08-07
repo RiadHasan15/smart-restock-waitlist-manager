@@ -36,6 +36,9 @@ jQuery(document).ready(function($) {
         // Clear previous messages
         $message.removeClass('success error').hide();
         
+        // Immediately hide the form container to prevent empty space
+        $form.closest('.srwm-waitlist-form-container').hide();
+        
         // Submit form
         $.ajax({
             url: srwm_ajax.ajax_url,
@@ -428,8 +431,22 @@ jQuery(document).ready(function($) {
                     }
                     
                     if (response.success) {
-                        // Replace the entire container content
+                        // Completely replace the container content
                         $container.html(response.html);
+                        
+                        // Force remove any leftover form containers and ensure they don't take space
+                        $container.find('.srwm-waitlist-form-container').each(function() {
+                            $(this).remove();
+                        });
+                        
+                        // Double-check: remove any elements with form-related classes
+                        $container.find('[class*="form"]').each(function() {
+                            if ($(this).hasClass('srwm-waitlist-form-container') || 
+                                $(this).hasClass('srwm-waitlist-form') ||
+                                $(this).hasClass('srwm-form-fields')) {
+                                $(this).remove();
+                            }
+                        });
                         
                         // Re-initialize visual effects after content replacement
                         setTimeout(function() {
