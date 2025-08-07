@@ -1,8 +1,7 @@
-/* Smart Restock & Waitlist Manager - Modern Professional UI */
+/* Smart Restock & Waitlist Manager - Clean CSS */
 
 /* Base Container */
 .srwm-waitlist-container {
-    /* Background and colors will be set dynamically via PHP */
     border-radius: 20px;
     padding: 32px;
     margin: 24px 0;
@@ -17,17 +16,7 @@
     transform: translateY(-2px);
 }
 
-/* Remove gradient overlay */
-.srwm-waitlist-container::before {
-    display: none;
-}
-
-.srwm-waitlist-container > * {
-    position: relative;
-    z-index: 2;
-}
-
-/* Modern Header */
+/* Header */
 .srwm-waitlist-header {
     text-align: center;
     margin-bottom: 32px;
@@ -52,7 +41,6 @@
     font-weight: 700;
     letter-spacing: -0.5px;
     line-height: 1.2;
-    /* Color will be set dynamically */
 }
 
 .srwm-waitlist-subtitle {
@@ -60,10 +48,9 @@
     font-weight: 400;
     line-height: 1.5;
     opacity: 0.8;
-    /* Color will be set dynamically */
 }
 
-/* Enhanced Status Card */
+/* Status Card */
 .srwm-waitlist-status {
     margin-bottom: 24px;
 }
@@ -76,7 +63,6 @@
     gap: 20px;
     position: relative;
     overflow: hidden;
-    /* Background and border will be set dynamically */
 }
 
 .srwm-status-card::before {
@@ -91,7 +77,6 @@
 }
 
 .srwm-status-card.active {
-    /* Background and border will be set dynamically */
     box-shadow: 0 8px 32px rgba(34, 197, 94, 0.15);
 }
 
@@ -100,57 +85,57 @@
     color: #22c55e;
     flex-shrink: 0;
     background: rgba(34, 197, 94, 0.1);
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.srwm-status-content {
+    flex: 1;
+}
+
 .srwm-status-content h4 {
     margin: 0 0 8px 0;
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.3;
-    /* Color will be set dynamically */
 }
 
 .srwm-status-content p {
-    margin: 0 0 16px 0;
-    font-size: 15px;
+    margin: 0;
+    font-size: 16px;
     line-height: 1.5;
-    /* Color will be set dynamically */
+    opacity: 0.8;
 }
 
-/* Modern Queue Position */
+/* Queue Position */
 .srwm-queue-position {
+    margin-top: 20px;
+    padding: 16px;
     border-radius: 12px;
-    padding: 20px;
-    margin-top: 16px;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .srwm-queue-info {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .srwm-queue-label {
     font-size: 14px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.7;
+    font-weight: 600;
+    opacity: 0.8;
 }
 
 .srwm-queue-number {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     color: #007cba;
     text-shadow: 0 2px 4px rgba(0, 124, 186, 0.2);
 }
@@ -165,32 +150,26 @@
     overflow: hidden;
     background: rgba(0, 0, 0, 0.1);
     margin-bottom: 8px;
-    /* Background will be set dynamically */
 }
 
 .srwm-progress-fill {
     height: 100%;
-    border-radius: 4px;
-    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     background: linear-gradient(90deg, #007cba, #005a87);
-    /* Background will be set dynamically */
+    border-radius: 4px;
+    transition: width 0.6s ease;
 }
 
 .srwm-queue-progress small {
     font-size: 12px;
     opacity: 0.7;
-    font-weight: 500;
 }
 
-/* Enhanced Preview Section */
+/* Social Proof */
 .srwm-waitlist-preview {
     margin-bottom: 24px;
     border-radius: 16px;
     overflow: hidden;
     position: relative;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
 }
 
 .srwm-preview-header {
@@ -202,7 +181,6 @@
     border-radius: 16px;
     position: relative;
     overflow: hidden;
-    /* Background and border will be set dynamically */
 }
 
 .srwm-preview-header::before {
@@ -247,7 +225,6 @@
     font-weight: 800;
     line-height: 1;
     animation: countUp 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Color will be set dynamically */
 }
 
 @keyframes countUp {
@@ -265,7 +242,6 @@
     font-size: 18px;
     font-weight: 600;
     line-height: 1.3;
-    /* Color will be set dynamically */
 }
 
 .srwm-preview-subtitle {
@@ -274,10 +250,9 @@
     font-weight: 400;
     line-height: 1.4;
     opacity: 0.8;
-    /* Color will be set dynamically */
 }
 
-/* Modern Queue Visualization */
+/* Queue Visualization */
 .srwm-queue-visualization {
     margin-top: 20px;
 }
@@ -286,101 +261,62 @@
     height: 12px;
     border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 16px;
-    position: relative;
     background: rgba(0, 0, 0, 0.1);
-    /* Background will be set dynamically */
+    margin-bottom: 16px;
 }
 
 .srwm-queue-fill {
     height: 100%;
-    border-radius: 6px;
-    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     background: linear-gradient(90deg, #007cba, #005a87);
+    border-radius: 6px;
+    transition: width 0.8s ease;
     position: relative;
-    /* Background will be set dynamically */
 }
 
 .srwm-queue-fill::after {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .srwm-queue-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
+    gap: 12px;
 }
 
 .srwm-stat-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    text-align: center;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
+    background: rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(10px);
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .srwm-stat-icon {
     font-size: 16px;
-    opacity: 0.7;
 }
 
-/* Modern Form Container */
+/* Form Container */
 .srwm-waitlist-form-container {
     border-radius: 16px;
     padding: 28px;
     position: relative;
     overflow: hidden;
-    /* Background and border will be set dynamically */
-}
-
-/* Ensure hidden elements don't take up space */
-.srwm-waitlist-form-container:not(:visible),
-.srwm-waitlist-form-container[style*="display: none"],
-.srwm-waitlist-form-container[style*="display:none"],
-.srwm-waitlist-form-container.hidden,
-.srwm-waitlist-form-container.fade-out,
-.srwm-waitlist-form-container[style*="opacity: 0"],
-.srwm-waitlist-form-container[style*="visibility: hidden"] {
-    display: none !important;
-    height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    width: 0 !important;
-    min-height: 0 !important;
-    max-height: 0 !important;
-}
-
-/* Additional safety: hide any form elements that might be leftover */
-.srwm-waitlist-form-container.hidden .srwm-waitlist-form,
-.srwm-waitlist-form-container.hidden .srwm-form-fields,
-.srwm-waitlist-form-container[style*="display: none"] .srwm-waitlist-form,
-.srwm-waitlist-form-container[style*="display: none"] .srwm-form-fields {
-    display: none !important;
 }
 
 .srwm-waitlist-form-container::before {
@@ -422,7 +358,6 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
-    /* Background and border will be set dynamically */
 }
 
 .srwm-field-group input::placeholder {
@@ -434,7 +369,6 @@
     outline: none;
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0, 124, 186, 0.15);
-    /* Border color will be set dynamically */
 }
 
 .srwm-field-group input:hover {
@@ -442,7 +376,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhanced Submit Button */
+/* Submit Button */
 .srwm-waitlist-submit {
     width: 100%;
     padding: 18px 32px;
@@ -460,7 +394,6 @@
     gap: 12px;
     text-transform: none;
     letter-spacing: 0.3px;
-    /* Background and color will be set dynamically */
 }
 
 .srwm-waitlist-submit::before {
@@ -480,8 +413,7 @@
 
 .srwm-waitlist-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 124, 186, 0.3);
-    /* Background will be set dynamically */
+    box-shadow: 0 12px 40px rgba(0, 124, 186, 0.4);
 }
 
 .srwm-waitlist-submit:active {
@@ -501,10 +433,8 @@
     font-weight: 600;
 }
 
-/* Loading State */
 .srwm-waitlist-submit.loading {
     pointer-events: none;
-    opacity: 0.8;
 }
 
 .srwm-waitlist-submit.loading .srwm-submit-icon {
@@ -516,47 +446,51 @@
     to { transform: rotate(360deg); }
 }
 
-/* Enhanced Messages */
+/* Messages */
 .srwm-waitlist-message {
-    margin-top: 20px;
-    padding: 16px 20px;
-    border-radius: 12px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     text-align: center;
-    animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
+    animation: messageSlideIn 0.3s ease;
 }
 
 @keyframes messageSlideIn {
-    from { 
-        opacity: 0; 
-        transform: translateY(-10px); 
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
 .srwm-waitlist-message.success {
     background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.2);
     color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .srwm-waitlist-message.error {
     background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
     color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Loading State */
+.srwm-waitlist-container.loading {
+    opacity: 0.7;
+    pointer-events: none;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .srwm-waitlist-container {
-        padding: 24px 20px;
+        padding: 24px;
         margin: 16px 0;
-        border-radius: 16px;
     }
     
     .srwm-waitlist-header h3 {
@@ -564,7 +498,6 @@
     }
     
     .srwm-preview-header {
-        padding: 20px;
         flex-direction: column;
         text-align: center;
         gap: 16px;
@@ -572,7 +505,6 @@
     
     .srwm-queue-stats {
         grid-template-columns: 1fr;
-        gap: 12px;
     }
     
     .srwm-stat-item {
@@ -580,19 +512,17 @@
     }
     
     .srwm-status-card {
-        padding: 20px;
         flex-direction: column;
         text-align: center;
         gap: 16px;
     }
     
     .srwm-waitlist-form-container {
-        padding: 24px 20px;
+        padding: 20px;
     }
     
     .srwm-field-group input {
         padding: 14px 16px;
-        font-size: 16px; /* Prevents zoom on iOS */
     }
     
     .srwm-waitlist-submit {
@@ -600,13 +530,12 @@
     }
 }
 
-/* Focus States for Accessibility */
+/* Accessibility */
 .srwm-waitlist-container:focus-within {
     outline: 2px solid #007cba;
     outline-offset: 2px;
 }
 
-/* High Contrast Mode */
 @media (prefers-contrast: high) {
     .srwm-waitlist-container {
         border: 2px solid currentColor;
@@ -617,12 +546,12 @@
     }
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
     .srwm-count-number,
-    .srwm-queue-fill,
-    .srwm-progress-fill {
+    .srwm-waitlist-submit,
+    .srwm-field-group input {
         animation: none;
+        transition: none;
     }
     
     .srwm-waitlist-submit:hover {
@@ -635,11 +564,9 @@
     }
 }
 
-/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     .srwm-waitlist-container {
         background: rgba(0, 0, 0, 0.8);
-        color: #ffffff;
     }
     
     .srwm-field-group input {

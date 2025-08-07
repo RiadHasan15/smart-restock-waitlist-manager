@@ -1,11 +1,8 @@
 /**
- * Smart Restock & Waitlist Manager - Enhanced Frontend JavaScript
+ * Smart Restock & Waitlist Manager - Simple Frontend JavaScript
  */
 
 jQuery(document).ready(function($) {
-    
-    // Initialize visual effects
-    initVisualEffects();
     
     // Handle form submission
     $('.srwm-waitlist-form').on('submit', function(e) {
@@ -36,9 +33,6 @@ jQuery(document).ready(function($) {
         // Clear previous messages
         $message.removeClass('success error').hide();
         
-        // Immediately hide the form container to prevent empty space
-        $form.closest('.srwm-waitlist-form-container').hide();
-        
         // Submit form
         $.ajax({
             url: srwm_ajax.ajax_url,
@@ -53,11 +47,7 @@ jQuery(document).ready(function($) {
                     
                     if (response.success) {
                         showSuccessMessage($message, response.message);
-                        
-                        // Use the reload approach to get the properly structured HTML
                         reloadWaitlistSection($form);
-                        
-                        animateSuccess($form);
                     } else {
                         showErrorMessage($message, response.message);
                     }
@@ -90,156 +80,16 @@ jQuery(document).ready(function($) {
     });
     
     /**
-     * Initialize visual effects
-     */
-    function initVisualEffects() {
-        // Animate count numbers
-        animateCountNumbers();
-        
-        // Add scroll animations
-        addScrollAnimations();
-        
-        // Initialize progress bars
-        initProgressBars();
-        
-        // Add hover effects
-        addHoverEffects();
-    }
-    
-    /**
-     * Animate count numbers
-     */
-    function animateCountNumbers() {
-        $('.srwm-count-number').each(function() {
-            const $element = $(this);
-            const targetCount = parseInt($element.data('count')) || 0;
-            
-            if (targetCount > 0) {
-                animateNumber($element, 0, targetCount, 1000);
-            }
-        });
-    }
-    
-    /**
-     * Animate number from start to end
-     */
-    function animateNumber($element, start, end, duration) {
-        const startTime = performance.now();
-        const difference = end - start;
-        
-        function updateNumber(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function for smooth animation
-            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-            const current = Math.floor(start + (difference * easeOutQuart));
-            
-            $element.text(current.toLocaleString());
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateNumber);
-            }
-        }
-        
-        requestAnimationFrame(updateNumber);
-    }
-    
-    /**
-     * Add scroll animations
-     */
-    function addScrollAnimations() {
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
-            });
-        }, observerOptions);
-        
-        // Observe elements for animation
-        $('.srwm-waitlist-container').each(function() {
-            observer.observe(this);
-        });
-    }
-    
-    /**
-     * Initialize progress bars
-     */
-    function initProgressBars() {
-        $('.srwm-progress-fill').each(function() {
-            const $progress = $(this);
-            const width = $progress.css('width');
-            
-            // Reset width for animation
-            $progress.css('width', '0%');
-            
-            // Animate to target width
-            setTimeout(function() {
-                $progress.css('width', width);
-            }, 300);
-        });
-    }
-    
-    /**
-     * Add hover effects
-     */
-    function addHoverEffects() {
-        // Add hover effects to form inputs
-        $('.srwm-field-group input').on('focus', function() {
-            $(this).closest('.srwm-field-group').addClass('focused');
-        }).on('blur', function() {
-            $(this).closest('.srwm-field-group').removeClass('focused');
-        });
-        
-        // Add ripple effect to submit button
-        $('.srwm-waitlist-submit').on('click', function(e) {
-            const $button = $(this);
-            const $ripple = $('<span class="ripple"></span>');
-            
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            $ripple.css({
-                width: size + 'px',
-                height: size + 'px',
-                left: x + 'px',
-                top: y + 'px'
-            });
-            
-            $button.append($ripple);
-            
-            setTimeout(function() {
-                $ripple.remove();
-            }, 600);
-        });
-    }
-    
-    /**
      * Validate form data
      */
     function validateForm(data) {
-        const $message = $('.srwm-waitlist-message');
-        
-        // Clear previous messages
-        $message.removeClass('success error').hide();
-        
-        // Validate email
-        if (!data.email || !isValidEmail(data.email)) {
-            showErrorMessage($message, 'Please enter a valid email address.');
+        if (!data.name || data.name.trim() === '') {
+            showErrorMessage($('.srwm-waitlist-message'), 'Please enter your name.');
             return false;
         }
         
-        // Validate name
-        if (!data.name || data.name.trim().length < 2) {
-            showErrorMessage($message, 'Please enter your full name.');
+        if (!data.email || !isValidEmail(data.email)) {
+            showErrorMessage($('.srwm-waitlist-message'), 'Please enter a valid email address.');
             return false;
         }
         
@@ -247,7 +97,7 @@ jQuery(document).ready(function($) {
     }
     
     /**
-     * Check if email is valid
+     * Validate email format
      */
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -258,151 +108,14 @@ jQuery(document).ready(function($) {
      * Show success message
      */
     function showSuccessMessage($message, text) {
-        $message
-            .removeClass('error')
-            .addClass('success')
-            .text(text)
-            .show()
-            .addClass('animate-in');
-        
-        // Auto-hide after 5 seconds
-        setTimeout(function() {
-            $message.fadeOut();
-        }, 5000);
+        $message.removeClass('error').addClass('success').html(text).fadeIn();
     }
     
     /**
      * Show error message
      */
     function showErrorMessage($message, text) {
-        $message
-            .removeClass('success')
-            .addClass('error')
-            .text(text)
-            .show()
-            .addClass('animate-in');
-        
-        // Auto-hide after 8 seconds
-        setTimeout(function() {
-            $message.fadeOut();
-        }, 8000);
-    }
-    
-    /**
-     * Update waitlist display after successful submission
-     * This function is deprecated - using reloadWaitlistSection instead
-     */
-    function updateWaitlistDisplay($form, response) {
-        // This function is no longer used - the reloadWaitlistSection approach is used instead
-        return;
-        const $container = $form.closest('.srwm-waitlist-container');
-        
-        // Hide form container
-        $form.closest('.srwm-waitlist-form-container').fadeOut(300, function() {
-            // Build success HTML with dynamic data
-            let successHtml = `
-                <div class="srwm-waitlist-status">
-                    <div class="srwm-status-card active">
-                        <div class="srwm-status-icon">
-                            <span class="dashicons dashicons-yes-alt"></span>
-                        </div>
-                        <div class="srwm-status-content">
-                            <h4>You're on the waitlist!</h4>
-                            <p>We'll notify you as soon as this product is back in stock.</p>`;
-            
-            // Add queue position if available
-            if (response.customer_position && response.customer_position > 0) {
-                const progressWidth = Math.min(100, (response.customer_position / Math.max(1, response.waitlist_count)) * 100);
-                const peopleAhead = response.customer_position - 1;
-                
-                successHtml += `
-                            <div class="srwm-queue-position">
-                                <div class="srwm-queue-info">
-                                    <span class="srwm-queue-label">Your position:</span>
-                                    <span class="srwm-queue-number">#${response.customer_position}</span>
-                                </div>
-                                <div class="srwm-queue-progress">
-                                    <div class="srwm-progress-bar">
-                                        <div class="srwm-progress-fill" style="width: ${progressWidth}%"></div>
-                                    </div>
-                                    <small>${peopleAhead} people ahead of you</small>
-                                </div>
-                            </div>`;
-            }
-            
-            successHtml += `
-                        </div>
-                    </div>`;
-            
-            // Add social proof if more than 1 person on waitlist
-            if (response.waitlist_count > 1) {
-                const queueFillWidth = Math.min(100, (response.waitlist_count / 100) * 100);
-                const peopleText = response.waitlist_count === 1 ? 'person is waiting' : 'people are waiting';
-                
-                console.log('Adding social proof section. Waitlist count:', response.waitlist_count);
-                
-                successHtml += `
-                    <div class="srwm-waitlist-preview" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
-                        <div class="srwm-preview-header">
-                            <div class="srwm-preview-icon">
-                                <span class="dashicons dashicons-groups"></span>
-                            </div>
-                            <div class="srwm-preview-content">
-                                <div class="srwm-preview-count">
-                                    <span class="srwm-count-number" data-count="${response.waitlist_count}">0</span>
-                                    <span class="srwm-count-label">
-                                        ${response.waitlist_count} ${peopleText}
-                                    </span>
-                                </div>
-                                <div class="srwm-preview-subtitle">
-                                    You're part of an exclusive group!
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="srwm-queue-visualization">
-                            <div class="srwm-queue-bar">
-                                <div class="srwm-queue-fill" style="width: ${queueFillWidth}%"></div>
-                            </div>
-                            <div class="srwm-queue-stats">
-                                <span class="srwm-stat-item">
-                                    <span class="srwm-stat-icon">⚡</span>
-                                    Fast notifications
-                                </span>
-                                <span class="srwm-stat-item">
-                                    <span class="srwm-stat-icon">🎯</span>
-                                    Priority access
-                                </span>
-                                <span class="srwm-stat-item">
-                                    <span class="srwm-stat-icon">🔒</span>
-                                    Secure & private
-                                </span>
-                            </div>
-                        </div>
-                    </div>`;
-            } else {
-                console.log('Not adding social proof. Waitlist count:', response.waitlist_count);
-            }
-            
-            successHtml += `
-                </div>`;
-            
-            console.log('Final success HTML:', successHtml);
-            
-            $container.find('.srwm-waitlist-header').after(successHtml);
-            
-            // Animate the new status card and count numbers
-            setTimeout(function() {
-                $container.find('.srwm-status-card').addClass('animate-in');
-                animateCountNumbers();
-                
-                // Debug: Check if social proof section exists
-                const $socialProof = $container.find('.srwm-waitlist-preview');
-                console.log('Social proof section found:', $socialProof.length);
-                console.log('Social proof visibility:', $socialProof.is(':visible'));
-                console.log('Social proof display:', $socialProof.css('display'));
-            }, 100);
-        });
+        $message.removeClass('success').addClass('error').html(text).fadeIn();
     }
     
     /**
@@ -431,27 +144,12 @@ jQuery(document).ready(function($) {
                     }
                     
                     if (response.success) {
-                        // Completely replace the container content
+                        // Replace the entire container content
                         $container.html(response.html);
                         
-                        // Force remove any leftover form containers and ensure they don't take space
-                        $container.find('.srwm-waitlist-form-container').each(function() {
-                            $(this).remove();
-                        });
-                        
-                        // Double-check: remove any elements with form-related classes
-                        $container.find('[class*="form"]').each(function() {
-                            if ($(this).hasClass('srwm-waitlist-form-container') || 
-                                $(this).hasClass('srwm-waitlist-form') ||
-                                $(this).hasClass('srwm-form-fields')) {
-                                $(this).remove();
-                            }
-                        });
-                        
-                        // Re-initialize visual effects after content replacement
+                        // Re-initialize visual effects
                         setTimeout(function() {
                             animateCountNumbers();
-                            initProgressBars();
                         }, 100);
                     } else {
                         console.error('Failed to reload waitlist section:', response.message);
@@ -470,113 +168,40 @@ jQuery(document).ready(function($) {
     }
     
     /**
-     * Animate success state
+     * Animate count numbers
      */
-    function animateSuccess($form) {
-        const $container = $form.closest('.srwm-waitlist-container');
-        
-        // Add success animation class
-        $container.addClass('success-animation');
-        
-        // Remove animation class after animation completes
-        setTimeout(function() {
-            $container.removeClass('success-animation');
-        }, 1000);
+    function animateCountNumbers() {
+        $('.srwm-count-number').each(function() {
+            const $element = $(this);
+            const targetCount = parseInt($element.data('count')) || 0;
+            const startCount = 0;
+            const duration = 1200;
+            
+            animateNumber($element, startCount, targetCount, duration);
+        });
     }
     
     /**
-     * Debounce function for performance
+     * Animate number from start to end
      */
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+    function animateNumber($element, start, end, duration) {
+        const startTime = performance.now();
+        
+        function updateNumber(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            const current = Math.floor(start + (end - start) * progress);
+            $element.text(current);
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateNumber);
+            }
+        }
+        
+        requestAnimationFrame(updateNumber);
     }
     
-    /**
-     * Throttle function for scroll events
-     */
-    function throttle(func, limit) {
-        let inThrottle;
-        return function() {
-            const args = arguments;
-            const context = this;
-            if (!inThrottle) {
-                func.apply(context, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        };
-    }
-    
-    // Add CSS for animations
-    const animationCSS = `
-        <style>
-            .srwm-waitlist-container {
-                opacity: 0;
-                transform: translateY(20px);
-                transition: opacity 0.6s ease, transform 0.6s ease;
-            }
-            
-            .srwm-waitlist-container.animate-in {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .srwm-status-card {
-                opacity: 0;
-                transform: scale(0.9);
-                transition: opacity 0.4s ease, transform 0.4s ease;
-            }
-            
-            .srwm-status-card.animate-in {
-                opacity: 1;
-                transform: scale(1);
-            }
-            
-            .srwm-field-group.focused input {
-                transform: scale(1.02);
-            }
-            
-            .srwm-waitlist-submit .ripple {
-                position: absolute;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.3);
-                transform: scale(0);
-                animation: ripple 0.6s linear;
-                pointer-events: none;
-            }
-            
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-            
-            .srwm-waitlist-container.success-animation {
-                animation: successPulse 0.6s ease;
-            }
-            
-            @keyframes successPulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.02); }
-                100% { transform: scale(1); }
-            }
-        </style>
-    `;
-    
-    $('head').append(animationCSS);
-    
-    // Initialize animations on page load
-    setTimeout(function() {
-        $('.srwm-waitlist-container').addClass('animate-in');
-    }, 100);
-    
+    // Initialize count animations on page load
+    animateCountNumbers();
 });
