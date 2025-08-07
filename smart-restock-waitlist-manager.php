@@ -4749,6 +4749,27 @@ Best regards,
                 wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
             }
             
+            // Check if updated_at column exists, if not add it
+            $columns = $wpdb->get_results("SHOW COLUMNS FROM $table");
+            $column_names = array_column($columns, 'Field');
+            $has_updated_at = in_array('updated_at', $column_names);
+            
+            if (!$has_updated_at) {
+                error_log('SRWM: updated_at column does not exist, adding it');
+                $alter_result = $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+                error_log('SRWM: ALTER TABLE result: ' . ($alter_result !== false ? 'success' : 'failed'));
+                error_log('SRWM: ALTER TABLE error: ' . $wpdb->last_error);
+                
+                // Check again after attempting to add
+                $columns_after = $wpdb->get_results("SHOW COLUMNS FROM $table");
+                $column_names_after = array_column($columns_after, 'Field');
+                $has_updated_at = in_array('updated_at', $column_names_after);
+                error_log('SRWM: After ALTER TABLE, updated_at exists: ' . ($has_updated_at ? 'yes' : 'no'));
+            } else {
+                error_log('SRWM: updated_at column already exists');
+            }
+            
+            // Try to update with updated_at first, if it fails, update without it
             $result = $wpdb->update(
                 $table,
                 array(
@@ -4759,6 +4780,18 @@ Best regards,
                 array('%s', '%s'),
                 array('%d')
             );
+            
+            // If update failed due to missing column, try without updated_at
+            if ($result === false && strpos($wpdb->last_error, 'updated_at') !== false) {
+                error_log('SRWM: Update failed due to missing updated_at column, trying without it');
+                $result = $wpdb->update(
+                    $table,
+                    array('status' => $db_status),
+                    array('id' => $po_id),
+                    array('%s'),
+                    array('%d')
+                );
+            }
             
             error_log('SRWM: Update result: ' . ($result !== false ? 'success' : 'failed'));
             error_log('SRWM: Last SQL error: ' . $wpdb->last_error);
