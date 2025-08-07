@@ -19,6 +19,7 @@ class SRWM_Admin {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'init_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        add_action('admin_post_srwm_save_settings', array($this, 'handle_settings_save'));
         // AJAX handlers moved to main plugin file to avoid conflicts
     }
     
@@ -138,6 +139,10 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_low_stock_threshold');
         register_setting('srwm_settings', 'srwm_auto_disable_at_zero');
         
+        // Social proof display settings
+        register_setting('srwm_settings', 'srwm_hide_social_proof');
+        register_setting('srwm_settings', 'srwm_social_proof_style');
+        
         // Pro settings
         if ($this->license_manager->is_pro_active()) {
             register_setting('srwm_settings', 'srwm_whatsapp_enabled');
@@ -209,6 +214,19 @@ class SRWM_Admin {
             }
         }
         
+        // Save social proof display settings
+        $hide_social_proof = isset($_POST['srwm_hide_social_proof']) ? '1' : '0';
+        $social_proof_style = isset($_POST['srwm_social_proof_style']) ? 
+            sanitize_text_field($_POST['srwm_social_proof_style']) : 'full';
+        
+        // Validate social proof style
+        if (!in_array($social_proof_style, array('compact', 'full'))) {
+            $social_proof_style = 'full';
+        }
+        
+        update_option('srwm_hide_social_proof', $hide_social_proof);
+        update_option('srwm_social_proof_style', $social_proof_style);
+        
         // Save Pro settings if license is active
         if ($this->license_manager->is_pro_active()) {
             $supplier_notifications = isset($_POST['srwm_supplier_notifications']) ? 'yes' : 'no';
@@ -251,6 +269,24 @@ class SRWM_Admin {
     }
     
     /**
+     * Handle settings form submission
+     */
+    public function handle_settings_save() {
+        // Check nonce
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'srwm_settings-options')) {
+            wp_die(__('Security check failed.', 'smart-restock-waitlist'));
+        }
+        
+        // Check permissions
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You do not have sufficient permissions to access this page.', 'smart-restock-waitlist'));
+        }
+        
+        // Save settings
+        $this->save_settings();
+    }
+    
+    /**
      * Reset settings to defaults
      */
     private function reset_settings_to_defaults() {
@@ -285,6 +321,10 @@ class SRWM_Admin {
         foreach ($default_styling as $option => $value) {
             update_option($option, $value);
         }
+        
+        // Reset social proof display settings to defaults
+        update_option('srwm_hide_social_proof', '0');
+        update_option('srwm_social_proof_style', 'full');
         
         // Reset Pro settings if license is active
         if ($this->license_manager->is_pro_active()) {
@@ -6736,7 +6776,8 @@ class SRWM_Admin {
                 </div>
             <?php endif; ?>
             
-            <form method="post" action="">
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                <input type="hidden" name="action" value="srwm_save_settings">
                 <?php wp_nonce_field('srwm_settings-options'); ?>
                 
                 <div class="srwm-settings-section">
