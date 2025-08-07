@@ -5004,154 +5004,332 @@ If you no longer wish to receive these emails, please contact us.';
             </div>
             
             <div class="srwm-dashboard-content">
-                <!-- Analytics Cards -->
-                <div class="srwm-analytics-grid">
-                    <div class="srwm-analytics-card">
-                        <div class="srwm-analytics-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <div class="srwm-analytics-content">
-                            <h3><?php echo $this->get_total_purchase_orders(); ?></h3>
-                            <p><?php _e('Total Purchase Orders', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                    </div>
-                    
-                    <div class="srwm-analytics-card">
-                        <div class="srwm-analytics-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="srwm-analytics-content">
-                            <h3><?php echo $this->get_pending_purchase_orders(); ?></h3>
-                            <p><?php _e('Pending Orders', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                    </div>
-                    
-                    <div class="srwm-analytics-card">
-                        <div class="srwm-analytics-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="srwm-analytics-content">
-                            <h3><?php echo $this->get_completed_purchase_orders(); ?></h3>
-                            <p><?php _e('Completed Orders', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                    </div>
-                    
-                    <div class="srwm-analytics-card">
-                        <div class="srwm-analytics-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="srwm-analytics-content">
-                            <h3>2.5d</h3>
-                            <p><?php _e('Avg. Processing Time', 'smart-restock-waitlist'); ?></p>
-                        </div>
-                    </div>
+                <!-- Dashboard Tabs Navigation -->
+                <div class="srwm-dashboard-tabs">
+                    <button class="srwm-tab-button active" data-tab="overview">
+                        <span class="dashicons dashicons-clipboard"></span>
+                        <?php _e('Overview', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="analytics">
+                        <span class="dashicons dashicons-chart-line"></span>
+                        <?php _e('Analytics', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="reports">
+                        <span class="dashicons dashicons-analytics"></span>
+                        <?php _e('Reports', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button class="srwm-tab-button" data-tab="actions">
+                        <span class="dashicons dashicons-admin-tools"></span>
+                        <?php _e('Quick Actions', 'smart-restock-waitlist'); ?>
+                    </button>
                 </div>
                 
-                <!-- Purchase Orders Table Section -->
-                <div class="srwm-section-card">
-                    <div class="srwm-section-header">
-                        <h2><i class="fas fa-list"></i> <?php _e('Recent Purchase Orders', 'smart-restock-waitlist'); ?></h2>
-                        <div class="srwm-section-actions">
-                            <div class="srwm-search-box">
-                                <input type="text" id="po-search" placeholder="<?php _e('Search POs...', 'smart-restock-waitlist'); ?>">
-                                <i class="fas fa-search"></i>
+                <!-- Tab Content Container -->
+                <div class="srwm-tab-content-container">
+                    <!-- Overview Tab -->
+                    <div class="srwm-tab-content active" data-tab="overview">
+                        <!-- Enhanced Analytics Cards -->
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-chart-bar"></span>
+                                    <?php _e('Purchase Order Analytics', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Key metrics and performance indicators for your purchase order management', 'smart-restock-waitlist'); ?>
+                                </p>
                             </div>
-                            <select id="po-status-filter">
-                                <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
-                                <option value="pending"><?php _e('Pending', 'smart-restock-waitlist'); ?></option>
-                                <option value="confirmed"><?php _e('Confirmed', 'smart-restock-waitlist'); ?></option>
-                                <option value="shipped"><?php _e('Shipped', 'smart-restock-waitlist'); ?></option>
-                                <option value="completed"><?php _e('Completed', 'smart-restock-waitlist'); ?></option>
-                            </select>
+                            
+                            <div class="srwm-analytics-grid">
+                                <div class="srwm-analytics-card srwm-card-hover">
+                                    <div class="srwm-analytics-icon srwm-icon-primary">
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div class="srwm-analytics-content">
+                                        <div class="srwm-analytics-number"><?php echo number_format($this->get_total_purchase_orders()); ?></div>
+                                        <div class="srwm-analytics-label"><?php _e('Total Purchase Orders', 'smart-restock-waitlist'); ?></div>
+                                        <div class="srwm-analytics-trend srwm-trend-up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>12% this month</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="srwm-analytics-card srwm-card-hover">
+                                    <div class="srwm-analytics-icon srwm-icon-warning">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="srwm-analytics-content">
+                                        <div class="srwm-analytics-number"><?php echo number_format($this->get_pending_purchase_orders()); ?></div>
+                                        <div class="srwm-analytics-label"><?php _e('Pending Orders', 'smart-restock-waitlist'); ?></div>
+                                        <div class="srwm-analytics-trend srwm-trend-neutral">
+                                            <i class="fas fa-minus"></i>
+                                            <span>No change</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="srwm-analytics-card srwm-card-hover">
+                                    <div class="srwm-analytics-icon srwm-icon-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="srwm-analytics-content">
+                                        <div class="srwm-analytics-number"><?php echo number_format($this->get_completed_purchase_orders()); ?></div>
+                                        <div class="srwm-analytics-label"><?php _e('Completed Orders', 'smart-restock-waitlist'); ?></div>
+                                        <div class="srwm-analytics-trend srwm-trend-up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>8% this month</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="srwm-analytics-card srwm-card-hover">
+                                    <div class="srwm-analytics-icon srwm-icon-info">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="srwm-analytics-content">
+                                        <div class="srwm-analytics-number">2.5<span class="srwm-unit">days</span></div>
+                                        <div class="srwm-analytics-label"><?php _e('Avg. Processing Time', 'smart-restock-waitlist'); ?></div>
+                                        <div class="srwm-analytics-trend srwm-trend-down">
+                                            <i class="fas fa-arrow-down"></i>
+                                            <span>15% faster</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Purchase Orders Table Section -->
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-list-view"></span>
+                                    <?php _e('Recent Purchase Orders', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <div class="srwm-section-actions">
+                                    <div class="srwm-search-filters">
+                                        <div class="srwm-search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" id="po-search" placeholder="<?php _e('Search by PO number, product, or supplier...', 'smart-restock-waitlist'); ?>">
+                                        </div>
+                                        <div class="srwm-filter-group">
+                                            <select id="po-status-filter" class="srwm-select">
+                                                <option value=""><?php _e('All Status', 'smart-restock-waitlist'); ?></option>
+                                                <option value="pending"><?php _e('⏳ Pending', 'smart-restock-waitlist'); ?></option>
+                                                <option value="confirmed"><?php _e('✅ Confirmed', 'smart-restock-waitlist'); ?></option>
+                                                <option value="shipped"><?php _e('🚚 Shipped', 'smart-restock-waitlist'); ?></option>
+                                                <option value="completed"><?php _e('🎉 Completed', 'smart-restock-waitlist'); ?></option>
+                                            </select>
+                                            <select id="po-sort-filter" class="srwm-select">
+                                                <option value="newest"><?php _e('Newest First', 'smart-restock-waitlist'); ?></option>
+                                                <option value="oldest"><?php _e('Oldest First', 'smart-restock-waitlist'); ?></option>
+                                                <option value="status"><?php _e('By Status', 'smart-restock-waitlist'); ?></option>
+                                                <option value="supplier"><?php _e('By Supplier', 'smart-restock-waitlist'); ?></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-table-container">
+                                <table class="srwm-data-table">
+                                    <thead>
+                                        <tr>
+                                            <th><?php _e('PO Number', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Quantity', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Date Created', 'smart-restock-waitlist'); ?></th>
+                                            <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $purchase_orders = $this->get_purchase_orders();
+                                        if (!empty($purchase_orders)):
+                                            foreach ($purchase_orders as $po): 
+                                        ?>
+                                            <tr>
+                                                <td>
+                                                    <div class="srwm-po-number">
+                                                        <strong><?php echo esc_html($po->po_number); ?></strong>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="srwm-product-info">
+                                                        <div class="srwm-product-name"><?php echo esc_html($po->product_name); ?></div>
+                                                        <div class="srwm-product-sku"><?php echo esc_html($po->sku); ?></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="srwm-supplier-info">
+                                                        <div class="srwm-supplier-name"><?php echo esc_html($po->supplier_name); ?></div>
+                                                        <div class="srwm-supplier-email"><?php echo esc_html($po->supplier_email); ?></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="srwm-quantity-badge"><?php echo esc_html($po->quantity); ?></span>
+                                                </td>
+                                                <td>
+                                                    <span class="srwm-status-badge srwm-status-<?php echo esc_attr($po->status); ?>">
+                                                        <i class="fas fa-circle"></i>
+                                                        <?php echo esc_html(ucfirst($po->status)); ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="srwm-date-info">
+                                                        <div class="srwm-date"><?php echo esc_html(date('M j, Y', strtotime($po->created_at))); ?></div>
+                                                        <div class="srwm-time"><?php echo esc_html(date('g:i A', strtotime($po->created_at))); ?></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="srwm-action-buttons">
+                                                        <button class="srwm-btn srwm-btn-small srwm-btn-primary view-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('View Details', 'smart-restock-waitlist'); ?>">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="srwm-btn srwm-btn-small srwm-btn-secondary download-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('Download PDF', 'smart-restock-waitlist'); ?>">
+                                                            <i class="fas fa-download"></i>
+                                                        </button>
+                                                        <button class="srwm-btn srwm-btn-small srwm-btn-secondary resend-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>">
+                                                            <i class="fas fa-envelope"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php 
+                                            endforeach;
+                                        else:
+                                        ?>
+                                            <tr>
+                                                <td colspan="7" class="srwm-empty-state">
+                                                    <div class="srwm-empty-icon">
+                                                        <i class="fas fa-clipboard-list"></i>
+                                                    </div>
+                                                    <h3><?php _e('No Purchase Orders Yet', 'smart-restock-waitlist'); ?></h3>
+                                                    <p><?php _e('Start by generating your first purchase order when products run low on stock.', 'smart-restock-waitlist'); ?></p>
+                                                    <button class="srwm-btn srwm-btn-primary" id="srwm-generate-first-po">
+                                                        <i class="fas fa-plus"></i>
+                                                        <?php _e('Generate First PO', 'smart-restock-waitlist'); ?>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="srwm-table-container">
-                        <table class="srwm-data-table">
-                            <thead>
-                                <tr>
-                                    <th><?php _e('PO Number', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Quantity', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Status', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Date Created', 'smart-restock-waitlist'); ?></th>
-                                    <th><?php _e('Actions', 'smart-restock-waitlist'); ?></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                $purchase_orders = $this->get_purchase_orders();
-                                if (!empty($purchase_orders)):
-                                    foreach ($purchase_orders as $po): 
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <div class="srwm-po-number">
-                                                <strong><?php echo esc_html($po->po_number); ?></strong>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="srwm-product-info">
-                                                <div class="srwm-product-name"><?php echo esc_html($po->product_name); ?></div>
-                                                <div class="srwm-product-sku"><?php echo esc_html($po->sku); ?></div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="srwm-supplier-info">
-                                                <div class="srwm-supplier-name"><?php echo esc_html($po->supplier_name); ?></div>
-                                                <div class="srwm-supplier-email"><?php echo esc_html($po->supplier_email); ?></div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="srwm-quantity-badge"><?php echo esc_html($po->quantity); ?></span>
-                                        </td>
-                                        <td>
-                                            <span class="srwm-status-badge srwm-status-<?php echo esc_attr($po->status); ?>">
-                                                <i class="fas fa-circle"></i>
-                                                <?php echo esc_html(ucfirst($po->status)); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="srwm-date-info">
-                                                <div class="srwm-date"><?php echo esc_html(date('M j, Y', strtotime($po->created_at))); ?></div>
-                                                <div class="srwm-time"><?php echo esc_html(date('g:i A', strtotime($po->created_at))); ?></div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="srwm-action-buttons">
-                                                <button class="srwm-btn srwm-btn-small srwm-btn-primary view-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('View Details', 'smart-restock-waitlist'); ?>">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="srwm-btn srwm-btn-small srwm-btn-secondary download-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('Download PDF', 'smart-restock-waitlist'); ?>">
-                                                    <i class="fas fa-download"></i>
-                                                </button>
-                                                <button class="srwm-btn srwm-btn-small srwm-btn-secondary resend-po" data-po-id="<?php echo $po->id; ?>" title="<?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>">
-                                                    <i class="fas fa-envelope"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php 
-                                    endforeach;
-                                else:
-                                ?>
-                                    <tr>
-                                        <td colspan="7" class="srwm-empty-state">
-                                            <div class="srwm-empty-icon">
-                                                <i class="fas fa-clipboard-list"></i>
-                                            </div>
-                                            <h3><?php _e('No Purchase Orders Yet', 'smart-restock-waitlist'); ?></h3>
-                                            <p><?php _e('Start by generating your first purchase order when products run low on stock.', 'smart-restock-waitlist'); ?></p>
-                                            <button class="srwm-btn srwm-btn-primary" id="srwm-generate-first-po">
-                                                <i class="fas fa-plus"></i>
-                                                <?php _e('Generate First PO', 'smart-restock-waitlist'); ?>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                    <!-- Analytics Tab -->
+                    <div class="srwm-tab-content" data-tab="analytics">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-chart-line"></span>
+                                    <?php _e('Purchase Order Analytics', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Detailed analytics and insights for your purchase order performance', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-placeholder-content">
+                                <div class="srwm-placeholder-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3><?php _e('Analytics Coming Soon', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Advanced analytics and reporting features will be available in the next update.', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reports Tab -->
+                    <div class="srwm-tab-content" data-tab="reports">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-analytics"></span>
+                                    <?php _e('Purchase Order Reports', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Generate comprehensive reports and export data for analysis', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-placeholder-content">
+                                <div class="srwm-placeholder-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <h3><?php _e('Reports Coming Soon', 'smart-restock-waitlist'); ?></h3>
+                                <p><?php _e('Advanced reporting and export features will be available in the next update.', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions Tab -->
+                    <div class="srwm-tab-content" data-tab="actions">
+                        <div class="srwm-section">
+                            <div class="srwm-section-header">
+                                <h2 class="srwm-section-title">
+                                    <span class="dashicons dashicons-admin-tools"></span>
+                                    <?php _e('Quick Actions', 'smart-restock-waitlist'); ?>
+                                </h2>
+                                <p class="srwm-section-description">
+                                    <?php _e('Common actions and shortcuts for managing purchase orders', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </div>
+                            
+                            <div class="srwm-quick-actions-grid">
+                                <div class="srwm-quick-action-card">
+                                    <div class="srwm-quick-action-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <h3><?php _e('Generate New PO', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Create a new purchase order for low stock products', 'smart-restock-waitlist'); ?></p>
+                                    <button class="srwm-btn srwm-btn-primary" id="srwm-quick-generate-po">
+                                        <i class="fas fa-plus"></i>
+                                        <?php _e('Generate PO', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                                
+                                <div class="srwm-quick-action-card">
+                                    <div class="srwm-quick-action-icon">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                    <h3><?php _e('Export Data', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Export purchase orders data for external analysis', 'smart-restock-waitlist'); ?></p>
+                                    <button class="srwm-btn srwm-btn-secondary" id="srwm-quick-export">
+                                        <i class="fas fa-download"></i>
+                                        <?php _e('Export', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                                
+                                <div class="srwm-quick-action-card">
+                                    <div class="srwm-quick-action-icon">
+                                        <i class="fas fa-sync"></i>
+                                    </div>
+                                    <h3><?php _e('Bulk Actions', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Perform bulk operations on multiple purchase orders', 'smart-restock-waitlist'); ?></p>
+                                    <button class="srwm-btn srwm-btn-secondary" id="srwm-quick-bulk">
+                                        <i class="fas fa-tasks"></i>
+                                        <?php _e('Bulk Actions', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                                
+                                <div class="srwm-quick-action-card">
+                                    <div class="srwm-quick-action-icon">
+                                        <i class="fas fa-cog"></i>
+                                    </div>
+                                    <h3><?php _e('Settings', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Configure purchase order settings and preferences', 'smart-restock-waitlist'); ?></p>
+                                    <button class="srwm-btn srwm-btn-secondary" id="srwm-quick-settings">
+                                        <i class="fas fa-cog"></i>
+                                        <?php _e('Settings', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5269,8 +5447,21 @@ If you no longer wish to receive these emails, please contact us.';
             // Ensure modals are hidden on page load
             $('#srwm-po-modal, #srwm-po-details-modal').hide();
             
+            // Tab functionality
+            $('.srwm-tab-button').on('click', function() {
+                var tabId = $(this).data('tab');
+                
+                // Update active tab button
+                $('.srwm-tab-button').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show active tab content
+                $('.srwm-tab-content').removeClass('active');
+                $('.srwm-tab-content[data-tab="' + tabId + '"]').addClass('active');
+            });
+            
             // PO Generation Modal
-            $('#srwm-generate-po, #srwm-generate-first-po').on('click', function() {
+            $('#srwm-generate-po, #srwm-generate-first-po, #srwm-quick-generate-po').on('click', function() {
                 $('#srwm-po-modal').show().addClass('srwm-modal-active');
             });
             
@@ -5325,7 +5516,7 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
-            // Search functionality
+            // Enhanced Search functionality
             $('#po-search').on('input', function() {
                 var searchTerm = $(this).val().toLowerCase();
                 $('.srwm-data-table tbody tr').each(function() {
@@ -5334,7 +5525,7 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
-            // Status filter
+            // Enhanced Status filter
             $('#po-status-filter').on('change', function() {
                 var status = $(this).val().toLowerCase();
                 $('.srwm-data-table tbody tr').each(function() {
@@ -5345,6 +5536,40 @@ If you no longer wish to receive these emails, please contact us.';
                         $(this).toggle(rowStatus === status);
                     }
                 });
+            });
+            
+            // Sort functionality
+            $('#po-sort-filter').on('change', function() {
+                var sortBy = $(this).val();
+                var tbody = $('.srwm-data-table tbody');
+                var rows = tbody.find('tr').toArray();
+                
+                rows.sort(function(a, b) {
+                    var aVal, bVal;
+                    
+                    switch(sortBy) {
+                        case 'newest':
+                            aVal = new Date($(a).find('.srwm-date').text());
+                            bVal = new Date($(b).find('.srwm-date').text());
+                            return bVal - aVal;
+                        case 'oldest':
+                            aVal = new Date($(a).find('.srwm-date').text());
+                            bVal = new Date($(b).find('.srwm-date').text());
+                            return aVal - bVal;
+                        case 'status':
+                            aVal = $(a).find('.srwm-status-badge').text().toLowerCase();
+                            bVal = $(b).find('.srwm-status-badge').text().toLowerCase();
+                            return aVal.localeCompare(bVal);
+                        case 'supplier':
+                            aVal = $(a).find('.srwm-supplier-name').text().toLowerCase();
+                            bVal = $(b).find('.srwm-supplier-name').text().toLowerCase();
+                            return aVal.localeCompare(bVal);
+                        default:
+                            return 0;
+                    }
+                });
+                
+                tbody.empty().append(rows);
             });
             
             // View PO Details
@@ -5369,9 +5594,26 @@ If you no longer wish to receive these emails, please contact us.';
             });
             
             // Export POs
-            $('#srwm-export-pos').on('click', function() {
+            $('#srwm-export-pos, #srwm-quick-export').on('click', function() {
                 // This will be implemented later
                 alert('<?php _e('Export functionality will be implemented in the next step!', 'smart-restock-waitlist'); ?>');
+            });
+            
+            // Quick Actions
+            $('#srwm-quick-bulk').on('click', function() {
+                alert('<?php _e('Bulk actions functionality will be implemented in the next step!', 'smart-restock-waitlist'); ?>');
+            });
+            
+            $('#srwm-quick-settings').on('click', function() {
+                window.location.href = '<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>';
+            });
+            
+            // Animate analytics cards on load
+            $('.srwm-analytics-card').each(function(index) {
+                var card = $(this);
+                setTimeout(function() {
+                    card.addClass('srwm-card-animated');
+                }, index * 100);
             });
         });
         </script>
