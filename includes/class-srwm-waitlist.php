@@ -482,29 +482,14 @@ class SRWM_Waitlist {
             return false;
         }
         
-        // For waitlist confirmation, use a simple welcome message
-        $template = 'Hi {customer_name},
-
-Thank you for joining the waitlist for {product_name}!
-
-You have been successfully added to our waitlist. We will notify you as soon as this product is back in stock.
-
-Product: {product_name}
-Product URL: {product_url}
-
-What happens next:
-- You will be among the first to know when this product is back in stock
-- You will get early access to purchase before the general public
-- We only email you when there is important news about this product
-
-Thank you for your interest!
-
-Best regards,
-' . get_bloginfo('name') . '
-' . get_bloginfo('url') . '
-
-This email was sent to you because you joined the waitlist for {product_name}.
-If you no longer wish to receive these emails, please contact us.';
+        // Get registration email template
+        $template = get_option('srwm_email_template_registration');
+        
+        // If no custom template is set, use the default
+        if (empty($template)) {
+            $admin = new SRWM_Admin();
+            $template = $admin->get_default_registration_email_template();
+        }
         
         $placeholders = array(
             '{customer_name}' => $name ?: __('Customer', 'smart-restock-waitlist'),

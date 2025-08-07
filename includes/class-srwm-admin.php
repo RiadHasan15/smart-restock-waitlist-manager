@@ -38,6 +38,13 @@ class SRWM_Admin {
             update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
         }
         
+        // Check if registration email template is corrupted
+        $registration_template = get_option('srwm_email_template_registration');
+        if (!empty($registration_template) && strpos($registration_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
+            // Template is corrupted, replace with correct default
+            update_option('srwm_email_template_registration', $this->get_default_registration_email_template());
+        }
+        
         // Check if supplier email template is corrupted
         $supplier_template = get_option('srwm_email_template_supplier');
         if (!empty($supplier_template) && strpos($supplier_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
@@ -158,6 +165,7 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_waitlist_enabled');
         register_setting('srwm_settings', 'srwm_supplier_notifications');
         register_setting('srwm_settings', 'srwm_email_template_waitlist');
+        register_setting('srwm_settings', 'srwm_email_template_registration');
         register_setting('srwm_settings', 'srwm_email_template_supplier');
         register_setting('srwm_settings', 'srwm_low_stock_threshold');
         register_setting('srwm_settings', 'srwm_auto_disable_at_zero');
@@ -216,11 +224,21 @@ class SRWM_Admin {
             $waitlist_email_template = $this->get_default_waitlist_email_template();
         }
         
+        // Validate and sanitize registration email template
+        $registration_email_template = isset($_POST['srwm_email_template_registration']) ? 
+            wp_kses_post($_POST['srwm_email_template_registration']) : '';
+        
+        // Set default registration email template if empty
+        if (empty($registration_email_template)) {
+            $registration_email_template = $this->get_default_registration_email_template();
+        }
+        
         // Save settings
         update_option('srwm_waitlist_enabled', $waitlist_enabled);
         update_option('srwm_auto_disable_at_zero', $auto_disable_at_zero);
         update_option('srwm_waitlist_display_threshold', $waitlist_display_threshold);
         update_option('srwm_email_template_waitlist', $waitlist_email_template);
+        update_option('srwm_email_template_registration', $registration_email_template);
         
         // Save styling options
         $styling_options = array(
@@ -339,6 +357,10 @@ class SRWM_Admin {
         // Force delete and recreate waitlist email template
         delete_option('srwm_email_template_waitlist');
         update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
+        
+        // Force delete and recreate registration email template
+        delete_option('srwm_email_template_registration');
+        update_option('srwm_email_template_registration', $this->get_default_registration_email_template());
         
         // Force delete and recreate supplier email template if Pro is active
         if ($this->license_manager->is_pro_active()) {
@@ -4627,6 +4649,42 @@ class SRWM_Admin {
     /**
      * Get default waitlist email template
      */
+    public function get_default_registration_email_template() {
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
+        
+        return 'Hi {customer_name},
+
+Thank you for joining the waitlist for {product_name}!
+
+We\'re excited to have you as part of our exclusive waitlist community. You\'ve been successfully added to our notification system, and we\'ll keep you updated on the status of this product.
+
+Product Details:
+- Product: {product_name}
+- Product Page: {product_url}
+
+What happens next:
+✓ You\'ll be among the first to know when this product is back in stock
+✓ You\'ll receive priority access to purchase before the general public
+✓ You may receive exclusive discounts and special offers
+✓ We\'ll only contact you when there\'s important news about this product
+
+We understand how valuable your time is, so we promise to only send you relevant updates about this specific product.
+
+If you have any questions or need to make changes to your waitlist preferences, please don\'t hesitate to contact our customer support team at ' . $admin_email . '.
+
+Thank you for your interest and patience!
+
+Best regards,
+The ' . $site_name . ' Team
+' . $site_url . '
+
+---
+This email was sent to you because you joined the waitlist for {product_name}.
+If you no longer wish to receive these notifications, please contact us.';
+    }
+    
     public function get_default_waitlist_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
@@ -7388,7 +7446,24 @@ If you no longer wish to receive these emails, please contact us.';
                     <p class="description"><?php _e('Configure email templates for different notifications. Each template serves a specific purpose.', 'smart-restock-waitlist'); ?></p>
                     <table class="form-table">
                     <tr>
-                        <th scope="row"><?php _e('Customer Waitlist Email', 'smart-restock-waitlist'); ?></th>
+                        <th scope="row"><?php _e('Waitlist Registration Email', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <textarea name="srwm_email_template_registration" rows="8" cols="50" class="large-text"><?php 
+                                $template = get_option('srwm_email_template_registration');
+                                if (empty($template)) {
+                                    $template = $this->get_default_registration_email_template();
+                                }
+                                echo esc_textarea($template); 
+                            ?></textarea>
+                            <p class="description">
+                                <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
+                                <br><strong><?php _e('This email is sent when a customer joins the waitlist (welcome/confirmation email).', 'smart-restock-waitlist'); ?></strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Restock Notification Email', 'smart-restock-waitlist'); ?></th>
                         <td>
                             <textarea name="srwm_email_template_waitlist" rows="8" cols="50" class="large-text"><?php 
                                 $template = get_option('srwm_email_template_waitlist');
