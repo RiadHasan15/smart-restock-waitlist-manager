@@ -7132,6 +7132,30 @@ class SRWM_Admin {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Social Proof Options -->
+                    <div class="srwm-social-proof-options">
+                        <h3><?php _e('Social Proof Display', 'smart-restock-waitlist'); ?></h3>
+                        <div class="srwm-option-row">
+                            <div class="srwm-option">
+                                <label>
+                                    <input type="checkbox" name="srwm_hide_social_proof" 
+                                           value="1" <?php checked(get_option('srwm_hide_social_proof', '0'), '1'); ?>>
+                                    <?php _e('Hide Social Proof Section', 'smart-restock-waitlist'); ?>
+                                </label>
+                                <p class="description"><?php _e('Hide the "people waiting" section to save space', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-option">
+                                <label><?php _e('Social Proof Style', 'smart-restock-waitlist'); ?></label>
+                                <select name="srwm_social_proof_style">
+                                    <option value="compact" <?php selected(get_option('srwm_social_proof_style', 'full'), 'compact'); ?>><?php _e('Compact (Minimal)', 'smart-restock-waitlist'); ?></option>
+                                    <option value="full" <?php selected(get_option('srwm_social_proof_style', 'full'), 'full'); ?>><?php _e('Full (Detailed)', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                                <p class="description"><?php _e('Choose between compact or full social proof display', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="srwm-settings-section">

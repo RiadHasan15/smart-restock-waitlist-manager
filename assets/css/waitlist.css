@@ -172,6 +172,50 @@
     position: relative;
 }
 
+/* Compact Social Proof */
+.srwm-waitlist-preview.srwm-compact {
+    margin-bottom: 16px;
+}
+
+.srwm-preview-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.srwm-compact-count {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.srwm-compact-count .srwm-count-number {
+    font-size: 24px;
+    font-weight: 800;
+    color: #007cba;
+    line-height: 1;
+}
+
+.srwm-compact-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: inherit;
+    opacity: 0.8;
+}
+
+.srwm-compact-subtitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.7;
+    text-align: right;
+}
+
+/* Full Social Proof */
 .srwm-preview-header {
     display: flex;
     align-items: center;
@@ -529,6 +573,17 @@
     
     .srwm-waitlist-submit {
         padding: 16px 24px;
+    }
+    
+    /* Compact social proof mobile */
+    .srwm-preview-compact {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .srwm-compact-subtitle {
+        text-align: center;
     }
 }
 
