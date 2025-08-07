@@ -7279,6 +7279,13 @@ If you no longer wish to receive these emails, please contact us.';
                 
                 console.log('SRWM: Final formData:', formData);
                 
+                console.log('SRWM: Making AJAX request to:', ajaxurl);
+                console.log('SRWM: AJAX data:', {
+                    action: 'srwm_generate_po',
+                    form_data: JSON.stringify(formData),
+                    nonce: '<?php echo wp_create_nonce('srwm_generate_po'); ?>'
+                });
+                
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
@@ -7291,6 +7298,7 @@ If you no longer wish to receive these emails, please contact us.';
                         $('#srwm-generate-po-submit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Generating...', 'smart-restock-waitlist'); ?>');
                     },
                     success: function(response) {
+                        console.log('SRWM: AJAX success response:', response);
                         if (response.success) {
                             // Show success message
                             var message = response.data.message || '<?php _e('Purchase order generated successfully!', 'smart-restock-waitlist'); ?>';
@@ -7325,6 +7333,10 @@ If you no longer wish to receive these emails, please contact us.';
                         }
                     },
                     error: function(xhr, status, error) {
+                        console.log('SRWM: AJAX error occurred');
+                        console.log('SRWM: Status:', status);
+                        console.log('SRWM: Error:', error);
+                        console.log('SRWM: Response Text:', xhr.responseText);
                         console.error('AJAX Error:', xhr.responseText);
                         var errorMessage = '<?php _e('An error occurred while generating the purchase order', 'smart-restock-waitlist'); ?>';
                         
