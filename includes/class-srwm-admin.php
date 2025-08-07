@@ -2216,6 +2216,286 @@ class SRWM_Admin {
             line-height: 1.5;
         }
         
+        /* Enhanced PO Modal Styles */
+        .srwm-po-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .srwm-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #e5e7eb;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-step.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .srwm-step.completed {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .srwm-step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .srwm-step-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .srwm-po-step-content {
+            display: none;
+            padding: 24px;
+        }
+        
+        .srwm-po-step-content.active {
+            display: block;
+        }
+        
+        .srwm-step-header {
+            margin-bottom: 24px;
+        }
+        
+        .srwm-step-header h3 {
+            margin: 0 0 8px 0;
+            color: #111827;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .srwm-step-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Product Search Section */
+        .srwm-product-search-section {
+            margin-bottom: 24px;
+        }
+        
+        .srwm-bulk-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        /* Products Grid */
+        .srwm-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        
+        .srwm-product-card {
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .srwm-product-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .srwm-product-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .srwm-product-card input[type="checkbox"] {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .srwm-product-info {
+            margin-bottom: 12px;
+        }
+        
+        .srwm-product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-product-sku {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .srwm-product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .srwm-stock-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .srwm-stock-low {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .srwm-stock-out {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .srwm-stock-ok {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        /* Selected Products */
+        .srwm-selected-products {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .srwm-selected-product {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+        
+        .srwm-selected-product-info {
+            flex: 1;
+        }
+        
+        .srwm-selected-product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .srwm-selected-product-sku {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .srwm-quantity-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .srwm-quantity-input input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .srwm-suggested-quantity {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        /* Step Actions */
+        .srwm-step-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        /* Pagination */
+        .srwm-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        .srwm-pagination button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-pagination button:hover {
+            background: #f3f4f6;
+        }
+        
+        .srwm-pagination button.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+        
+        .srwm-pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Loading State */
+        .srwm-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 40px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .srwm-loading i {
+            font-size: 18px;
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
@@ -2581,6 +2861,12 @@ class SRWM_Admin {
             max-height: 80vh;
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .srwm-modal-content.srwm-modal-large {
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
         }
         
         .srwm-modal-header {
@@ -5575,80 +5861,176 @@ If you no longer wish to receive these emails, please contact us.';
         
         <!-- Enhanced PO Generation Modal -->
         <div id="srwm-po-modal" class="srwm-modal" style="display: none;">
-            <div class="srwm-modal-content">
+            <div class="srwm-modal-content srwm-modal-large">
                 <div class="srwm-modal-header">
                     <h2><?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?></h2>
                     <span class="srwm-modal-close">&times;</span>
                 </div>
-                <div class="srwm-modal-body">
-                    <form id="srwm-po-form">
-                        <div class="srwm-form-row">
-                            <div class="srwm-form-group">
-                                <label for="po-product"><?php _e('Product', 'smart-restock-waitlist'); ?> *</label>
-                                <select id="po-product" name="product_id" required>
-                                    <option value=""><?php _e('Select Product', 'smart-restock-waitlist'); ?></option>
-                                    <?php foreach ($this->get_products_with_thresholds() as $product): ?>
-                                        <option value="<?php echo $product->id; ?>" 
-                                                data-stock="<?php echo $product->stock_quantity; ?>"
-                                                data-threshold="<?php echo $product->threshold; ?>">
-                                            <?php echo esc_html($product->name); ?> (<?php echo esc_html($product->sku); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="srwm-form-group">
-                                <label for="po-supplier"><?php _e('Supplier', 'smart-restock-waitlist'); ?> *</label>
-                                <select id="po-supplier" name="supplier_id" required>
-                                    <option value=""><?php _e('Select Supplier', 'smart-restock-waitlist'); ?></option>
-                                    <?php 
-                                    $suppliers = $this->get_suppliers();
-                                    if ($suppliers) {
-                                        foreach ($suppliers as $supplier): 
-                                    ?>
-                                        <option value="<?php echo $supplier->id; ?>">
-                                            <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
-                                        </option>
-                                    <?php 
-                                        endforeach;
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="srwm-form-row">
-                            <div class="srwm-form-group">
-                                <label for="po-quantity"><?php _e('Quantity', 'smart-restock-waitlist'); ?> *</label>
-                                <input type="number" id="po-quantity" name="quantity" min="1" required>
-                                <small class="srwm-help-text"><?php _e('Suggested quantity will be calculated based on waitlist and current stock', 'smart-restock-waitlist'); ?></small>
-                            </div>
-                            <div class="srwm-form-group">
-                                <label for="po-delivery-date"><?php _e('Expected Delivery Date', 'smart-restock-waitlist'); ?></label>
-                                <input type="date" id="po-delivery-date" name="delivery_date" 
-                                       value="<?php echo date('Y-m-d', strtotime('+14 days')); ?>">
-                            </div>
-                        </div>
-                        
-                        <div class="srwm-form-group">
-                            <label for="po-notes"><?php _e('Notes (Optional)', 'smart-restock-waitlist'); ?></label>
-                            <textarea id="po-notes" name="notes" rows="3" placeholder="<?php _e('Add any special instructions or notes for the supplier...', 'smart-restock-waitlist'); ?>"></textarea>
-                        </div>
-                        
-                        <div class="srwm-form-group">
-                            <label>
-                                <input type="checkbox" id="po-send-notification" name="send_notification" checked>
-                                <?php _e('Send notification to supplier immediately', 'smart-restock-waitlist'); ?>
-                            </label>
-                        </div>
-                    </form>
+                
+                <!-- Step Navigation -->
+                <div class="srwm-po-steps">
+                    <div class="srwm-step active" data-step="1">
+                        <div class="srwm-step-number">1</div>
+                        <div class="srwm-step-label"><?php _e('Select Products', 'smart-restock-waitlist'); ?></div>
+                    </div>
+                    <div class="srwm-step" data-step="2">
+                        <div class="srwm-step-number">2</div>
+                        <div class="srwm-step-label"><?php _e('Set Quantities', 'smart-restock-waitlist'); ?></div>
+                    </div>
+                    <div class="srwm-step" data-step="3">
+                        <div class="srwm-step-number">3</div>
+                        <div class="srwm-step-label"><?php _e('Supplier & Delivery', 'smart-restock-waitlist'); ?></div>
+                    </div>
+                    <div class="srwm-step" data-step="4">
+                        <div class="srwm-step-number">4</div>
+                        <div class="srwm-step-label"><?php _e('Review & Generate', 'smart-restock-waitlist'); ?></div>
+                    </div>
                 </div>
+                
+                <div class="srwm-modal-body">
+                    <!-- Step 1: Product Selection -->
+                    <div class="srwm-po-step-content active" data-step="1">
+                        <div class="srwm-step-header">
+                            <h3><?php _e('Select Products for Purchase Order', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Search and select products that need restocking. You can select multiple products at once.', 'smart-restock-waitlist'); ?></p>
+                        </div>
+                        
+                        <!-- Search and Filters -->
+                        <div class="srwm-product-search-section">
+                            <div class="srwm-search-filters">
+                                <div class="srwm-search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="po-product-search" placeholder="<?php _e('Search products by name, SKU, or category...', 'smart-restock-waitlist'); ?>">
+                                </div>
+                                <div class="srwm-filter-group">
+                                    <select id="po-category-filter" class="srwm-select">
+                                        <option value=""><?php _e('All Categories', 'smart-restock-waitlist'); ?></option>
+                                    </select>
+                                    <select id="po-stock-filter" class="srwm-select">
+                                        <option value=""><?php _e('All Stock Levels', 'smart-restock-waitlist'); ?></option>
+                                        <option value="low"><?php _e('Low Stock', 'smart-restock-waitlist'); ?></option>
+                                        <option value="out"><?php _e('Out of Stock', 'smart-restock-waitlist'); ?></option>
+                                        <option value="waitlist"><?php _e('Has Waitlist', 'smart-restock-waitlist'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-bulk-actions">
+                                <button type="button" class="srwm-btn srwm-btn-outline" id="po-select-all">
+                                    <i class="fas fa-check-square"></i>
+                                    <?php _e('Select All', 'smart-restock-waitlist'); ?>
+                                </button>
+                                <button type="button" class="srwm-btn srwm-btn-outline" id="po-clear-selection">
+                                    <i class="fas fa-square"></i>
+                                    <?php _e('Clear Selection', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Products Grid -->
+                        <div class="srwm-products-grid" id="po-products-grid">
+                            <div class="srwm-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <?php _e('Loading products...', 'smart-restock-waitlist'); ?>
+                            </div>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="srwm-pagination" id="po-products-pagination">
+                            <!-- Pagination will be loaded dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Set Quantities -->
+                    <div class="srwm-po-step-content" data-step="2">
+                        <div class="srwm-step-header">
+                            <h3><?php _e('Set Quantities for Selected Products', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Review and adjust quantities for each selected product. Suggested quantities are based on current stock and waitlist.', 'smart-restock-waitlist'); ?></p>
+                        </div>
+                        
+                        <div class="srwm-selected-products" id="po-selected-products">
+                            <!-- Selected products will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Supplier & Delivery -->
+                    <div class="srwm-po-step-content" data-step="3">
+                        <div class="srwm-step-header">
+                            <h3><?php _e('Supplier & Delivery Details', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Select supplier and set delivery preferences for your purchase order.', 'smart-restock-waitlist'); ?></p>
+                        </div>
+                        
+                        <form id="srwm-po-form">
+                            <div class="srwm-form-row">
+                                <div class="srwm-form-group">
+                                    <label for="po-supplier"><?php _e('Supplier', 'smart-restock-waitlist'); ?> *</label>
+                                    <select id="po-supplier" name="supplier_id" required>
+                                        <option value=""><?php _e('Select Supplier', 'smart-restock-waitlist'); ?></option>
+                                        <?php 
+                                        $suppliers = $this->get_suppliers();
+                                        if ($suppliers) {
+                                            foreach ($suppliers as $supplier): 
+                                        ?>
+                                            <option value="<?php echo $supplier->id; ?>">
+                                                <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
+                                            </option>
+                                        <?php 
+                                            endforeach;
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="srwm-form-group">
+                                    <label for="po-delivery-date"><?php _e('Expected Delivery Date', 'smart-restock-waitlist'); ?></label>
+                                    <input type="date" id="po-delivery-date" name="delivery_date" 
+                                           value="<?php echo date('Y-m-d', strtotime('+14 days')); ?>">
+                                </div>
+                            </div>
+                            
+                            <div class="srwm-form-group">
+                                <label for="po-notes"><?php _e('Notes (Optional)', 'smart-restock-waitlist'); ?></label>
+                                <textarea id="po-notes" name="notes" rows="3" placeholder="<?php _e('Add any special instructions or notes for the supplier...', 'smart-restock-waitlist'); ?>"></textarea>
+                            </div>
+                            
+                            <div class="srwm-form-group">
+                                <label>
+                                    <input type="checkbox" id="po-send-notification" name="send_notification" checked>
+                                    <?php _e('Send notification to supplier immediately', 'smart-restock-waitlist'); ?>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Step 4: Review & Generate -->
+                    <div class="srwm-po-step-content" data-step="4">
+                        <div class="srwm-step-header">
+                            <h3><?php _e('Review Purchase Order', 'smart-restock-waitlist'); ?></h3>
+                            <p><?php _e('Review all details before generating the purchase order.', 'smart-restock-waitlist'); ?></p>
+                        </div>
+                        
+                        <div class="srwm-po-review" id="po-review-content">
+                            <!-- Review content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="srwm-modal-footer">
-                    <button type="button" class="button button-secondary srwm-modal-close">
+                    <div class="srwm-step-actions">
+                        <button type="button" class="srwm-btn srwm-btn-secondary" id="srwm-po-prev-step" style="display: none;">
+                            <i class="fas fa-arrow-left"></i>
+                            <?php _e('Previous', 'smart-restock-waitlist'); ?>
+                        </button>
+                        <button type="button" class="srwm-btn srwm-btn-primary" id="srwm-po-next-step">
+                            <?php _e('Next', 'smart-restock-waitlist'); ?>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="srwm-btn srwm-btn-success" id="srwm-generate-po-submit" style="display: none;">
+                            <i class="fas fa-check"></i>
+                            <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>
+                        </button>
+                    </div>
+                    <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
                         <?php _e('Cancel', 'smart-restock-waitlist'); ?>
-                    </button>
-                    <button type="button" class="button button-primary" id="srwm-generate-po-submit">
-                        <span class="dashicons dashicons-plus"></span>
-                        <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>
                     </button>
                 </div>
             </div>
