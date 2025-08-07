@@ -2148,6 +2148,85 @@ class SRWM_Admin {
             margin-top: 24px;
         }
         
+        /* Bulk Actions Modal Styles */
+        .srwm-bulk-actions-content {
+            padding: 20px 0;
+        }
+        
+        .srwm-bulk-section {
+            margin-bottom: 25px;
+        }
+        
+        .srwm-bulk-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .srwm-bulk-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .srwm-radio-option,
+        .srwm-checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-radio-option:hover,
+        .srwm-checkbox-option:hover {
+            background-color: #f8f9fa;
+            border-color: #0073aa;
+        }
+        
+        .srwm-radio-option input[type="radio"],
+        .srwm-checkbox-option input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .srwm-radio-label,
+        .srwm-checkbox-label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .srwm-bulk-selection {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        
+        .srwm-po-checkboxes {
+            margin-top: 15px;
+        }
+        
+        .srwm-loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .srwm-error {
+            color: #dc3545;
+            text-align: center;
+            font-weight: 500;
+        }
+        
         .srwm-quick-action-card {
             background: #fff;
             border-radius: 12px;
@@ -8565,14 +8644,215 @@ If you no longer wish to receive these emails, please contact us.';
             
             // Export POs
             $('#srwm-export-pos, #srwm-quick-export').on('click', function() {
-                // This will be implemented later
-                alert('<?php _e('Export functionality will be implemented in the next step!', 'smart-restock-waitlist'); ?>');
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Generating...', 'smart-restock-waitlist'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_export_pos',
+                        nonce: '<?php echo wp_create_nonce('srwm_export_pos'); ?>'
+                    },
+                    success: function(response) {
+                        console.log('SRWM: Export POs response:', response);
+                        if (response.success) {
+                            // Create download link
+                            var link = document.createElement('a');
+                            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data);
+                            link.download = 'purchase_orders_' + new Date().toISOString().slice(0, 10) + '.csv';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            showNotification('<?php _e('Purchase orders exported successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                        } else {
+                            showNotification('<?php _e('Failed to export purchase orders. Please try again.', 'smart-restock-waitlist'); ?>', 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('SRWM: Export POs error:', {xhr: xhr, status: status, error: error});
+                        showNotification('<?php _e('Error exporting purchase orders. Please try again.', 'smart-restock-waitlist'); ?>', 'error');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-download"></i> <?php _e('Export', 'smart-restock-waitlist'); ?>');
+                    }
+                });
             });
             
             // Quick Actions
             $('#srwm-quick-bulk').on('click', function() {
-                alert('<?php _e('Bulk actions functionality will be implemented in the next step!', 'smart-restock-waitlist'); ?>');
+                // Show bulk actions modal
+                showBulkActionsModal();
             });
+            
+            // Function to show bulk actions modal
+            function showBulkActionsModal() {
+                var modal = $('<div class="srwm-modal srwm-modal-active" style="display: flex;">' +
+                    '<div class="srwm-modal-content" style="max-width: 600px;">' +
+                        '<div class="srwm-modal-header">' +
+                            '<h3><i class="fas fa-tasks"></i> <?php _e('Bulk Actions', 'smart-restock-waitlist'); ?></h3>' +
+                            '<button class="srwm-modal-close">&times;</button>' +
+                        '</div>' +
+                        '<div class="srwm-modal-body">' +
+                            '<div class="srwm-bulk-actions-content">' +
+                                '<div class="srwm-bulk-section">' +
+                                    '<h4><?php _e('Select Action', 'smart-restock-waitlist'); ?></h4>' +
+                                    '<div class="srwm-bulk-options">' +
+                                        '<label class="srwm-radio-option">' +
+                                            '<input type="radio" name="bulk_action" value="status_update" checked>' +
+                                            '<span class="srwm-radio-label"><?php _e('Update Status', 'smart-restock-waitlist'); ?></span>' +
+                                        '</label>' +
+                                        '<label class="srwm-radio-option">' +
+                                            '<input type="radio" name="bulk_action" value="resend">' +
+                                            '<span class="srwm-radio-label"><?php _e('Resend to Suppliers', 'smart-restock-waitlist'); ?></span>' +
+                                        '</label>' +
+                                        '<label class="srwm-radio-option">' +
+                                            '<input type="radio" name="bulk_action" value="delete">' +
+                                            '<span class="srwm-radio-label"><?php _e('Delete POs', 'smart-restock-waitlist'); ?></span>' +
+                                        '</label>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="srwm-bulk-section" id="bulk-status-section">' +
+                                    '<h4><?php _e('New Status', 'smart-restock-waitlist'); ?></h4>' +
+                                    '<select id="bulk-status-select" class="srwm-select">' +
+                                        '<option value="pending"><?php _e('Pending', 'smart-restock-waitlist'); ?></option>' +
+                                        '<option value="confirmed"><?php _e('Confirmed', 'smart-restock-waitlist'); ?></option>' +
+                                        '<option value="shipped"><?php _e('Shipped', 'smart-restock-waitlist'); ?></option>' +
+                                        '<option value="completed"><?php _e('Completed', 'smart-restock-waitlist'); ?></option>' +
+                                    '</select>' +
+                                '</div>' +
+                                '<div class="srwm-bulk-section">' +
+                                    '<h4><?php _e('Select Purchase Orders', 'smart-restock-waitlist'); ?></h4>' +
+                                    '<div class="srwm-bulk-selection">' +
+                                        '<label class="srwm-checkbox-option">' +
+                                            '<input type="checkbox" id="select-all-pos">' +
+                                            '<span class="srwm-checkbox-label"><?php _e('Select All', 'smart-restock-waitlist'); ?></span>' +
+                                        '</label>' +
+                                        '<div class="srwm-po-checkboxes" id="po-checkboxes">' +
+                                            '<p class="srwm-loading"><?php _e('Loading purchase orders...', 'smart-restock-waitlist'); ?></p>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="srwm-modal-footer">' +
+                            '<button class="srwm-btn srwm-btn-secondary" onclick="$(this).closest(\'.srwm-modal\').remove();"><?php _e('Cancel', 'smart-restock-waitlist'); ?></button>' +
+                            '<button class="srwm-btn srwm-btn-primary" id="execute-bulk-action"><?php _e('Execute Action', 'smart-restock-waitlist'); ?></button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>');
+                
+                $('body').append(modal);
+                
+                // Load purchase orders for selection
+                loadPurchaseOrdersForBulk();
+                
+                // Handle action type change
+                $('input[name="bulk_action"]').on('change', function() {
+                    var action = $(this).val();
+                    if (action === 'status_update') {
+                        $('#bulk-status-section').show();
+                    } else {
+                        $('#bulk-status-section').hide();
+                    }
+                });
+                
+                // Handle select all
+                $('#select-all-pos').on('change', function() {
+                    $('.po-checkbox').prop('checked', $(this).is(':checked'));
+                });
+                
+                // Execute bulk action
+                $('#execute-bulk-action').on('click', function() {
+                    executeBulkAction();
+                });
+                
+                // Close modal
+                modal.find('.srwm-modal-close, .srwm-modal').on('click', function(e) {
+                    if (e.target === this) {
+                        modal.remove();
+                    }
+                });
+            }
+            
+            // Load purchase orders for bulk selection
+            function loadPurchaseOrdersForBulk() {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_pos_for_bulk',
+                        nonce: '<?php echo wp_create_nonce('srwm_get_pos_for_bulk'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            var html = '';
+                            response.data.forEach(function(po) {
+                                html += '<label class="srwm-checkbox-option">' +
+                                    '<input type="checkbox" class="po-checkbox" value="' + po.id + '">' +
+                                    '<span class="srwm-checkbox-label">' + po.po_number + ' - ' + po.product_name + '</span>' +
+                                '</label>';
+                            });
+                            $('#po-checkboxes').html(html);
+                        } else {
+                            $('#po-checkboxes').html('<p class="srwm-error"><?php _e('Failed to load purchase orders.', 'smart-restock-waitlist'); ?></p>');
+                        }
+                    },
+                    error: function() {
+                        $('#po-checkboxes').html('<p class="srwm-error"><?php _e('Error loading purchase orders.', 'smart-restock-waitlist'); ?></p>');
+                    }
+                });
+            }
+            
+            // Execute bulk action
+            function executeBulkAction() {
+                var selectedPos = $('.po-checkbox:checked').map(function() {
+                    return $(this).val();
+                }).get();
+                
+                if (selectedPos.length === 0) {
+                    showNotification('<?php _e('Please select at least one purchase order.', 'smart-restock-waitlist'); ?>', 'error');
+                    return;
+                }
+                
+                var action = $('input[name="bulk_action"]:checked').val();
+                var status = $('#bulk-status-select').val();
+                
+                var button = $('#execute-bulk-action');
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> <?php _e('Processing...', 'smart-restock-waitlist'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_execute_bulk_action',
+                        nonce: '<?php echo wp_create_nonce('srwm_execute_bulk_action'); ?>',
+                        po_ids: selectedPos,
+                        bulk_action: action,
+                        status: status
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification(response.data.message, 'success');
+                            $('.srwm-modal').remove();
+                            // Reload the page to refresh the table
+                            location.reload();
+                        } else {
+                            showNotification(response.data, 'error');
+                        }
+                    },
+                    error: function() {
+                        showNotification('<?php _e('Error executing bulk action. Please try again.', 'smart-restock-waitlist'); ?>', 'error');
+                    },
+                    complete: function() {
+                        button.prop('disabled', false).html('<?php _e('Execute Action', 'smart-restock-waitlist'); ?>');
+                    }
+                });
+            }
             
             $('#srwm-quick-settings').on('click', function() {
                 window.location.href = '<?php echo admin_url('admin.php?page=smart-restock-waitlist-settings'); ?>';
