@@ -1390,17 +1390,41 @@ class SmartRestockWaitlistManager {
             }
             
             // Process based on delivery method
+            error_log('SRWM: Processing delivery method: ' . $form_data['delivery_method']);
+            error_log('SRWM: Form data keys: ' . implode(', ', array_keys($form_data)));
+            
             if ($form_data['delivery_method'] === 'supplier') {
+                error_log('SRWM: Supplier delivery method selected');
+                error_log('SRWM: Supplier ID in form data: ' . (isset($form_data['supplier_id']) ? $form_data['supplier_id'] : 'NOT SET'));
+                
                 if (empty($form_data['supplier_id'])) {
+                    error_log('SRWM: Supplier ID is empty or not set');
                     wp_send_json_error(__('Supplier not selected.', 'smart-restock-waitlist'));
                 }
                 
                 // Get supplier details
                 global $wpdb;
+                error_log('SRWM: Looking for supplier with ID: ' . $form_data['supplier_id']);
+                
+                // First, let's check if the suppliers table exists and has data
+                $suppliers_table = $wpdb->prefix . 'srwm_suppliers';
+                $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$suppliers_table'");
+                error_log('SRWM: Suppliers table exists: ' . ($table_exists ? 'yes' : 'no'));
+                
+                if ($table_exists) {
+                    $total_suppliers = $wpdb->get_var("SELECT COUNT(*) FROM $suppliers_table");
+                    error_log('SRWM: Total suppliers in database: ' . $total_suppliers);
+                }
+                
                 $supplier = $wpdb->get_row($wpdb->prepare(
                     "SELECT * FROM {$wpdb->prefix}srwm_suppliers WHERE id = %d",
                     $form_data['supplier_id']
                 ));
+                
+                error_log('SRWM: Found supplier: ' . ($supplier ? 'yes' : 'no'));
+                if ($supplier) {
+                    error_log('SRWM: Supplier details: ' . print_r($supplier, true));
+                }
                 
                 if (!$supplier) {
                     wp_send_json_error(__('Selected supplier not found.', 'smart-restock-waitlist'));
