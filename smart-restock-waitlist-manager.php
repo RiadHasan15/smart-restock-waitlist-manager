@@ -4606,12 +4606,28 @@ Best regards,
         }
         
         // Check if updated_at column exists, if not add it
-        $column_exists = $wpdb->get_results("SHOW COLUMNS FROM $table LIKE 'updated_at'");
-        if (empty($column_exists)) {
+        $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'updated_at'");
+        if (!$column_exists) {
             error_log('SRWM: updated_at column does not exist, adding it');
-            $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            $alter_result = $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            error_log('SRWM: ALTER TABLE result: ' . ($alter_result !== false ? 'success' : 'failed'));
+            error_log('SRWM: ALTER TABLE error: ' . $wpdb->last_error);
+        } else {
+            error_log('SRWM: updated_at column already exists');
         }
         
+        // Check if updated_at column exists, if not add it
+        $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'updated_at'");
+        if (!$column_exists) {
+            error_log('SRWM: updated_at column does not exist, adding it');
+            $alter_result = $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            error_log('SRWM: ALTER TABLE result: ' . ($alter_result !== false ? 'success' : 'failed'));
+            error_log('SRWM: ALTER TABLE error: ' . $wpdb->last_error);
+        } else {
+            error_log('SRWM: updated_at column already exists');
+        }
+        
+        // Try to update with updated_at first, if it fails, update without it
         $result = $wpdb->update(
             $table,
             array(
@@ -4622,6 +4638,30 @@ Best regards,
             array('%s', '%s'),
             array('%d')
         );
+        
+        // If update failed due to missing column, try without updated_at
+        if ($result === false && strpos($wpdb->last_error, 'updated_at') !== false) {
+            error_log('SRWM: Update failed due to missing updated_at column, trying without it');
+            $result = $wpdb->update(
+                $table,
+                array('status' => $db_status),
+                array('id' => $po_id),
+                array('%s'),
+                array('%d')
+            );
+        }
+        
+        // If update failed due to missing column, try without updated_at
+        if ($result === false && strpos($wpdb->last_error, 'updated_at') !== false) {
+            error_log('SRWM: Update failed due to missing updated_at column, trying without it');
+            $result = $wpdb->update(
+                $table,
+                array('status' => $db_status),
+                array('id' => $po_id),
+                array('%s'),
+                array('%d')
+            );
+        }
         
         error_log('SRWM: Update result: ' . ($result !== false ? 'success' : 'failed'));
         error_log('SRWM: Last SQL error: ' . $wpdb->last_error);
