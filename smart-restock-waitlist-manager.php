@@ -1022,6 +1022,10 @@ class SmartRestockWaitlistManager {
         
         // Purchase Order AJAX handlers
         add_action('wp_ajax_srwm_get_products_for_po', array($this, 'ajax_get_products_for_po'));
+        add_action('wp_ajax_srwm_get_po_details', array($this, 'ajax_get_po_details'));
+        add_action('wp_ajax_srwm_download_po', array($this, 'ajax_download_po'));
+        add_action('wp_ajax_srwm_resend_po', array($this, 'ajax_resend_po'));
+        add_action('wp_ajax_srwm_update_po_status', array($this, 'ajax_update_po_status'));
     }
     
     /**
@@ -3874,6 +3878,384 @@ class SmartRestockWaitlistManager {
             'generated_count' => $generated_count,
             'errors' => $errors
         ));
+    }
+    
+    /**
+     * AJAX: Get PO details for modal
+     */
+    public function ajax_get_po_details() {
+        check_ajax_referer('srwm_get_po_details', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        $po_id = intval($_POST['po_id']);
+        
+        if (!$po_id) {
+            wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $po = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d",
+            $po_id
+        ));
+        
+        if (!$po) {
+            wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Get product details
+        $product = wc_get_product($po->product_id);
+        $product_name = $product ? $product->get_name() : __('Product not found', 'smart-restock-waitlist');
+        $product_sku = $product ? $product->get_sku() : '';
+        
+        // Get supplier details
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT supplier_name FROM {$wpdb->prefix}srwm_suppliers WHERE supplier_email = %s",
+            $po->supplier_email
+        ));
+        $supplier_name = $supplier ? $supplier->supplier_name : __('Unknown Supplier', 'smart-restock-waitlist');
+        
+        // Generate HTML for modal
+        $html = '
+        <div class="srwm-po-details">
+            <div class="srwm-po-header">
+                <h2>' . esc_html($po->po_number) . '</h2>
+                <span class="srwm-status-badge srwm-status-' . esc_attr($po->status) . '">
+                    <i class="fas fa-circle"></i>
+                    ' . esc_html(ucfirst($po->status)) . '
+                </span>
+            </div>
+            
+            <div class="srwm-po-content">
+                <div class="srwm-po-section">
+                    <h3>' . __('Product Information', 'smart-restock-waitlist') . '</h3>
+                    <div class="srwm-po-info-grid">
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Product Name', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($product_name) . '</span>
+                        </div>
+                        <div class="srwm-po-info-item">
+                            <label>' . __('SKU', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($product_sku) . '</span>
+                        </div>
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Quantity', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($po->quantity) . '</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="srwm-po-section">
+                    <h3>' . __('Supplier Information', 'smart-restock-waitlist') . '</h3>
+                    <div class="srwm-po-info-grid">
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Supplier Name', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($supplier_name) . '</span>
+                        </div>
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Email', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($po->supplier_email) . '</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="srwm-po-section">
+                    <h3>' . __('Order Details', 'smart-restock-waitlist') . '</h3>
+                    <div class="srwm-po-info-grid">
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Created Date', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html(date('F j, Y g:i A', strtotime($po->created_at))) . '</span>
+                        </div>
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Expected Delivery', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html($po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : __('Not specified', 'smart-restock-waitlist')) . '</span>
+                        </div>
+                        <div class="srwm-po-info-item">
+                            <label>' . __('Urgency', 'smart-restock-waitlist') . '</label>
+                            <span>' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</span>
+                        </div>
+                    </div>
+                </div>
+                
+                ' . ($po->notes ? '
+                <div class="srwm-po-section">
+                    <h3>' . __('Notes', 'smart-restock-waitlist') . '</h3>
+                    <div class="srwm-po-notes">
+                        ' . esc_html($po->notes) . '
+                    </div>
+                </div>
+                ' : '') . '
+            </div>
+        </div>';
+        
+        wp_send_json_success(array('html' => $html));
+    }
+    
+    /**
+     * AJAX: Download PO PDF
+     */
+    public function ajax_download_po() {
+        check_ajax_referer('srwm_download_po', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        $po_id = intval($_POST['po_id']);
+        
+        if (!$po_id) {
+            wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $po = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d",
+            $po_id
+        ));
+        
+        if (!$po) {
+            wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
+        }
+        
+        // For now, we'll create a simple HTML file that can be printed as PDF
+        // In a full implementation, you'd use a PDF library like TCPDF or DOMPDF
+        
+        $product = wc_get_product($po->product_id);
+        $product_name = $product ? $product->get_name() : __('Product not found', 'smart-restock-waitlist');
+        $product_sku = $product ? $product->get_sku() : '';
+        
+        $supplier = $wpdb->get_row($wpdb->prepare(
+            "SELECT supplier_name FROM {$wpdb->prefix}srwm_suppliers WHERE supplier_email = %s",
+            $po->supplier_email
+        ));
+        $supplier_name = $supplier ? $supplier->supplier_name : __('Unknown Supplier', 'smart-restock-waitlist');
+        
+        // Create a simple HTML file
+        $html_content = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>' . esc_html($po->po_number) . '</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                .po-number { font-size: 24px; font-weight: bold; color: #333; }
+                .section { margin-bottom: 30px; }
+                .section h3 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                .info-grid { display: table; width: 100%; }
+                .info-item { display: table-row; }
+                .info-label { display: table-cell; font-weight: bold; padding: 5px 10px 5px 0; }
+                .info-value { display: table-cell; padding: 5px 0; }
+                .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>PURCHASE ORDER</h1>
+                <div class="po-number">' . esc_html($po->po_number) . '</div>
+                <div>Date: ' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
+            </div>
+            
+            <div class="section">
+                <h3>Product Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Product Name:</div>
+                        <div class="info-value">' . esc_html($product_name) . '</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">SKU:</div>
+                        <div class="info-value">' . esc_html($product_sku) . '</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Quantity:</div>
+                        <div class="info-value">' . esc_html($po->quantity) . '</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Supplier Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Supplier Name:</div>
+                        <div class="info-value">' . esc_html($supplier_name) . '</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value">' . esc_html($po->supplier_email) . '</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Order Details</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Expected Delivery:</div>
+                        <div class="info-value">' . esc_html($po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : 'Not specified') . '</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Urgency:</div>
+                        <div class="info-value">' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</div>
+                    </div>
+                </div>
+            </div>
+            
+            ' . ($po->notes ? '
+            <div class="section">
+                <h3>Notes</h3>
+                <p>' . esc_html($po->notes) . '</p>
+            </div>
+            ' : '') . '
+            
+            <div class="footer">
+                <p>Generated on ' . esc_html(date('F j, Y g:i A')) . '</p>
+            </div>
+        </body>
+        </html>';
+        
+        // Create a temporary file
+        $upload_dir = wp_upload_dir();
+        $filename = 'po-' . $po->po_number . '-' . date('Y-m-d') . '.html';
+        $file_path = $upload_dir['path'] . '/' . $filename;
+        $file_url = $upload_dir['url'] . '/' . $filename;
+        
+        file_put_contents($file_path, $html_content);
+        
+        wp_send_json_success(array(
+            'download_url' => $file_url,
+            'filename' => $filename
+        ));
+    }
+    
+    /**
+     * AJAX: Resend PO to supplier
+     */
+    public function ajax_resend_po() {
+        check_ajax_referer('srwm_resend_po', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        $po_id = intval($_POST['po_id']);
+        
+        if (!$po_id) {
+            wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $po = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d",
+            $po_id
+        ));
+        
+        if (!$po) {
+            wp_send_json_error(__('Purchase order not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Get product details
+        $product = wc_get_product($po->product_id);
+        $product_name = $product ? $product->get_name() : __('Product not found', 'smart-restock-waitlist');
+        
+        // Send email to supplier
+        $subject = sprintf(__('Purchase Order %s - %s', 'smart-restock-waitlist'), $po->po_number, $product_name);
+        
+        $message = sprintf(
+            __('Dear Supplier,
+
+A new purchase order has been generated for your review.
+
+Purchase Order Details:
+- PO Number: %s
+- Product: %s
+- Quantity: %d
+- Expected Delivery: %s
+- Urgency: %s
+
+Please review and confirm this order.
+
+Best regards,
+%s', 'smart-restock-waitlist'),
+            $po->po_number,
+            $product_name,
+            $po->quantity,
+            $po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : __('Not specified', 'smart-restock-waitlist'),
+            ucfirst($po->urgency ?: 'normal'),
+            get_bloginfo('name')
+        );
+        
+        $headers = array('Content-Type: text/plain; charset=UTF-8');
+        
+        $sent = wp_mail($po->supplier_email, $subject, $message, $headers);
+        
+        if ($sent) {
+            // Update last sent timestamp
+            $wpdb->update(
+                $table,
+                array('last_sent_at' => current_time('mysql')),
+                array('id' => $po_id),
+                array('%s'),
+                array('%d')
+            );
+            
+            wp_send_json_success(__('PO sent to supplier successfully.', 'smart-restock-waitlist'));
+        } else {
+            wp_send_json_error(__('Failed to send PO to supplier.', 'smart-restock-waitlist'));
+        }
+    }
+    
+    /**
+     * AJAX: Update PO status
+     */
+    public function ajax_update_po_status() {
+        check_ajax_referer('srwm_update_po_status', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        $po_id = intval($_POST['po_id']);
+        $status = sanitize_text_field($_POST['status']);
+        
+        if (!$po_id) {
+            wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
+        }
+        
+        if (!in_array($status, array('pending', 'confirmed', 'shipped', 'completed'))) {
+            wp_send_json_error(__('Invalid status.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $result = $wpdb->update(
+            $table,
+            array(
+                'status' => $status,
+                'updated_at' => current_time('mysql')
+            ),
+            array('id' => $po_id),
+            array('%s', '%s'),
+            array('%d')
+        );
+        
+        if ($result !== false) {
+            wp_send_json_success(__('PO status updated successfully.', 'smart-restock-waitlist'));
+        } else {
+            wp_send_json_error(__('Failed to update PO status.', 'smart-restock-waitlist'));
+        }
     }
     
 
