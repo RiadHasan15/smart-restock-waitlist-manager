@@ -5304,6 +5304,236 @@ class SRWM_Admin {
         .srwm-auto-approval .srwm-notice-content p {
             color: #047857;
         }
+        
+        /* Enhanced PO Action Buttons and Status Styles */
+        .srwm-status-select {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: #fff;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+        
+        .srwm-status-select:hover {
+            border-color: #9ca3af;
+        }
+        
+        .srwm-status-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-status-select:disabled {
+            background-color: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Action Buttons Styles */
+        .srwm-action-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .srwm-btn-small {
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .srwm-btn-small:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-btn-small:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .srwm-btn-primary {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        
+        .srwm-btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .srwm-btn-secondary {
+            background-color: #6b7280;
+            color: #fff;
+        }
+        
+        .srwm-btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        /* PO Details Modal Styles */
+        .srwm-po-details {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .srwm-po-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .srwm-po-header h2 {
+            margin: 0;
+            color: #111827;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .srwm-po-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .srwm-po-section {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-po-section h3 {
+            margin: 0 0 15px 0;
+            color: #374151;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 8px;
+        }
+        
+        .srwm-po-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .srwm-po-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .srwm-po-info-item label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .srwm-po-info-item span {
+            font-size: 14px;
+            color: #111827;
+            font-weight: 500;
+        }
+        
+        .srwm-po-notes {
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+        
+        /* Notification Styles */
+        .srwm-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+        }
+        
+        .srwm-notification-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .srwm-notification-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .srwm-notification-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .srwm-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .srwm-notification-content i {
+            font-size: 16px;
+        }
+        
+        .srwm-notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .srwm-notification-close:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
         </style>
         <?php
     }
@@ -6386,10 +6616,12 @@ If you no longer wish to receive these emails, please contact us.';
                                                     <span class="srwm-quantity-badge"><?php echo esc_html($po->quantity); ?></span>
                                                 </td>
                                                 <td>
-                                                    <span class="srwm-status-badge srwm-status-<?php echo esc_attr($po->status); ?>">
-                                                        <i class="fas fa-circle"></i>
-                                                        <?php echo esc_html(ucfirst($po->status)); ?>
-                                                    </span>
+                                                    <select class="srwm-status-select update-po-status" data-po-id="<?php echo $po->id; ?>" data-original-value="<?php echo esc_attr($po->status); ?>">
+                                                        <option value="pending" <?php selected($po->status, 'pending'); ?>><?php _e('⏳ Pending', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="confirmed" <?php selected($po->status, 'confirmed'); ?>><?php _e('✅ Confirmed', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="shipped" <?php selected($po->status, 'shipped'); ?>><?php _e('🚚 Shipped', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="completed" <?php selected($po->status, 'completed'); ?>><?php _e('🎉 Completed', 'smart-restock-waitlist'); ?></option>
+                                                    </select>
                                                 </td>
                                                 <td>
                                                     <div class="srwm-date-info">
@@ -7432,6 +7664,10 @@ If you no longer wish to receive these emails, please contact us.';
             // View PO Details
             $('.view-po').on('click', function() {
                 var poId = $(this).data('po-id');
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
                 
                 $.ajax({
                     url: ajaxurl,
@@ -7445,10 +7681,161 @@ If you no longer wish to receive these emails, please contact us.';
                         if (response.success) {
                             $('#srwm-po-details-content').html(response.data.html);
                             $('#srwm-po-details-modal').show().addClass('srwm-modal-active');
+                        } else {
+                            alert('<?php _e('Failed to load PO details. Please try again.', 'smart-restock-waitlist'); ?>');
                         }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error loading PO details. Please try again.', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-eye"></i>');
                     }
                 });
             });
+            
+            // Download PO PDF
+            $('.download-po').on('click', function() {
+                var poId = $(this).data('po-id');
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_download_po',
+                        po_id: poId,
+                        nonce: '<?php echo wp_create_nonce('srwm_download_po'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Create download link
+                            var link = document.createElement('a');
+                            link.href = response.data.download_url;
+                            link.download = response.data.filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // Show success notification
+                            showNotification('<?php _e('PO PDF downloaded successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                        } else {
+                            alert('<?php _e('Failed to generate PDF. Please try again.', 'smart-restock-waitlist'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error generating PDF. Please try again.', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-download"></i>');
+                    }
+                });
+            });
+            
+            // Resend PO to Supplier
+            $('.resend-po').on('click', function() {
+                var poId = $(this).data('po-id');
+                var button = $(this);
+                
+                if (!confirm('<?php _e('Are you sure you want to resend this PO to the supplier?', 'smart-restock-waitlist'); ?>')) {
+                    return;
+                }
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_resend_po',
+                        po_id: poId,
+                        nonce: '<?php echo wp_create_nonce('srwm_resend_po'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification('<?php _e('PO resent to supplier successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                        } else {
+                            alert('<?php _e('Failed to resend PO. Please try again.', 'smart-restock-waitlist'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error resending PO. Please try again.', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-envelope"></i>');
+                    }
+                });
+            });
+            
+            // Update PO Status
+            $('.update-po-status').on('change', function() {
+                var poId = $(this).data('po-id');
+                var newStatus = $(this).val();
+                var select = $(this);
+                
+                // Add loading state
+                select.prop('disabled', true);
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_update_po_status',
+                        po_id: poId,
+                        status: newStatus,
+                        nonce: '<?php echo wp_create_nonce('srwm_update_po_status'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showNotification('<?php _e('PO status updated successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                            // Update the status badge in the table
+                            var statusBadge = select.closest('tr').find('.srwm-status-badge');
+                            statusBadge.removeClass().addClass('srwm-status-badge srwm-status-' + newStatus);
+                            statusBadge.html('<i class="fas fa-circle"></i> ' + newStatus.charAt(0).toUpperCase() + newStatus.slice(1));
+                        } else {
+                            alert('<?php _e('Failed to update status. Please try again.', 'smart-restock-waitlist'); ?>');
+                            // Revert select value
+                            select.val(select.data('original-value'));
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('Error updating status. Please try again.', 'smart-restock-waitlist'); ?>');
+                        // Revert select value
+                        select.val(select.data('original-value'));
+                    },
+                    complete: function() {
+                        // Restore select state
+                        select.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Function to show notifications
+            function showNotification(message, type) {
+                var notification = $('<div class="srwm-notification srwm-notification-' + type + '">' +
+                    '<div class="srwm-notification-content">' +
+                    '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i>' +
+                    '<span>' + message + '</span>' +
+                    '</div>' +
+                    '<button class="srwm-notification-close"><i class="fas fa-times"></i></button>' +
+                    '</div>');
+                
+                $('body').append(notification);
+                
+                // Auto remove after 5 seconds
+                setTimeout(function() {
+                    notification.fadeOut(function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+            }
             
             // Export POs
             $('#srwm-export-pos, #srwm-quick-export').on('click', function() {
