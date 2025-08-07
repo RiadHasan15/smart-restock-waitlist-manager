@@ -7014,6 +7014,10 @@ If you no longer wish to receive these emails, please contact us.';
                             <span class="dashicons dashicons-plus"></span>
                             <?php _e('Generate New PO', 'smart-restock-waitlist'); ?>
                         </button>
+                        <button class="srwm-btn srwm-btn-secondary" id="srwm-test-email" style="margin-left: 10px;">
+                            <span class="dashicons dashicons-email"></span>
+                            Test Email
+                        </button>
                         <button class="srwm-btn srwm-btn-secondary" id="srwm-test-ajax" style="margin-left: 10px;">
                             <span class="dashicons dashicons-admin-tools"></span>
                             Test AJAX
@@ -8373,6 +8377,39 @@ If you no longer wish to receive these emails, please contact us.';
                     complete: function() {
                         // Restore button state
                         button.prop('disabled', false).html('<i class="fas fa-envelope"></i>');
+                    }
+                });
+            });
+            
+            // Test Email functionality
+            $('#srwm-test-email').on('click', function() {
+                var button = $(this);
+                
+                // Add loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Testing Email...');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_test_email',
+                        nonce: '<?php echo wp_create_nonce('srwm_test_email'); ?>'
+                    },
+                    success: function(response) {
+                        console.log('SRWM: Test email response:', response);
+                        if (response.success) {
+                            showNotification('Test email sent successfully! Check your inbox.', 'success');
+                        } else {
+                            showNotification('Test email failed: ' + response.data, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('SRWM: Test email error:', {xhr: xhr, status: status, error: error});
+                        showNotification('Test email failed: ' + error, 'error');
+                    },
+                    complete: function() {
+                        // Restore button state
+                        button.prop('disabled', false).html('<i class="fas fa-envelope"></i> Test Email');
                     }
                 });
             });
