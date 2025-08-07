@@ -304,8 +304,36 @@ class SRWM_Admin {
             wp_die(__('You do not have sufficient permissions to access this page.', 'smart-restock-waitlist'));
         }
         
+        // Check if this is an email template reset
+        if (isset($_GET['action']) && $_GET['action'] === 'reset-email-templates') {
+            if (wp_verify_nonce($_GET['_wpnonce'], 'srwm_reset_email_templates')) {
+                $this->reset_email_templates();
+                wp_redirect(add_query_arg('email-templates-reset', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
+                exit;
+            }
+        }
+        
         // Save settings
         $this->save_settings();
+    }
+    
+    /**
+     * Reset email templates to defaults
+     */
+    private function reset_email_templates() {
+        // Reset waitlist email template
+        update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
+        
+        // Reset restock email template
+        update_option('srwm_restock_email_template', $this->get_default_restock_email_template());
+        
+        // Reset restock email subject
+        update_option('srwm_restock_email_subject', __('{product_name} is back in stock!', 'smart-restock-waitlist'));
+        
+        // Reset supplier email template if Pro is active
+        if ($this->license_manager->is_pro_active()) {
+            update_option('srwm_email_template_supplier', $this->get_default_supplier_email_template());
+        }
     }
     
     /**
@@ -7381,6 +7409,7 @@ If you no longer wish to receive these emails, please contact us.';
                 
                 <div class="srwm-settings-section">
                     <h2><?php _e('Email Templates', 'smart-restock-waitlist'); ?></h2>
+                    <p class="description"><?php _e('Configure email templates for different notifications. Each template serves a specific purpose.', 'smart-restock-waitlist'); ?></p>
                     <table class="form-table">
                     <tr>
                         <th scope="row"><?php _e('Customer Waitlist Email', 'smart-restock-waitlist'); ?></th>
@@ -7394,6 +7423,7 @@ If you no longer wish to receive these emails, please contact us.';
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
+                                <br><strong><?php _e('This email is sent when a customer joins the waitlist.', 'smart-restock-waitlist'); ?></strong>
                             </p>
                         </td>
                     </tr>
@@ -7412,6 +7442,7 @@ If you no longer wish to receive these emails, please contact us.';
                             ?></textarea>
                             <p class="description">
                                 <?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}', 'smart-restock-waitlist'); ?>
+                                <br><strong><?php _e('This email is sent when a product comes back in stock.', 'smart-restock-waitlist'); ?></strong>
                             </p>
                         </td>
                     </tr>
@@ -7435,6 +7466,16 @@ If you no longer wish to receive these emails, please contact us.';
                     </tr>
                     <?php endif; ?>
                     </table>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <p style="margin: 0 0 10px 0;"><strong><?php _e('Need to reset email templates?', 'smart-restock-waitlist'); ?></strong></p>
+                        <p style="margin: 0 0 15px 0; color: #666;"><?php _e('If your email templates are showing the wrong content, you can reset them to the correct defaults.', 'smart-restock-waitlist'); ?></p>
+                        <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=smart-restock-waitlist-settings&action=reset-email-templates'), 'srwm_reset_email_templates'); ?>" 
+                           class="button button-secondary" 
+                           onclick="return confirm('<?php esc_attr_e('Are you sure you want to reset email templates to defaults?', 'smart-restock-waitlist'); ?>')">
+                            <?php _e('Reset Email Templates to Defaults', 'smart-restock-waitlist'); ?>
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="srwm-submit-actions">
