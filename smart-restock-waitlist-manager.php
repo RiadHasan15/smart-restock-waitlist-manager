@@ -3422,22 +3422,6 @@ class SmartRestockWaitlistManager {
         // Add error logging for debugging
         error_log('SRWM: ajax_get_products_for_po called');
         
-        // Simple test response first
-        wp_send_json_success(array(
-            'products' => array(
-                array(
-                    'id' => 1,
-                    'name' => 'Test Product',
-                    'sku' => 'TEST001',
-                    'stock_quantity' => 10,
-                    'threshold' => 5,
-                    'category' => 'Test Category',
-                    'waitlist_count' => 0
-                )
-            )
-        ));
-        
-        /*
         try {
             check_ajax_referer('srwm_get_products_for_po', 'nonce');
         } catch (Exception $e) {
@@ -3499,7 +3483,6 @@ class SmartRestockWaitlistManager {
             error_log('SRWM: Exception in ajax_get_products_for_po - ' . $e->getMessage());
             wp_send_json_error(__('Error loading products: ', 'smart-restock-waitlist') . $e->getMessage());
         }
-        */
     }
     
     /**
