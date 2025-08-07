@@ -7265,8 +7265,6 @@ If you no longer wish to receive these emails, please contact us.';
                     send_notification: $('#po-send-notification').is(':checked')
                 };
                 
-                console.log('SRWM: formData:', formData);
-                
                 // Add delivery method specific data
                 if (deliveryMethod === 'supplier') {
                     var supplierId = $('#po-supplier').val();
@@ -7278,6 +7276,8 @@ If you no longer wish to receive these emails, please contact us.';
                     formData.email_address = $('#po-email-address').val();
                     formData.supplier_name = $('#po-supplier-name').val();
                 }
+                
+                console.log('SRWM: Final formData:', formData);
                 
                 $.ajax({
                     url: ajaxurl,
