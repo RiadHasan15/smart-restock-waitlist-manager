@@ -48,14 +48,20 @@ jQuery(document).ready(function($) {
                         response = JSON.parse(response);
                     }
                     
+                    console.log('AJAX Response:', response);
+                    
                     if (response.success) {
                         showSuccessMessage($message, response.message);
-                        updateWaitlistDisplay($form, response);
+                        
+                        // Reload the entire waitlist section to ensure proper display
+                        reloadWaitlistSection($form);
+                        
                         animateSuccess($form);
                     } else {
                         showErrorMessage($message, response.message);
                     }
                 } catch (e) {
+                    console.error('AJAX Error:', e);
                     showErrorMessage($message, 'An unexpected error occurred. Please try again.');
                 }
             },
@@ -288,6 +294,9 @@ jQuery(document).ready(function($) {
     function updateWaitlistDisplay($form, response) {
         const $container = $form.closest('.srwm-waitlist-container');
         
+        console.log('updateWaitlistDisplay called with response:', response);
+        console.log('Container found:', $container.length > 0);
+        
         // Hide form container
         $form.closest('.srwm-waitlist-form-container').fadeOut(300, function() {
             // Build success HTML with dynamic data
@@ -330,8 +339,10 @@ jQuery(document).ready(function($) {
                 const queueFillWidth = Math.min(100, (response.waitlist_count / 100) * 100);
                 const peopleText = response.waitlist_count === 1 ? 'person is waiting' : 'people are waiting';
                 
+                console.log('Adding social proof section. Waitlist count:', response.waitlist_count);
+                
                 successHtml += `
-                    <div class="srwm-waitlist-preview">
+                    <div class="srwm-waitlist-preview" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
                         <div class="srwm-preview-header">
                             <div class="srwm-preview-icon">
                                 <span class="dashicons dashicons-groups"></span>
@@ -369,10 +380,14 @@ jQuery(document).ready(function($) {
                             </div>
                         </div>
                     </div>`;
+            } else {
+                console.log('Not adding social proof. Waitlist count:', response.waitlist_count);
             }
             
             successHtml += `
                 </div>`;
+            
+            console.log('Final success HTML:', successHtml);
             
             $container.find('.srwm-waitlist-header').after(successHtml);
             
@@ -380,7 +395,60 @@ jQuery(document).ready(function($) {
             setTimeout(function() {
                 $container.find('.srwm-status-card').addClass('animate-in');
                 animateCountNumbers();
+                
+                // Debug: Check if social proof section exists
+                const $socialProof = $container.find('.srwm-waitlist-preview');
+                console.log('Social proof section found:', $socialProof.length);
+                console.log('Social proof visibility:', $socialProof.is(':visible'));
+                console.log('Social proof display:', $socialProof.css('display'));
             }, 100);
+        });
+    }
+    
+    /**
+     * Reload the entire waitlist section
+     */
+    function reloadWaitlistSection($form) {
+        const $container = $form.closest('.srwm-waitlist-container');
+        const productId = $form.find('input[name="product_id"]').val();
+        
+        console.log('Reloading waitlist section for product:', productId);
+        
+        // Show loading state
+        $container.addClass('loading');
+        
+        // Make AJAX request to get updated waitlist HTML
+        $.ajax({
+            url: srwm_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'srwm_get_waitlist_html',
+                nonce: srwm_ajax.nonce,
+                product_id: productId
+            },
+            success: function(response) {
+                try {
+                    if (typeof response === 'string') {
+                        response = JSON.parse(response);
+                    }
+                    
+                    if (response.success) {
+                        // Replace the entire container content
+                        $container.html(response.html);
+                        console.log('Waitlist section reloaded successfully');
+                    } else {
+                        console.error('Failed to reload waitlist section:', response.message);
+                    }
+                } catch (e) {
+                    console.error('Error parsing reload response:', e);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error reloading waitlist section:', error);
+            },
+            complete: function() {
+                $container.removeClass('loading');
+            }
         });
     }
     

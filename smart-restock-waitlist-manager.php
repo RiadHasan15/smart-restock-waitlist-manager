@@ -974,6 +974,8 @@ class SmartRestockWaitlistManager {
         // Frontend AJAX
         add_action('wp_ajax_srwm_add_to_waitlist', array($this, 'ajax_add_to_waitlist'));
         add_action('wp_ajax_nopriv_srwm_add_to_waitlist', array($this, 'ajax_add_to_waitlist'));
+        add_action('wp_ajax_srwm_get_waitlist_html', array($this, 'ajax_get_waitlist_html'));
+        add_action('wp_ajax_nopriv_srwm_get_waitlist_html', array($this, 'ajax_get_waitlist_html'));
         
         // Admin AJAX
         add_action('wp_ajax_srwm_restock_product', array($this, 'ajax_restock_product'));
@@ -1040,6 +1042,9 @@ class SmartRestockWaitlistManager {
             $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
             $customer_position = SRWM_Waitlist::get_instance()->get_customer_queue_position($product_id, $email);
             
+            // Debug logging
+            error_log('SRWM Debug - Product ID: ' . $product_id . ', Waitlist Count: ' . $waitlist_count . ', Customer Position: ' . $customer_position);
+            
             wp_die(json_encode(array(
                 'success' => true, 
                 'message' => __('You have been added to the waitlist!', 'smart-restock-waitlist'),
@@ -1049,6 +1054,38 @@ class SmartRestockWaitlistManager {
         } else {
             wp_die(json_encode(array('success' => false, 'message' => __('You are already on the waitlist for this product.', 'smart-restock-waitlist'))));
         }
+    }
+    
+    /**
+     * AJAX: Get waitlist HTML for reloading
+     */
+    public function ajax_get_waitlist_html() {
+        check_ajax_referer('srwm_waitlist_nonce', 'nonce');
+        
+        $product_id = intval($_POST['product_id']);
+        
+        if (!$product_id) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Invalid product ID.', 'smart-restock-waitlist'))));
+        }
+        
+        // Get the product
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_die(json_encode(array('success' => false, 'message' => __('Product not found.', 'smart-restock-waitlist'))));
+        }
+        
+        // Start output buffering to capture the waitlist HTML
+        ob_start();
+        
+        // Display the waitlist form (this will show the success state if user is on waitlist)
+        SRWM_Waitlist::get_instance()->display_waitlist_form();
+        
+        $html = ob_get_clean();
+        
+        wp_die(json_encode(array(
+            'success' => true,
+            'html' => $html
+        )));
     }
     
     /**
