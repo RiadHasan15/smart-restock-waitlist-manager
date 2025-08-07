@@ -20,7 +20,30 @@ class SRWM_Admin {
         add_action('admin_init', array($this, 'init_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('admin_post_srwm_save_settings', array($this, 'handle_settings_save'));
+        
+        // Clean up corrupted email templates
+        add_action('init', array($this, 'cleanup_corrupted_templates'));
+        
         // AJAX handlers moved to main plugin file to avoid conflicts
+    }
+    
+    /**
+     * Clean up corrupted email templates
+     */
+    public function cleanup_corrupted_templates() {
+        // Check if waitlist email template is corrupted
+        $waitlist_template = get_option('srwm_email_template_waitlist');
+        if (!empty($waitlist_template) && strpos($waitlist_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
+            // Template is corrupted, replace with correct default
+            update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
+        }
+        
+        // Check if supplier email template is corrupted
+        $supplier_template = get_option('srwm_email_template_supplier');
+        if (!empty($supplier_template) && strpos($supplier_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
+            // Template is corrupted, replace with correct default
+            update_option('srwm_email_template_supplier', $this->get_default_supplier_email_template());
+        }
     }
     
     /**
@@ -296,6 +319,15 @@ class SRWM_Admin {
             }
         }
         
+        // Check if this is a force cleanup
+        if (isset($_GET['action']) && $_GET['action'] === 'force-cleanup') {
+            if (wp_verify_nonce($_GET['_wpnonce'], 'srwm_force_cleanup')) {
+                $this->cleanup_corrupted_templates();
+                wp_redirect(add_query_arg('force-cleanup', 'true', admin_url('admin.php?page=smart-restock-waitlist-settings')));
+                exit;
+            }
+        }
+        
         // Save settings
         $this->save_settings();
     }
@@ -304,11 +336,13 @@ class SRWM_Admin {
      * Reset email templates to defaults
      */
     private function reset_email_templates() {
-        // Reset waitlist email template
+        // Force delete and recreate waitlist email template
+        delete_option('srwm_email_template_waitlist');
         update_option('srwm_email_template_waitlist', $this->get_default_waitlist_email_template());
         
-        // Reset supplier email template if Pro is active
+        // Force delete and recreate supplier email template if Pro is active
         if ($this->license_manager->is_pro_active()) {
+            delete_option('srwm_email_template_supplier');
             update_option('srwm_email_template_supplier', $this->get_default_supplier_email_template());
         }
     }
@@ -7358,8 +7392,11 @@ If you no longer wish to receive these emails, please contact us.';
                         <td>
                             <textarea name="srwm_email_template_waitlist" rows="8" cols="50" class="large-text"><?php 
                                 $template = get_option('srwm_email_template_waitlist');
-                                if (empty($template)) {
+                                // Force use of new default template if old corrupted template exists
+                                if (empty($template) || strpos($template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
                                     $template = $this->get_default_waitlist_email_template();
+                                    // Update the database with the correct template
+                                    update_option('srwm_email_template_waitlist', $template);
                                 }
                                 echo esc_textarea($template); 
                             ?></textarea>
@@ -7399,6 +7436,12 @@ If you no longer wish to receive these emails, please contact us.';
                            class="button button-secondary" 
                            onclick="return confirm('<?php esc_attr_e('Are you sure you want to reset email templates to defaults?', 'smart-restock-waitlist'); ?>')">
                             <?php _e('Reset Email Templates to Defaults', 'smart-restock-waitlist'); ?>
+                        </a>
+                        <br><br>
+                        <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=smart-restock-waitlist-settings&action=force-cleanup'), 'srwm_force_cleanup'); ?>" 
+                           class="button button-primary" 
+                           onclick="return confirm('<?php esc_attr_e('This will force clean up any corrupted email templates. Continue?', 'smart-restock-waitlist'); ?>')">
+                            <?php _e('Force Clean Up Corrupted Templates', 'smart-restock-waitlist'); ?>
                         </a>
                     </div>
                 </div>
