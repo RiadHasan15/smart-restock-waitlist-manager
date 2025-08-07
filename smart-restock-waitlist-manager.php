@@ -4090,7 +4090,7 @@ class SmartRestockWaitlistManager {
         ));
         $supplier_name = $supplier ? $supplier->supplier_name : __('Unknown Supplier', 'smart-restock-waitlist');
         
-        // Create a modern, professional HTML file for PDF generation
+        // Create a clean, minimal, professional HTML file for PDF generation
         $html_content = '
         <!DOCTYPE html>
         <html>
@@ -4098,111 +4098,60 @@ class SmartRestockWaitlistManager {
             <meta charset="UTF-8">
             <title>' . esc_html($po->po_number) . ' - Purchase Order</title>
             <style>
-                @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+                @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
                 
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 
                 body { 
                     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
                     line-height: 1.6; 
-                    color: #0f172a; 
-                    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-                    min-height: 100vh;
-                    padding: 40px 20px;
+                    color: #333; 
+                    background: #f5f5f5;
+                    padding: 20px;
                 }
                 
                 .container {
-                    max-width: 900px;
+                    max-width: 800px;
                     margin: 0 auto;
                     background: white;
-                    border-radius: 24px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-                    overflow: hidden;
-                    position: relative;
-                }
-                
-                .container::before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 6px;
-                    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 25%, #06b6d4 50%, #10b981 75%, #f59e0b 100%);
+                    border: 1px solid #ddd;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
                 }
                 
                 .header {
-                    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+                    background: #2c3e50;
                     color: white;
-                    padding: 50px 40px;
+                    padding: 30px;
                     text-align: center;
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .header::before {
-                    content: "";
-                    position: absolute;
-                    top: -50%;
-                    right: -50%;
-                    width: 300px;
-                    height: 300px;
-                    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-                    border-radius: 50%;
-                }
-                
-                .header::after {
-                    content: "";
-                    position: absolute;
-                    bottom: -30%;
-                    left: -30%;
-                    width: 200px;
-                    height: 200px;
-                    background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
-                    border-radius: 50%;
-                }
-                
-                .header-content {
-                    position: relative;
-                    z-index: 2;
+                    border-bottom: 3px solid #3498db;
                 }
                 
                 .po-title {
                     font-size: 14px;
                     font-weight: 500;
                     text-transform: uppercase;
-                    letter-spacing: 3px;
-                    opacity: 0.8;
-                    margin-bottom: 12px;
-                    background: linear-gradient(90deg, #60a5fa, #a78bfa);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-bottom: 10px;
                 }
                 
                 .po-number {
-                    font-size: 48px;
-                    font-weight: 800;
-                    margin-bottom: 16px;
-                    letter-spacing: -2px;
-                    background: linear-gradient(90deg, #ffffff, #e2e8f0);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
+                    font-size: 32px;
+                    font-weight: 700;
+                    margin-bottom: 8px;
                 }
                 
                 .po-date {
-                    font-size: 16px;
+                    font-size: 14px;
                     opacity: 0.9;
-                    font-weight: 400;
                 }
                 
                 .content {
-                    padding: 50px 40px;
+                    padding: 30px;
                 }
                 
                 .section {
-                    margin-bottom: 40px;
+                    margin-bottom: 30px;
                 }
                 
                 .section:last-child {
@@ -4212,235 +4161,166 @@ class SmartRestockWaitlistManager {
                 .section-header {
                     display: flex;
                     align-items: center;
-                    gap: 16px;
-                    margin-bottom: 24px;
-                    padding-bottom: 16px;
-                    border-bottom: 3px solid #f1f5f9;
-                    position: relative;
-                }
-                
-                .section-header::after {
-                    content: "";
-                    position: absolute;
-                    bottom: -3px;
-                    left: 0;
-                    width: 60px;
-                    height: 3px;
-                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-                    border-radius: 2px;
+                    gap: 12px;
+                    margin-bottom: 20px;
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid #eee;
                 }
                 
                 .section-icon {
-                    width: 48px;
-                    height: 48px;
-                    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-                    border-radius: 12px;
+                    width: 32px;
+                    height: 32px;
+                    background: #3498db;
+                    border-radius: 4px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     color: white;
-                    font-size: 20px;
-                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                    font-size: 16px;
                 }
                 
                 .section-title {
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1e293b;
-                    letter-spacing: -0.5px;
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #2c3e50;
                 }
                 
-                .info-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    gap: 20px;
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
                 }
                 
-                .info-item {
-                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                    border: 1px solid #e2e8f0;
-                    border-radius: 16px;
-                    padding: 24px;
-                    transition: all 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
+                .info-table tr {
+                    border-bottom: 1px solid #eee;
                 }
                 
-                .info-item::before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 3px;
-                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+                .info-table tr:last-child {
+                    border-bottom: none;
                 }
                 
                 .info-label {
-                    font-size: 11px;
-                    font-weight: 700;
-                    color: #64748b;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #666;
                     text-transform: uppercase;
-                    letter-spacing: 1px;
-                    margin-bottom: 8px;
+                    letter-spacing: 0.5px;
+                    padding: 12px 20px 12px 0;
+                    width: 30%;
+                    vertical-align: top;
                 }
                 
                 .info-value {
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: #1e293b;
-                    line-height: 1.4;
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: #333;
+                    padding: 12px 0;
+                    vertical-align: top;
                 }
                 
                 .quantity-badge {
-                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    background: #27ae60;
                     color: white;
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    font-weight: 700;
-                    font-size: 14px;
-                    display: inline-block;
-                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-weight: 600;
+                    font-size: 12px;
                 }
                 
                 .status-badge {
                     display: inline-flex;
                     align-items: center;
-                    gap: 8px;
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    font-weight: 700;
+                    gap: 6px;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    font-weight: 600;
                     text-transform: uppercase;
-                    letter-spacing: 1px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    letter-spacing: 0.5px;
                 }
                 
                 .status-pending {
-                    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-                    color: #92400e;
+                    background: #f39c12;
+                    color: white;
                 }
                 
                 .status-confirmed {
-                    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-                    color: #1e40af;
+                    background: #3498db;
+                    color: white;
                 }
                 
                 .status-shipped {
-                    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-                    color: #065f46;
+                    background: #27ae60;
+                    color: white;
                 }
                 
                 .status-completed {
-                    background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);
-                    color: #0f5132;
+                    background: #2ecc71;
+                    color: white;
                 }
                 
                 .urgency-badge {
-                    padding: 8px 16px;
-                    border-radius: 20px;
-                    font-size: 12px;
-                    font-weight: 700;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    font-weight: 600;
                     text-transform: uppercase;
-                    letter-spacing: 1px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    letter-spacing: 0.5px;
                 }
                 
                 .urgency-normal {
-                    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-                    color: #1e40af;
+                    background: #3498db;
+                    color: white;
                 }
                 
                 .urgency-high {
-                    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-                    color: #92400e;
+                    background: #f39c12;
+                    color: white;
                 }
                 
                 .urgency-urgent {
-                    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-                    color: #991b1b;
+                    background: #e74c3c;
+                    color: white;
                 }
                 
                 .notes-section {
-                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                    border: 1px solid #e2e8f0;
-                    border-radius: 16px;
-                    padding: 24px;
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .notes-section::before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    height: 3px;
-                    background: linear-gradient(90deg, #f59e0b, #f97316);
+                    background: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    padding: 20px;
                 }
                 
                 .notes-content {
-                    font-size: 15px;
-                    line-height: 1.6;
-                    color: #374151;
-                    font-weight: 500;
+                    font-size: 14px;
+                    line-height: 1.5;
+                    color: #333;
                 }
                 
                 .footer {
-                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                    padding: 30px 40px;
+                    background: #f8f9fa;
+                    padding: 20px 30px;
                     text-align: center;
-                    border-top: 1px solid #e2e8f0;
+                    border-top: 1px solid #e9ecef;
                     font-size: 12px;
-                    color: #64748b;
-                    font-weight: 500;
+                    color: #666;
                 }
                 
                 .print-button {
                     position: fixed;
-                    top: 30px;
-                    right: 30px;
-                    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+                    top: 20px;
+                    right: 20px;
+                    background: #3498db;
                     color: white;
                     border: none;
-                    padding: 16px 24px;
-                    border-radius: 12px;
+                    padding: 12px 20px;
+                    border-radius: 4px;
                     cursor: pointer;
                     font-weight: 600;
                     font-size: 14px;
                     z-index: 1000;
-                    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-                    transition: all 0.3s ease;
                 }
                 
                 .print-button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
-                }
-                
-                .company-info {
-                    position: absolute;
-                    top: 30px;
-                    left: 40px;
-                    text-align: left;
-                    z-index: 2;
-                }
-                
-                .company-name {
-                    font-size: 18px;
-                    font-weight: 700;
-                    margin-bottom: 4px;
-                    background: linear-gradient(90deg, #60a5fa, #a78bfa);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                }
-                
-                .company-tagline {
-                    font-size: 12px;
-                    opacity: 0.7;
-                    font-weight: 400;
+                    background: #2980b9;
                 }
                 
                 @media print {
@@ -4451,13 +4331,7 @@ class SmartRestockWaitlistManager {
                     }
                     .container { 
                         box-shadow: none; 
-                        border-radius: 0;
-                        border: 2px solid #e2e8f0;
-                    }
-                    .header {
-                        background: #1e293b !important;
-                        -webkit-print-color-adjust: exact;
-                        color-adjust: exact;
+                        border: 1px solid #ddd;
                     }
                 }
             </style>
@@ -4467,16 +4341,9 @@ class SmartRestockWaitlistManager {
             
             <div class="container">
                 <div class="header">
-                    <div class="company-info">
-                        <div class="company-name">' . get_bloginfo('name') . '</div>
-                        <div class="company-tagline">Professional Purchase Orders</div>
-                    </div>
-                    
-                    <div class="header-content">
-                        <div class="po-title">Purchase Order</div>
-                        <div class="po-number">' . esc_html($po->po_number) . '</div>
-                        <div class="po-date">' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
-                    </div>
+                    <div class="po-title">Purchase Order</div>
+                    <div class="po-number">' . esc_html($po->po_number) . '</div>
+                    <div class="po-date">' . esc_html(date('F j, Y', strtotime($po->created_at))) . '</div>
                 </div>
                 
                 <div class="content">
@@ -4486,22 +4353,22 @@ class SmartRestockWaitlistManager {
                             <div class="section-icon">📦</div>
                             <div class="section-title">Product Information</div>
                         </div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Product Name</div>
-                                <div class="info-value">' . esc_html($product_name) . '</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">SKU</div>
-                                <div class="info-value">' . esc_html($product_sku) . '</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Quantity</div>
-                                <div class="info-value">
+                        <table class="info-table">
+                            <tr>
+                                <td class="info-label">Product Name</td>
+                                <td class="info-value">' . esc_html($product_name) . '</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">SKU</td>
+                                <td class="info-value">' . esc_html($product_sku) . '</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Quantity</td>
+                                <td class="info-value">
                                     <span class="quantity-badge">' . esc_html($po->quantity) . '</span>
-                                </div>
-                            </div>
-                        </div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     
                     <!-- Supplier Information -->
@@ -4510,16 +4377,16 @@ class SmartRestockWaitlistManager {
                             <div class="section-icon">👤</div>
                             <div class="section-title">Supplier Information</div>
                         </div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Supplier Name</div>
-                                <div class="info-value">' . esc_html($supplier_name) . '</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Email Address</div>
-                                <div class="info-value">' . esc_html($po->supplier_email) . '</div>
-                            </div>
-                        </div>
+                        <table class="info-table">
+                            <tr>
+                                <td class="info-label">Supplier Name</td>
+                                <td class="info-value">' . esc_html($supplier_name) . '</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Email Address</td>
+                                <td class="info-value">' . esc_html($po->supplier_email) . '</td>
+                            </tr>
+                        </table>
                     </div>
                     
                     <!-- Order Details -->
@@ -4528,27 +4395,27 @@ class SmartRestockWaitlistManager {
                             <div class="section-icon">📋</div>
                             <div class="section-title">Order Details</div>
                         </div>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Expected Delivery</div>
-                                <div class="info-value">' . esc_html($po->delivery_date ? date('M j, Y', strtotime($po->delivery_date)) : 'Not specified') . '</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Urgency Level</div>
-                                <div class="info-value">
+                        <table class="info-table">
+                            <tr>
+                                <td class="info-label">Expected Delivery</td>
+                                <td class="info-value">' . esc_html($po->delivery_date ? date('M j, Y', strtotime($po->delivery_date)) : 'Not specified') . '</td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Urgency Level</td>
+                                <td class="info-value">
                                     <span class="urgency-badge urgency-' . esc_attr($po->urgency ?: 'normal') . '">' . esc_html(ucfirst($po->urgency ?: 'normal')) . '</span>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Order Status</div>
-                                <div class="info-value">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="info-label">Order Status</td>
+                                <td class="info-value">
                                     <span class="status-badge status-' . esc_attr($po->status) . '">
-                                        <span style="width: 8px; height: 8px; background: currentColor; border-radius: 50%; display: inline-block;"></span>
+                                        <span style="width: 6px; height: 6px; background: white; border-radius: 50%; display: inline-block;"></span>
                                         ' . esc_html(ucfirst($po->status)) . '
                                     </span>
-                                </div>
-                            </div>
-                        </div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     
                     ' . ($po->notes ? '
@@ -4566,7 +4433,7 @@ class SmartRestockWaitlistManager {
                 </div>
                 
                 <div class="footer">
-                    <p>Generated on ' . esc_html(date('F j, Y g:i A')) . ' | ' . get_bloginfo('name') . ' | Professional Purchase Order Management</p>
+                    <p>Generated on ' . esc_html(date('F j, Y g:i A')) . ' | ' . get_bloginfo('name') . '</p>
                 </div>
             </div>
         </body>
