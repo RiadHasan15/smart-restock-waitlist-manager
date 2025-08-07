@@ -1036,7 +1036,16 @@ class SmartRestockWaitlistManager {
         $result = SRWM_Waitlist::add_customer($product_id, $email, $name);
         
         if ($result) {
-            wp_die(json_encode(array('success' => true, 'message' => __('You have been added to the waitlist!', 'smart-restock-waitlist'))));
+            // Get updated waitlist data
+            $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
+            $customer_position = SRWM_Waitlist::get_instance()->get_customer_queue_position($product_id, $email);
+            
+            wp_die(json_encode(array(
+                'success' => true, 
+                'message' => __('You have been added to the waitlist!', 'smart-restock-waitlist'),
+                'waitlist_count' => $waitlist_count,
+                'customer_position' => $customer_position
+            )));
         } else {
             wp_die(json_encode(array('success' => false, 'message' => __('You are already on the waitlist for this product.', 'smart-restock-waitlist'))));
         }
