@@ -1370,6 +1370,11 @@ class SmartRestockWaitlistManager {
             // Parse the form data
             $form_data = json_decode(stripslashes($_POST['form_data']), true);
             error_log('SRWM: Parsed form data: ' . print_r($form_data, true));
+            error_log('SRWM: Form data type: ' . gettype($form_data));
+            if (isset($form_data['supplier_id'])) {
+                error_log('SRWM: Supplier ID type: ' . gettype($form_data['supplier_id']));
+                error_log('SRWM: Supplier ID value: ' . $form_data['supplier_id']);
+            }
             
             if (json_last_error() !== JSON_ERROR_NONE) {
                 error_log('SRWM: JSON decode error: ' . json_last_error_msg());
