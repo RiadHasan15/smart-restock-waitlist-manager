@@ -1471,6 +1471,20 @@ class SmartRestockWaitlistManager {
             
             error_log('SRWM: Starting to process ' . count($form_data['products']) . ' products');
             
+            // Debug: Check what products are available in the system
+            if (function_exists('wc_get_products')) {
+                $available_products = wc_get_products(array(
+                    'limit' => 5,
+                    'status' => 'publish'
+                ));
+                error_log('SRWM: Available products in system: ' . count($available_products));
+                foreach ($available_products as $prod) {
+                    error_log('SRWM: Available product - ID: ' . $prod->get_id() . ', Name: ' . $prod->get_name());
+                }
+            } else {
+                error_log('SRWM: wc_get_products function not available');
+            }
+            
             foreach ($form_data['products'] as $product_data) {
                 error_log('SRWM: Processing product: ' . print_r($product_data, true));
                 $product_id = intval($product_data['id']);
@@ -1487,9 +1501,35 @@ class SmartRestockWaitlistManager {
                 $po_number = $this->generate_po_number();
                 
                 // Get product details
+                error_log('SRWM: Attempting to get product with ID: ' . $product_id);
+                
+                // Check if WooCommerce is active
+                if (!function_exists('wc_get_product')) {
+                    error_log('SRWM: WooCommerce function wc_get_product not available');
+                    continue;
+                }
+                
+                // Check if product exists in WordPress posts
+                $post_exists = get_post($product_id);
+                error_log('SRWM: WordPress post exists for ID ' . $product_id . ': ' . ($post_exists ? 'yes' : 'no'));
+                if ($post_exists) {
+                    error_log('SRWM: Post type: ' . $post_exists->post_type);
+                    error_log('SRWM: Post status: ' . $post_exists->post_status);
+                }
+                
                 $product = wc_get_product($product_id);
                 if (!$product) {
                     error_log('SRWM: Product not found for ID: ' . $product_id);
+                    error_log('SRWM: wc_get_product returned: ' . var_export($product, true));
+                    
+                    // Add to results as error instead of skipping
+                    $results[] = array(
+                        'product_id' => $product_id,
+                        'quantity' => $quantity,
+                        'supplier' => $supplier_data,
+                        'status' => 'error',
+                        'message' => 'Product not found'
+                    );
                     continue; // Skip if product doesn't exist
                 }
                 
