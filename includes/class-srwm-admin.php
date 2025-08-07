@@ -4754,7 +4754,6 @@ class SRWM_Admin {
             </div>
                 </div>';
     }
-    }
     
     /**
      * Get default supplier email template
