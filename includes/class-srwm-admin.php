@@ -2597,6 +2597,168 @@ class SRWM_Admin {
             background: #fef2f2;
         }
         
+        /* Delivery Method Selection */
+        .srwm-delivery-method {
+            margin-bottom: 24px;
+        }
+        
+        .srwm-method-option {
+            margin-bottom: 16px;
+        }
+        
+        .srwm-method-option input[type="radio"] {
+            display: none;
+        }
+        
+        .srwm-method-option label {
+            display: block;
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+        
+        .srwm-method-option input[type="radio"]:checked + label {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .srwm-method-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .srwm-method-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .srwm-method-option input[type="radio"]:checked + label .srwm-method-icon {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .srwm-method-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .srwm-method-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .srwm-form-section {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-help-text {
+            margin: 8px 0 0 0;
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        /* Fix dark colors to match dashboard */
+        .srwm-modal {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        
+        .srwm-modal-content {
+            background: #fff;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .srwm-modal-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .srwm-modal-header h2 {
+            color: #111827;
+        }
+        
+        .srwm-modal-close {
+            color: #6b7280;
+        }
+        
+        .srwm-modal-close:hover {
+            color: #111827;
+        }
+        
+        .srwm-po-steps {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .srwm-step {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        
+        .srwm-step.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+        
+        .srwm-step.completed {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .srwm-products-grid {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-product-card {
+            background: #fff;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .srwm-product-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .srwm-product-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .srwm-selected-product {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .srwm-review-section {
+            background: #f9fafb;
+        }
+        
+        .srwm-review-product {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
@@ -6102,21 +6264,55 @@ If you no longer wish to receive these emails, please contact us.';
                     <div class="srwm-po-step-content" data-step="3">
                         <div class="srwm-step-header">
                             <h3><?php _e('Supplier & Delivery Details', 'smart-restock-waitlist'); ?></h3>
-                            <p><?php _e('Select supplier and set delivery preferences for your purchase order.', 'smart-restock-waitlist'); ?></p>
+                            <p><?php _e('Choose how to send your purchase order - via supplier or email.', 'smart-restock-waitlist'); ?></p>
                         </div>
                         
-                        <form id="srwm-po-form">
+                        <!-- Delivery Method Selection -->
+                        <div class="srwm-delivery-method">
+                            <div class="srwm-method-option">
+                                <input type="radio" id="po-method-supplier" name="po_delivery_method" value="supplier" checked>
+                                <label for="po-method-supplier">
+                                    <div class="srwm-method-content">
+                                        <div class="srwm-method-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="srwm-method-info">
+                                            <h4><?php _e('Send to Supplier', 'smart-restock-waitlist'); ?></h4>
+                                            <p><?php _e('Send PO to an existing supplier from your supplier list', 'smart-restock-waitlist'); ?></p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="srwm-method-option">
+                                <input type="radio" id="po-method-email" name="po_delivery_method" value="email">
+                                <label for="po-method-email">
+                                    <div class="srwm-method-content">
+                                        <div class="srwm-method-icon">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div class="srwm-method-info">
+                                            <h4><?php _e('Send via Email', 'smart-restock-waitlist'); ?></h4>
+                                            <p><?php _e('Send PO directly to any email address', 'smart-restock-waitlist'); ?></p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Supplier Selection (shown when supplier method is selected) -->
+                        <div id="po-supplier-section" class="srwm-form-section">
                             <div class="srwm-form-row">
                                 <div class="srwm-form-group">
-                                    <label for="po-supplier"><?php _e('Supplier', 'smart-restock-waitlist'); ?> *</label>
-                                    <select id="po-supplier" name="supplier_id" required>
-                                        <option value=""><?php _e('Select Supplier', 'smart-restock-waitlist'); ?></option>
+                                    <label for="po-supplier"><?php _e('Select Supplier', 'smart-restock-waitlist'); ?> *</label>
+                                    <select id="po-supplier" name="supplier_id">
+                                        <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
                                         <?php 
                                         $suppliers = $this->get_suppliers();
-                                        if ($suppliers) {
+                                        if ($suppliers && is_array($suppliers)) {
                                             foreach ($suppliers as $supplier): 
                                         ?>
-                                            <option value="<?php echo $supplier->id; ?>">
+                                            <option value="<?php echo esc_attr($supplier->id); ?>">
                                                 <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
                                             </option>
                                         <?php 
@@ -6124,26 +6320,55 @@ If you no longer wish to receive these emails, please contact us.';
                                         }
                                         ?>
                                     </select>
+                                    <?php if (empty($suppliers)): ?>
+                                        <p class="srwm-help-text"><?php _e('No suppliers found. You can add suppliers in the Supplier Management section.', 'smart-restock-waitlist'); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Email Section (shown when email method is selected) -->
+                        <div id="po-email-section" class="srwm-form-section" style="display: none;">
+                            <div class="srwm-form-row">
+                                <div class="srwm-form-group">
+                                    <label for="po-email-address"><?php _e('Email Address', 'smart-restock-waitlist'); ?> *</label>
+                                    <input type="email" id="po-email-address" name="email_address" placeholder="<?php _e('Enter supplier email address...', 'smart-restock-waitlist'); ?>">
                                 </div>
                                 <div class="srwm-form-group">
-                                    <label for="po-delivery-date"><?php _e('Expected Delivery Date', 'smart-restock-waitlist'); ?></label>
-                                    <input type="date" id="po-delivery-date" name="delivery_date" 
-                                           value="<?php echo date('Y-m-d', strtotime('+14 days')); ?>">
+                                    <label for="po-supplier-name"><?php _e('Supplier Name (Optional)', 'smart-restock-waitlist'); ?></label>
+                                    <input type="text" id="po-supplier-name" name="supplier_name" placeholder="<?php _e('Enter supplier name...', 'smart-restock-waitlist'); ?>">
                                 </div>
                             </div>
-                            
+                        </div>
+                        
+                        <!-- Common Fields -->
+                        <div class="srwm-form-row">
                             <div class="srwm-form-group">
-                                <label for="po-notes"><?php _e('Notes (Optional)', 'smart-restock-waitlist'); ?></label>
-                                <textarea id="po-notes" name="notes" rows="3" placeholder="<?php _e('Add any special instructions or notes for the supplier...', 'smart-restock-waitlist'); ?>"></textarea>
+                                <label for="po-delivery-date"><?php _e('Expected Delivery Date', 'smart-restock-waitlist'); ?></label>
+                                <input type="date" id="po-delivery-date" name="delivery_date" 
+                                       value="<?php echo date('Y-m-d', strtotime('+14 days')); ?>">
                             </div>
-                            
                             <div class="srwm-form-group">
-                                <label>
-                                    <input type="checkbox" id="po-send-notification" name="send_notification" checked>
-                                    <?php _e('Send notification to supplier immediately', 'smart-restock-waitlist'); ?>
-                                </label>
+                                <label for="po-urgency"><?php _e('Urgency Level', 'smart-restock-waitlist'); ?></label>
+                                <select id="po-urgency" name="urgency">
+                                    <option value="normal"><?php _e('Normal', 'smart-restock-waitlist'); ?></option>
+                                    <option value="urgent"><?php _e('Urgent', 'smart-restock-waitlist'); ?></option>
+                                    <option value="critical"><?php _e('Critical', 'smart-restock-waitlist'); ?></option>
+                                </select>
                             </div>
-                        </form>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label for="po-notes"><?php _e('Notes (Optional)', 'smart-restock-waitlist'); ?></label>
+                            <textarea id="po-notes" name="notes" rows="3" placeholder="<?php _e('Add any special instructions or notes for the supplier...', 'smart-restock-waitlist'); ?>"></textarea>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label>
+                                <input type="checkbox" id="po-send-notification" name="send_notification" checked>
+                                <?php _e('Send notification immediately', 'smart-restock-waitlist'); ?>
+                            </label>
+                        </div>
                     </div>
                     
                     <!-- Step 4: Review & Generate -->
@@ -6466,8 +6691,39 @@ If you no longer wish to receive these emails, please contact us.';
             
             // Validate supplier form
             function validateSupplierForm() {
-                return $('#po-supplier').val() !== '';
+                var deliveryMethod = $('input[name="po_delivery_method"]:checked').val();
+                
+                if (deliveryMethod === 'supplier') {
+                    return $('#po-supplier').val() !== '';
+                } else if (deliveryMethod === 'email') {
+                    return $('#po-email-address').val() !== '' && isValidEmail($('#po-email-address').val());
+                }
+                
+                return false;
             }
+            
+            // Email validation
+            function isValidEmail(email) {
+                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            // Handle delivery method switching
+            $('input[name="po_delivery_method"]').on('change', function() {
+                var method = $(this).val();
+                
+                if (method === 'supplier') {
+                    $('#po-supplier-section').show();
+                    $('#po-email-section').hide();
+                    $('#po-supplier').prop('required', true);
+                    $('#po-email-address').prop('required', false);
+                } else if (method === 'email') {
+                    $('#po-supplier-section').hide();
+                    $('#po-email-section').show();
+                    $('#po-supplier').prop('required', false);
+                    $('#po-email-address').prop('required', true);
+                }
+            });
             
             // Update step display
             function updateStepDisplay() {
@@ -6555,10 +6811,24 @@ If you no longer wish to receive these emails, please contact us.';
                 });
                 
                 html += '</div>';
-                html += '<h4><?php _e('Supplier Details', 'smart-restock-waitlist'); ?></h4>';
+                
+                var deliveryMethod = $('input[name="po_delivery_method"]:checked').val();
+                html += '<h4><?php _e('Delivery Details', 'smart-restock-waitlist'); ?></h4>';
                 html += '<div class="srwm-review-supplier">';
-                html += '<p><strong><?php _e('Supplier:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-supplier option:selected').text() + '</p>';
+                
+                if (deliveryMethod === 'supplier') {
+                    html += '<p><strong><?php _e('Method:', 'smart-restock-waitlist'); ?></strong> <?php _e('Send to Supplier', 'smart-restock-waitlist'); ?></p>';
+                    html += '<p><strong><?php _e('Supplier:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-supplier option:selected').text() + '</p>';
+                } else if (deliveryMethod === 'email') {
+                    html += '<p><strong><?php _e('Method:', 'smart-restock-waitlist'); ?></strong> <?php _e('Send via Email', 'smart-restock-waitlist'); ?></p>';
+                    html += '<p><strong><?php _e('Email:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-email-address').val() + '</p>';
+                    if ($('#po-supplier-name').val()) {
+                        html += '<p><strong><?php _e('Supplier Name:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-supplier-name').val() + '</p>';
+                    }
+                }
+                
                 html += '<p><strong><?php _e('Delivery Date:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-delivery-date').val() + '</p>';
+                html += '<p><strong><?php _e('Urgency:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-urgency option:selected').text() + '</p>';
                 if ($('#po-notes').val()) {
                     html += '<p><strong><?php _e('Notes:', 'smart-restock-waitlist'); ?></strong> ' + $('#po-notes').val() + '</p>';
                 }
@@ -6570,6 +6840,8 @@ If you no longer wish to receive these emails, please contact us.';
             
             // Generate PO
             $('#srwm-generate-po-submit').on('click', function() {
+                var deliveryMethod = $('input[name="po_delivery_method"]:checked').val();
+                
                 var formData = {
                     products: selectedProducts.map(function(product) {
                         return {
@@ -6577,11 +6849,20 @@ If you no longer wish to receive these emails, please contact us.';
                             quantity: parseInt($('input[data-product-id="' + product.id + '"]').val())
                         };
                     }),
-                    supplier_id: $('#po-supplier').val(),
+                    delivery_method: deliveryMethod,
                     delivery_date: $('#po-delivery-date').val(),
+                    urgency: $('#po-urgency').val(),
                     notes: $('#po-notes').val(),
                     send_notification: $('#po-send-notification').is(':checked')
                 };
+                
+                // Add delivery method specific data
+                if (deliveryMethod === 'supplier') {
+                    formData.supplier_id = $('#po-supplier').val();
+                } else if (deliveryMethod === 'email') {
+                    formData.email_address = $('#po-email-address').val();
+                    formData.supplier_name = $('#po-supplier-name').val();
+                }
                 
                 $.ajax({
                     url: ajaxurl,
