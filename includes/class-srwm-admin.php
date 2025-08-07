@@ -6631,115 +6631,44 @@ If you no longer wish to receive these emails, please contact us.';
     public function get_default_supplier_email_template() {
         $site_name = get_bloginfo('name');
         $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
         
-        return '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restock Request - ' . $site_name . '</title>
-    <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; }
-        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 40px 30px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
-        .content { padding: 40px 30px; }
-        .greeting { font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px; }
-        .product-details { background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
-        .product-name { font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 15px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
-        .detail-label { font-weight: 600; color: #666666; }
-        .detail-value { font-weight: 700; color: #333333; }
-        .urgency-alert { background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
-        .urgency-alert h3 { color: #e65100; margin: 0 0 15px 0; font-size: 18px; }
-        .urgency-alert p { margin: 0; color: #666666; line-height: 1.5; }
-        .cta-button { text-align: center; margin: 40px 0; }
-        .cta-button a { display: inline-block; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }
-        .footer p { margin: 0; color: #666666; font-size: 14px; }
-        .social-links { margin-top: 20px; }
-        .social-links a { display: inline-block; margin: 0 10px; color: #ff9800; text-decoration: none; }
-        .social-links a:hover { text-decoration: underline; }
-        @media only screen and (max-width: 600px) {
-            .header { padding: 30px 20px; }
-            .header h1 { font-size: 24px; }
-            .content { padding: 30px 20px; }
-            .footer { padding: 20px; }
-            .cta-button a { padding: 15px 30px; font-size: 16px; }
-            .detail-row { flex-direction: column; }
-            .detail-value { margin-top: 5px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="header">
-            <h1>📦 Restock Request</h1>
-        </div>
-        
-        <div class="content">
-            <div class="greeting">
-                Hi <strong>{supplier_name}</strong>,
-                <br><br>
-                We need to restock a product that\'s currently in high demand. Please review the details below and take action as soon as possible.
-            </div>
-            
-            <div class="product-details">
-                <div class="product-name">{product_name}</div>
-                
-                <div class="detail-row">
-                    <span class="detail-label">SKU:</span>
-                    <span class="detail-value">{sku}</span>
-                </div>
-                
-                <div class="detail-row">
-                    <span class="detail-label">Current Stock:</span>
-                    <span class="detail-value">{current_stock} units</span>
-                </div>
-                
-                <div class="detail-row">
-                    <span class="detail-label">Waitlist Count:</span>
-                    <span class="detail-value">{waitlist_count} customers</span>
-                </div>
-                
-                <div class="detail-row">
-                    <span class="detail-label">Status:</span>
-                    <span class="detail-value" style="color: #d32f2f; font-weight: 700;">⚠️ Low Stock Alert</span>
-                </div>
-            </div>
-            
-            <div class="urgency-alert">
-                <h3>🚨 Urgent Action Required</h3>
-                <p>This product has customers waiting on the waitlist. Please restock as soon as possible to avoid losing sales and disappointing customers.</p>
-            </div>
-            
-            <div class="cta-button">
-                <a href="{restock_link}">
-                    📋 Process Restock
-                </a>
-            </div>
-            
-            <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px; text-align: center;">
-                <p><strong>Need assistance?</strong> Contact our procurement team for support.</p>
-                <p>Email: <a href="mailto:' . get_option('admin_email') . '" style="color: #ff9800;">' . get_option('admin_email') . '</a></p>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>' . $site_name . '</strong></p>
-            <p>Thank you for your partnership!</p>
-            <div class="social-links">
-                <a href="' . $site_url . '">Visit Website</a> |
-                <a href="mailto:' . get_option('admin_email') . '">Contact Support</a>
-            </div>
-            <p style="margin-top: 20px; font-size: 12px; color: #999999;">
-                This is an automated restock request from ' . $site_name . '.<br>
-                Please respond promptly to maintain our inventory levels.
-            </p>
-        </div>
-    </div>
-</body>
-</html>';
+        return 'Hi {supplier_name},
+
+URGENT: Low Stock Alert - Action Required
+
+We need to restock a product that is currently in high demand. Please review the details below and take action as soon as possible.
+
+Product Details:
+- Product Name: {product_name}
+- SKU: {sku}
+- Current Stock: {current_stock} units
+- Customers on Waitlist: {waitlist_count}
+- Status: LOW STOCK ALERT
+
+URGENT ACTION REQUIRED:
+This product has customers waiting on the waitlist. Please restock as soon as possible to avoid losing sales and disappointing customers.
+
+What you need to do:
+1. Review the stock levels for this product
+2. Process restock order immediately
+3. Confirm delivery timeline
+4. Notify us of any delays
+
+For fast processing, you can use our restock portal: {restock_link}
+
+Need assistance? Contact our procurement team:
+Email: ' . $admin_email . '
+Website: ' . $site_url . '
+
+Thank you for your partnership and prompt response!
+
+Best regards,
+' . $site_name . ' Team
+
+---
+This is an automated restock request from ' . $site_name . '.
+Please respond promptly to maintain our inventory levels.';
     }
     
     /**
