@@ -1889,8 +1889,109 @@ class SRWM_Admin {
             padding: 24px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
+        .srwm-analytics-card.srwm-card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .srwm-analytics-card.srwm-card-animated {
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .srwm-analytics-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 20px;
+            color: #fff;
+        }
+        
+        .srwm-icon-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .srwm-icon-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .srwm-icon-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .srwm-icon-info {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+        
+        .srwm-analytics-content {
+            flex: 1;
+        }
+        
+        .srwm-analytics-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+        
+        .srwm-unit {
+            font-size: 18px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .srwm-analytics-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .srwm-analytics-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .srwm-trend-up {
+            color: #10b981;
+        }
+        
+        .srwm-trend-down {
+            color: #ef4444;
+        }
+        
+        .srwm-trend-neutral {
+            color: #6b7280;
+        }
+        
+        .srwm-analytics-trend i {
+            font-size: 10px;
+        }
+        
+        /* Legacy support for old structure */
         .srwm-analytics-card h3 {
             margin: 0 0 12px 0;
             color: #111827;
@@ -1976,6 +2077,143 @@ class SRWM_Admin {
             display: flex;
             align-items: center;
             gap: 16px;
+        }
+        
+        /* Enhanced Search and Filters */
+        .srwm-search-filters {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .srwm-search-box {
+            position: relative;
+            min-width: 300px;
+        }
+        
+        .srwm-search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .srwm-search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .srwm-filter-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .srwm-select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        
+        .srwm-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Quick Actions Grid */
+        .srwm-quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .srwm-quick-action-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .srwm-quick-action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .srwm-quick-action-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            color: #fff;
+        }
+        
+        .srwm-quick-action-card h3 {
+            margin: 0 0 8px 0;
+            color: #111827;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .srwm-quick-action-card p {
+            margin: 0 0 20px 0;
+            color: #6b7280;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        /* Placeholder Content */
+        .srwm-placeholder-content {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .srwm-placeholder-icon {
+            font-size: 48px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+        
+        .srwm-placeholder-content h3 {
+            margin: 0 0 8px 0;
+            color: #374151;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .srwm-placeholder-content p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
         }
         
         /* Dashboard Loading State */
