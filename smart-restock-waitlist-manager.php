@@ -4465,15 +4465,33 @@ class SmartRestockWaitlistManager {
      * AJAX: Resend PO to supplier
      */
     public function ajax_resend_po() {
-        check_ajax_referer('srwm_resend_po', 'nonce');
+        // Prevent any output before JSON response
+        ob_clean();
+        
+        error_log('SRWM: ajax_resend_po called - START');
+        error_log('SRWM: POST data: ' . print_r($_POST, true));
+        
+        // Check if nonce exists
+        if (!isset($_POST['nonce'])) {
+            error_log('SRWM: Nonce not provided');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Check nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'srwm_resend_po')) {
+            error_log('SRWM: Nonce verification failed');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
         
         if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Insufficient permissions');
             wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
         
         $po_id = intval($_POST['po_id']);
         
         if (!$po_id) {
+            error_log('SRWM: Invalid PO ID: ' . $po_id);
             wp_send_json_error(__('Invalid PO ID.', 'smart-restock-waitlist'));
         }
         
@@ -4522,11 +4540,17 @@ Best regards,
         
         $headers = array('Content-Type: text/plain; charset=UTF-8');
         
+        error_log('SRWM: Attempting to send email to: ' . $po->supplier_email);
+        error_log('SRWM: Email subject: ' . $subject);
+        error_log('SRWM: Email message length: ' . strlen($message));
+        
         $sent = wp_mail($po->supplier_email, $subject, $message, $headers);
+        
+        error_log('SRWM: Email send result: ' . ($sent ? 'success' : 'failed'));
         
         if ($sent) {
             // Update last sent timestamp
-            $wpdb->update(
+            $update_result = $wpdb->update(
                 $table,
                 array('last_sent_at' => current_time('mysql')),
                 array('id' => $po_id),
@@ -4534,9 +4558,13 @@ Best regards,
                 array('%d')
             );
             
+            error_log('SRWM: Update last_sent_at result: ' . ($update_result !== false ? 'success' : 'failed'));
+            error_log('SRWM: Last SQL error: ' . $wpdb->last_error);
+            
             wp_send_json_success(__('PO sent to supplier successfully.', 'smart-restock-waitlist'));
         } else {
-            wp_send_json_error(__('Failed to send PO to supplier.', 'smart-restock-waitlist'));
+            error_log('SRWM: Failed to send email to supplier');
+            wp_send_json_error(__('Failed to send PO to supplier. Please check your email configuration.', 'smart-restock-waitlist'));
         }
     }
     
