@@ -61,11 +61,6 @@ class SRWM_Waitlist {
         $is_on_waitlist = self::is_customer_on_waitlist($product->get_id(), $this->get_current_customer_email());
         $customer_position = $this->get_customer_queue_position($product->get_id(), $this->get_current_customer_email());
         
-        // Debug info (remove in production)
-        if (current_user_can('manage_woocommerce')) {
-            echo '<!-- SRWM Debug: Stock=' . $current_stock . ', Threshold=' . $waitlist_threshold . ', Show=' . ($current_stock <= $waitlist_threshold ? 'Yes' : 'No') . ' -->';
-        }
-        
         ?>
         <div class="srwm-waitlist-container">
             <div class="srwm-waitlist-header">
@@ -242,15 +237,12 @@ class SRWM_Waitlist {
         $body_text = get_option('srwm_body_text', '#666666');
         $btn_primary_bg = get_option('srwm_btn_primary_bg', '#007cba');
         $btn_primary_text = get_option('srwm_btn_primary_text', '#ffffff');
-        $btn_secondary_bg = get_option('srwm_btn_secondary_bg', '#6c757d');
-        $btn_secondary_text = get_option('srwm_btn_secondary_text', '#ffffff');
         $success_bg = get_option('srwm_success_bg', '#d4edda');
         $success_text = get_option('srwm_success_text', '#155724');
         $border_color = get_option('srwm_border_color', '#e9ecef');
         $input_bg = get_option('srwm_input_bg', '#ffffff');
         $input_border = get_option('srwm_input_border', '#ced4da');
         $input_focus_border = get_option('srwm_input_focus_border', '#007cba');
-        $progress_bg = get_option('srwm_progress_bg', '#e9ecef');
         $progress_fill = get_option('srwm_progress_fill', '#007cba');
         $border_radius = get_option('srwm_border_radius', '8');
         $font_size = get_option('srwm_font_size', 'medium');
@@ -266,18 +258,13 @@ class SRWM_Waitlist {
         $base_font_size = isset($font_sizes[$font_size]) ? $font_sizes[$font_size] : '14px';
         
         $css .= "
-        /* SRWM Modern Dynamic Styles */
+        /* SRWM Dynamic Styles */
         .srwm-waitlist-container {
             background-color: {$container_bg} !important;
             border: 1px solid {$border_color} !important;
             border-radius: {$border_radius}px !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
             font-size: {$base_font_size} !important;
-        }
-        
-        .srwm-waitlist-header {
-            background-color: {$header_bg} !important;
-            color: {$header_text} !important;
         }
         
         .srwm-waitlist-header h3 {
@@ -335,18 +322,8 @@ class SRWM_Waitlist {
             color: {$success_text} !important;
         }
         
-        .srwm-queue-bar {
-            background-color: {$progress_bg} !important;
-            border-radius: {$border_radius}px !important;
-        }
-        
         .srwm-queue-fill {
             background: linear-gradient(90deg, {$progress_fill}, " . $this->adjust_brightness($progress_fill, -15) . ") !important;
-            border-radius: {$border_radius}px !important;
-        }
-        
-        .srwm-progress-bar {
-            background-color: {$progress_bg} !important;
             border-radius: {$border_radius}px !important;
         }
         
@@ -373,19 +350,9 @@ class SRWM_Waitlist {
             color: {$body_text} !important;
         }
         
-        .srwm-queue-position {
-            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.08) !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
         .srwm-queue-number {
             color: {$btn_primary_bg} !important;
             text-shadow: 0 2px 4px rgba(" . $this->hex_to_rgb($btn_primary_bg) . ", 0.2) !important;
-        }
-        
-        .srwm-stat-item {
-            background-color: rgba(" . $this->hex_to_rgb($border_color) . ", 0.05) !important;
-            backdrop-filter: blur(10px) !important;
         }
         ";
         
