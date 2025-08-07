@@ -7014,14 +7014,7 @@ If you no longer wish to receive these emails, please contact us.';
                             <span class="dashicons dashicons-plus"></span>
                             <?php _e('Generate New PO', 'smart-restock-waitlist'); ?>
                         </button>
-                        <button class="srwm-btn srwm-btn-secondary" id="srwm-test-email" style="margin-left: 10px;">
-                            <span class="dashicons dashicons-email"></span>
-                            Test Email
-                        </button>
-                        <button class="srwm-btn srwm-btn-secondary" id="srwm-test-ajax" style="margin-left: 10px;">
-                            <span class="dashicons dashicons-admin-tools"></span>
-                            Test AJAX
-                        </button>
+
                     </div>
                 </div>
             </div>
@@ -8381,107 +8374,7 @@ If you no longer wish to receive these emails, please contact us.';
                 });
             });
             
-            // Test Email functionality
-            $('#srwm-test-email').on('click', function() {
-                var button = $(this);
-                
-                // Add loading state
-                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Testing Email...');
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'srwm_test_email',
-                        nonce: '<?php echo wp_create_nonce('srwm_test_email'); ?>'
-                    },
-                    success: function(response) {
-                        console.log('SRWM: Test email response:', response);
-                        if (response.success) {
-                            showNotification('Test email sent successfully! Check your inbox.', 'success');
-                        } else {
-                            // Show detailed diagnostics in a modal
-                            var diagnostics = response.data || 'Unknown error';
-                            showEmailDiagnosticsModal(diagnostics);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('SRWM: Test email error:', {xhr: xhr, status: status, error: error});
-                        showNotification('Test email failed: ' + error, 'error');
-                    },
-                    complete: function() {
-                        // Restore button state
-                        button.prop('disabled', false).html('<i class="fas fa-envelope"></i> Test Email');
-                    }
-                });
-            });
-            
-            // Function to show email diagnostics modal
-            function showEmailDiagnosticsModal(diagnostics) {
-                var modal = $('<div class="srwm-modal srwm-modal-active" style="display: flex;">' +
-                    '<div class="srwm-modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">' +
-                        '<div class="srwm-modal-header">' +
-                            '<h3><i class="fas fa-exclamation-triangle"></i> Email Configuration Issue</h3>' +
-                            '<button class="srwm-modal-close">&times;</button>' +
-                        '</div>' +
-                        '<div class="srwm-modal-body">' +
-                            '<div class="srwm-alert srwm-alert-warning">' +
-                                '<h4>Email Test Failed</h4>' +
-                                '<p>Your WordPress email configuration needs attention. Here are the diagnostics:</p>' +
-                            '</div>' +
-                            '<div class="srwm-diagnostics">' +
-                                '<pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;">' + diagnostics + '</pre>' +
-                            '</div>' +
-                            '<div class="srwm-solutions">' +
-                                '<h4>Recommended Solutions:</h4>' +
-                                '<ol>' +
-                                    '<li><strong>Install WP Mail SMTP Plugin:</strong> This is the most common solution for email issues.</li>' +
-                                    '<li><strong>Check Hosting Email Settings:</strong> Contact your hosting provider about email configuration.</li>' +
-                                    '<li><strong>Use External Email Service:</strong> Consider services like SendGrid, Mailgun, or Gmail SMTP.</li>' +
-                                    '<li><strong>Check Server Logs:</strong> Look for email-related errors in your server logs.</li>' +
-                                '</ol>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="srwm-modal-footer">' +
-                            '<button class="srwm-btn srwm-btn-secondary" onclick="$(this).closest(\'.srwm-modal\').remove();">Close</button>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>');
-                
-                $('body').append(modal);
-                
-                // Close modal when clicking close button or outside
-                modal.find('.srwm-modal-close, .srwm-modal').on('click', function(e) {
-                    if (e.target === this) {
-                        modal.remove();
-                    }
-                });
-            }
-            
-            // Test AJAX functionality
-            $('#srwm-test-ajax').on('click', function() {
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'srwm_test_ajax',
-                        nonce: '<?php echo wp_create_nonce('srwm_test_ajax'); ?>'
-                    },
-                    success: function(response) {
-                        console.log('SRWM: Test AJAX response:', response);
-                        if (response.success) {
-                            showNotification('AJAX is working correctly!', 'success');
-                        } else {
-                            showNotification('AJAX test failed: ' + response.data, 'error');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('SRWM: Test AJAX error:', {xhr: xhr, status: status, error: error});
-                        console.log('SRWM: Test response text:', xhr.responseText);
-                        showNotification('AJAX test failed: ' + error, 'error');
-                    }
-                });
-            });
+
             
             // Update PO Status
             $('.update-po-status').on('change', function() {
