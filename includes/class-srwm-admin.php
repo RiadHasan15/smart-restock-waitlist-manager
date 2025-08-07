@@ -5639,21 +5639,65 @@ If you no longer wish to receive these emails, please contact us.';
         error_log('SRWM: Table exists: ' . ($table_exists ? 'yes' : 'no'));
         
         if (!$table_exists) {
-            error_log('SRWM: Suppliers table does not exist');
-            return array();
+            error_log('SRWM: Suppliers table does not exist - creating it');
+            $this->create_suppliers_table();
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+            error_log('SRWM: Table created successfully: ' . ($table_exists ? 'yes' : 'no'));
         }
         
-        $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+        $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY supplier_name ASC");
         error_log('SRWM: Found suppliers: ' . count($suppliers));
         
         // If no suppliers exist, add test suppliers
         if (empty($suppliers)) {
             $this->add_test_suppliers();
-            $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+            $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY supplier_name ASC");
             error_log('SRWM: After adding test suppliers: ' . count($suppliers));
         }
         
         return $suppliers ?: array();
+    }
+    
+    /**
+     * Create suppliers table if it doesn't exist
+     */
+    private function create_suppliers_table() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_suppliers';
+        
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE $table (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            product_id bigint(20) DEFAULT NULL,
+            supplier_name varchar(255) NOT NULL,
+            company_name varchar(255) DEFAULT '',
+            supplier_email varchar(255) NOT NULL,
+            phone varchar(50) DEFAULT '',
+            address text DEFAULT '',
+            contact_person varchar(255) DEFAULT '',
+            notes text DEFAULT '',
+            category varchar(100) DEFAULT '',
+            status enum('active', 'inactive') DEFAULT 'active',
+            trust_score decimal(3,2) DEFAULT 0.00,
+            threshold int(11) DEFAULT 5,
+            channels longtext DEFAULT '',
+            auto_generate_po tinyint(1) DEFAULT 0,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY email (supplier_email),
+            KEY product_id (product_id),
+            KEY status (status),
+            KEY category (category),
+            KEY trust_score (trust_score),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        
+        error_log('SRWM: Suppliers table creation attempted');
     }
     
     /**
@@ -5672,8 +5716,8 @@ If you no longer wish to receive these emails, please contact us.';
         // Add test suppliers
         $test_suppliers = array(
             array(
-                'name' => 'ABC Electronics',
-                'email' => 'orders@abcelectronics.com',
+                'supplier_name' => 'ABC Electronics',
+                'supplier_email' => 'orders@abcelectronics.com',
                 'phone' => '+1-555-0123',
                 'address' => '123 Tech Street, Silicon Valley, CA 94025',
                 'category' => 'Electronics',
@@ -5681,8 +5725,8 @@ If you no longer wish to receive these emails, please contact us.';
                 'created_at' => current_time('mysql')
             ),
             array(
-                'name' => 'Global Parts Co.',
-                'email' => 'purchasing@globalparts.com',
+                'supplier_name' => 'Global Parts Co.',
+                'supplier_email' => 'purchasing@globalparts.com',
                 'phone' => '+1-555-0456',
                 'address' => '456 Industrial Blvd, Manufacturing District, TX 75001',
                 'category' => 'Industrial',
@@ -5690,8 +5734,8 @@ If you no longer wish to receive these emails, please contact us.';
                 'created_at' => current_time('mysql')
             ),
             array(
-                'name' => 'Premium Supplies Ltd.',
-                'email' => 'orders@premiumsupplies.com',
+                'supplier_name' => 'Premium Supplies Ltd.',
+                'supplier_email' => 'orders@premiumsupplies.com',
                 'phone' => '+1-555-0789',
                 'address' => '789 Quality Lane, Business Park, NY 10001',
                 'category' => 'General',
@@ -6436,10 +6480,10 @@ If you no longer wish to receive these emails, please contact us.';
                                         error_log('SRWM: Modal suppliers count: ' . count($suppliers));
                                         if ($suppliers && is_array($suppliers)) {
                                             foreach ($suppliers as $supplier): 
-                                                error_log('SRWM: Adding supplier: ' . $supplier->name);
+                                                error_log('SRWM: Adding supplier: ' . $supplier->supplier_name);
                                         ?>
                                             <option value="<?php echo esc_attr($supplier->id); ?>">
-                                                <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
+                                                <?php echo esc_html($supplier->supplier_name); ?> (<?php echo esc_html($supplier->supplier_email); ?>)
                                             </option>
                                         <?php 
                                             endforeach;
@@ -6492,7 +6536,7 @@ If you no longer wish to receive these emails, please contact us.';
                         </div>
                         
                         <div class="srwm-form-group">
-                            <label>
+                            <label for="po-send-notification">
                                 <input type="checkbox" id="po-send-notification" name="send_notification" checked>
                                 <?php _e('Send notification immediately', 'smart-restock-waitlist'); ?>
                             </label>
