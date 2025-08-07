@@ -1361,9 +1361,20 @@ class SmartRestockWaitlistManager {
         error_log('SRWM: POST data: ' . print_r($_POST, true));
         
         try {
+            // Check if form_data exists
+            if (!isset($_POST['form_data'])) {
+                error_log('SRWM: form_data not found in POST');
+                wp_send_json_error(__('Form data not received.', 'smart-restock-waitlist'));
+            }
+            
             // Parse the form data
             $form_data = json_decode(stripslashes($_POST['form_data']), true);
             error_log('SRWM: Parsed form data: ' . print_r($form_data, true));
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log('SRWM: JSON decode error: ' . json_last_error_msg());
+                wp_send_json_error(__('Invalid JSON data received.', 'smart-restock-waitlist'));
+            }
             
             if (!$form_data) {
                 wp_send_json_error(__('Invalid form data received.', 'smart-restock-waitlist'));
@@ -1434,9 +1445,19 @@ class SmartRestockWaitlistManager {
                     continue; // Skip if product doesn't exist
                 }
                 
+                // Ensure purchase orders table exists
+                $this->create_tables();
+                
                 // Save PO to database
                 global $wpdb;
                 $table = $wpdb->prefix . 'srwm_purchase_orders';
+                
+                // Check if table exists
+                $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+                if (!$table_exists) {
+                    error_log("SRWM: Purchase orders table does not exist!");
+                    throw new Exception('Purchase orders table not found. Please try again.');
+                }
                 
                 $insert_data = array(
                     'po_number' => $po_number,
@@ -1447,7 +1468,13 @@ class SmartRestockWaitlistManager {
                     'created_at' => current_time('mysql')
                 );
                 
+                error_log("SRWM: Attempting to insert PO data: " . print_r($insert_data, true));
                 $inserted = $wpdb->insert($table, $insert_data);
+                
+                if ($inserted === false) {
+                    error_log("SRWM: Database insert failed: " . $wpdb->last_error);
+                    throw new Exception('Database error: ' . $wpdb->last_error);
+                }
                 
                 if ($inserted) {
                     $po_id = $wpdb->insert_id;
@@ -1485,7 +1512,8 @@ class SmartRestockWaitlistManager {
                     'po_numbers' => $saved_pos
                 ));
             } else {
-                wp_send_json_error(__('Failed to generate any purchase orders.', 'smart-restock-waitlist'));
+                error_log('SRWM: No POs were saved successfully');
+                wp_send_json_error(__('Failed to generate any purchase orders. Please check the error logs.', 'smart-restock-waitlist'));
             }
             
         } catch (Exception $e) {
@@ -1500,6 +1528,17 @@ class SmartRestockWaitlistManager {
     private function generate_po_number() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Ensure table exists
+        $this->create_tables();
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            error_log("SRWM: Purchase orders table does not exist for PO number generation!");
+            // Return a fallback PO number
+            return 'PO-' . date('Ymd') . '-' . time();
+        }
         
         // Get the current year and month
         $year = date('Y');

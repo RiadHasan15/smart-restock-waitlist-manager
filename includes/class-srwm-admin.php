@@ -7237,10 +7237,22 @@ If you no longer wish to receive these emails, please contact us.';
             
             // Generate PO
             $('#srwm-generate-po-submit').on('click', function() {
+                console.log('SRWM: Generate PO clicked');
+                console.log('SRWM: selectedProducts:', selectedProducts);
+                console.log('SRWM: selectedProducts type:', typeof selectedProducts);
+                console.log('SRWM: selectedProducts length:', selectedProducts.length);
+                
                 var deliveryMethod = $('input[name="po_delivery_method"]:checked').val();
+                console.log('SRWM: deliveryMethod:', deliveryMethod);
+                
+                if (!selectedProducts || selectedProducts.length === 0) {
+                    alert('<?php _e('No products selected. Please select at least one product.', 'smart-restock-waitlist'); ?>');
+                    return;
+                }
                 
                 var formData = {
                     products: selectedProducts.map(function(product) {
+                        console.log('SRWM: Processing product:', product);
                         return {
                             id: product.id,
                             quantity: parseInt($('input[data-product-id="' + product.id + '"]').val())
@@ -7252,6 +7264,8 @@ If you no longer wish to receive these emails, please contact us.';
                     notes: $('#po-notes').val(),
                     send_notification: $('#po-send-notification').is(':checked')
                 };
+                
+                console.log('SRWM: formData:', formData);
                 
                 // Add delivery method specific data
                 if (deliveryMethod === 'supplier') {
@@ -7306,8 +7320,20 @@ If you no longer wish to receive these emails, please contact us.';
                             alert(response.data.message || '<?php _e('Failed to generate purchase order', 'smart-restock-waitlist'); ?>');
                         }
                     },
-                    error: function() {
-                        alert('<?php _e('An error occurred while generating the purchase order', 'smart-restock-waitlist'); ?>');
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', xhr.responseText);
+                        var errorMessage = '<?php _e('An error occurred while generating the purchase order', 'smart-restock-waitlist'); ?>';
+                        
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.data && response.data.message) {
+                                errorMessage = response.data.message;
+                            }
+                        } catch (e) {
+                            // Use default error message
+                        }
+                        
+                        alert(errorMessage);
                     },
                     complete: function() {
                         $('#srwm-generate-po-submit').prop('disabled', false).html('<i class="fas fa-check"></i> <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>');
