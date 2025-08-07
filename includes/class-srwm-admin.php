@@ -4777,6 +4777,22 @@ If you no longer wish to receive these emails, please contact us.';
     }
     
     /**
+     * Get suppliers list
+     */
+    private function get_suppliers() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return array();
+        }
+        
+        return $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC") ?: array();
+    }
+    
+    /**
      * Get products with thresholds
      */
     private function get_products_with_thresholds() {
@@ -4999,6 +5015,10 @@ If you no longer wish to receive these emails, please contact us.';
                         <span class="dashicons dashicons-download"></span>
                         <?php _e('Export POs', 'smart-restock-waitlist'); ?>
                     </button>
+                    <button class="button button-secondary" id="srwm-view-all-pos">
+                        <span class="dashicons dashicons-list-view"></span>
+                        <?php _e('View All POs', 'smart-restock-waitlist'); ?>
+                    </button>
                 </div>
                 
                 <div class="srwm-table-container">
@@ -5066,6 +5086,194 @@ If you no longer wish to receive these emails, please contact us.';
                 </div>
             </div>
         </div>
+        
+        <!-- Enhanced PO Generation Modal -->
+        <div id="srwm-po-modal" class="srwm-modal">
+            <div class="srwm-modal-content">
+                <div class="srwm-modal-header">
+                    <h2><?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?></h2>
+                    <span class="srwm-modal-close">&times;</span>
+                </div>
+                <div class="srwm-modal-body">
+                    <form id="srwm-po-form">
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="po-product"><?php _e('Product', 'smart-restock-waitlist'); ?> *</label>
+                                <select id="po-product" name="product_id" required>
+                                    <option value=""><?php _e('Select Product', 'smart-restock-waitlist'); ?></option>
+                                    <?php foreach ($this->get_products_with_thresholds() as $product): ?>
+                                        <option value="<?php echo $product->id; ?>" 
+                                                data-stock="<?php echo $product->stock_quantity; ?>"
+                                                data-threshold="<?php echo $product->threshold; ?>">
+                                            <?php echo esc_html($product->name); ?> (<?php echo esc_html($product->sku); ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="srwm-form-group">
+                                <label for="po-supplier"><?php _e('Supplier', 'smart-restock-waitlist'); ?> *</label>
+                                <select id="po-supplier" name="supplier_id" required>
+                                    <option value=""><?php _e('Select Supplier', 'smart-restock-waitlist'); ?></option>
+                                    <?php 
+                                    $suppliers = $this->get_suppliers();
+                                    if ($suppliers) {
+                                        foreach ($suppliers as $supplier): 
+                                    ?>
+                                        <option value="<?php echo $supplier->id; ?>">
+                                            <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
+                                        </option>
+                                    <?php 
+                                        endforeach;
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-row">
+                            <div class="srwm-form-group">
+                                <label for="po-quantity"><?php _e('Quantity', 'smart-restock-waitlist'); ?> *</label>
+                                <input type="number" id="po-quantity" name="quantity" min="1" required>
+                                <small class="srwm-help-text"><?php _e('Suggested quantity will be calculated based on waitlist and current stock', 'smart-restock-waitlist'); ?></small>
+                            </div>
+                            <div class="srwm-form-group">
+                                <label for="po-delivery-date"><?php _e('Expected Delivery Date', 'smart-restock-waitlist'); ?></label>
+                                <input type="date" id="po-delivery-date" name="delivery_date" 
+                                       value="<?php echo date('Y-m-d', strtotime('+14 days')); ?>">
+                            </div>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label for="po-notes"><?php _e('Notes (Optional)', 'smart-restock-waitlist'); ?></label>
+                            <textarea id="po-notes" name="notes" rows="3" placeholder="<?php _e('Add any special instructions or notes for the supplier...', 'smart-restock-waitlist'); ?>"></textarea>
+                        </div>
+                        
+                        <div class="srwm-form-group">
+                            <label>
+                                <input type="checkbox" id="po-send-notification" name="send_notification" checked>
+                                <?php _e('Send notification to supplier immediately', 'smart-restock-waitlist'); ?>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button button-secondary srwm-modal-close">
+                        <?php _e('Cancel', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button type="button" class="button button-primary" id="srwm-generate-po-submit">
+                        <span class="dashicons dashicons-plus"></span>
+                        <?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PO Details Modal -->
+        <div id="srwm-po-details-modal" class="srwm-modal">
+            <div class="srwm-modal-content srwm-modal-large">
+                <div class="srwm-modal-header">
+                    <h2><?php _e('Purchase Order Details', 'smart-restock-waitlist'); ?></h2>
+                    <span class="srwm-modal-close">&times;</span>
+                </div>
+                <div class="srwm-modal-body" id="srwm-po-details-content">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+                <div class="srwm-modal-footer">
+                    <button type="button" class="button button-secondary srwm-modal-close">
+                        <?php _e('Close', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button type="button" class="button button-primary" id="srwm-download-po">
+                        <span class="dashicons dashicons-download"></span>
+                        <?php _e('Download PDF', 'smart-restock-waitlist'); ?>
+                    </button>
+                    <button type="button" class="button button-secondary" id="srwm-resend-po">
+                        <span class="dashicons dashicons-email-alt"></span>
+                        <?php _e('Resend to Supplier', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            // PO Generation Modal
+            $('#srwm-generate-po').on('click', function() {
+                $('#srwm-po-modal').addClass('srwm-modal-active');
+            });
+            
+            // Close modal
+            $('.srwm-modal-close, .srwm-modal').on('click', function(e) {
+                if (e.target === this) {
+                    $(this).closest('.srwm-modal').removeClass('srwm-modal-active');
+                }
+            });
+            
+            // Auto-calculate suggested quantity
+            $('#po-product').on('change', function() {
+                var selectedOption = $(this).find('option:selected');
+                var stock = parseInt(selectedOption.data('stock')) || 0;
+                var threshold = parseInt(selectedOption.data('threshold')) || 5;
+                var waitlistCount = 0; // This would be loaded via AJAX
+                
+                // Calculate suggested quantity
+                var suggestedQuantity = Math.max(10, (threshold - stock) * 2 + waitlistCount);
+                $('#po-quantity').val(suggestedQuantity);
+            });
+            
+            // Generate PO
+            $('#srwm-generate-po-submit').on('click', function() {
+                var formData = $('#srwm-po-form').serialize();
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_generate_po',
+                        form_data: formData,
+                        nonce: '<?php echo wp_create_nonce('srwm_generate_po'); ?>'
+                    },
+                    beforeSend: function() {
+                        $('#srwm-generate-po-submit').prop('disabled', true).text('<?php _e('Generating...', 'smart-restock-waitlist'); ?>');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#srwm-po-modal').removeClass('srwm-modal-active');
+                            location.reload(); // Refresh to show new PO
+                        } else {
+                            alert(response.data.message || '<?php _e('Failed to generate purchase order', 'smart-restock-waitlist'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('An error occurred while generating the purchase order', 'smart-restock-waitlist'); ?>');
+                    },
+                    complete: function() {
+                        $('#srwm-generate-po-submit').prop('disabled', false).html('<span class="dashicons dashicons-plus"></span><?php _e('Generate Purchase Order', 'smart-restock-waitlist'); ?>');
+                    }
+                });
+            });
+            
+            // View PO Details
+            $('.view-po').on('click', function() {
+                var poId = $(this).data('po-id');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'srwm_get_po_details',
+                        po_id: poId,
+                        nonce: '<?php echo wp_create_nonce('srwm_get_po_details'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#srwm-po-details-content').html(response.data.html);
+                            $('#srwm-po-details-modal').addClass('srwm-modal-active');
+                        }
+                    }
+                });
+            });
+        });
+        </script>
         
         <?php
         $this->enqueue_modern_styles();
