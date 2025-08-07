@@ -5478,24 +5478,7 @@ If you no longer wish to receive these emails, please contact us.';
         )) ?: 0;
     }
     
-    /**
-     * Get product categories for filter
-     */
-    private function get_product_categories() {
-        $categories = get_terms(array(
-            'taxonomy' => 'product_cat',
-            'hide_empty' => true,
-        ));
-        
-        $results = array();
-        if ($categories && !is_wp_error($categories)) {
-            foreach ($categories as $category) {
-                $results[] = $category->name;
-            }
-        }
-        
-        return $results;
-    }
+
     
     /**
      * Render Email Templates page
@@ -6060,9 +6043,9 @@ If you no longer wish to receive these emails, please contact us.';
                                         <?php 
                                         $categories = $this->get_product_categories();
                                         if ($categories) {
-                                            foreach ($categories as $category): 
+                                            foreach ($categories as $slug => $name): 
                                         ?>
-                                            <option value="<?php echo esc_attr($category); ?>"><?php echo esc_html($category); ?></option>
+                                            <option value="<?php echo esc_attr($name); ?>"><?php echo esc_html($name); ?></option>
                                         <?php 
                                             endforeach;
                                         }
