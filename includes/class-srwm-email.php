@@ -52,28 +52,12 @@ class SRWM_Email {
         
         $message = $this->replace_placeholders($template, $placeholders);
         
-        // Don't wrap if it's already a complete HTML email
-        if (strpos($message, '<!DOCTYPE html>') === false) {
-            $message = $this->wrap_email_content($message);
-        }
-        
         $headers = array(
-            'Content-Type: text/html; charset=UTF-8',
-            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
-            'MIME-Version: 1.0'
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
         );
         
-        // Force HTML email
-        add_filter('wp_mail_content_type', function() {
-            return 'text/html';
-        });
-        
-        $result = wp_mail($customer->customer_email, $subject, $message, $headers);
-        
-        // Remove the filter
-        remove_all_filters('wp_mail_content_type');
-        
-        return $result;
+        return wp_mail($customer->customer_email, $subject, $message, $headers);
     }
     
     /**
