@@ -512,7 +512,7 @@ class SRWM_Waitlist {
         }
         
         $headers = array(
-            'Content-Type: text/html; charset=UTF-8',
+            'Content-Type: text/plain; charset=UTF-8',
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
         );
         
