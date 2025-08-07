@@ -4616,7 +4616,6 @@ Best regards,
             
                         wp_send_json_error($error_message);
         }
-        }
     }
     
     /**
