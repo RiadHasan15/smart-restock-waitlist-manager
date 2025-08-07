@@ -2759,6 +2759,63 @@ class SRWM_Admin {
             border: 1px solid #e5e7eb;
         }
         
+        /* Fix dark form elements */
+        .srwm-form-group input[type="date"],
+        .srwm-form-group input[type="email"],
+        .srwm-form-group input[type="text"],
+        .srwm-form-group input[type="number"],
+        .srwm-form-group select,
+        .srwm-form-group textarea {
+            background: #fff !important;
+            color: #111827 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        
+        .srwm-form-group input[type="date"]:focus,
+        .srwm-form-group input[type="email"]:focus,
+        .srwm-form-group input[type="text"]:focus,
+        .srwm-form-group input[type="number"]:focus,
+        .srwm-form-group select:focus,
+        .srwm-form-group textarea:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        
+        .srwm-form-group input[type="checkbox"] {
+            background: #fff !important;
+            border: 1px solid #d1d5db !important;
+        }
+        
+        .srwm-form-group input[type="checkbox"]:checked {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+        }
+        
+        .srwm-form-group label {
+            color: #111827 !important;
+            font-weight: 500 !important;
+        }
+        
+        .srwm-form-group input[type="checkbox"] + label {
+            color: #374151 !important;
+            font-weight: 400 !important;
+        }
+        
+        /* Fix any remaining dark elements */
+        .srwm-modal * {
+            color: inherit;
+        }
+        
+        .srwm-modal input,
+        .srwm-modal select,
+        .srwm-modal textarea {
+            color: #111827 !important;
+        }
+        
+        .srwm-modal label {
+            color: #111827 !important;
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
@@ -5574,13 +5631,80 @@ If you no longer wish to receive these emails, please contact us.';
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_suppliers';
         
+        // Add debugging
+        error_log('SRWM: Getting suppliers from table: ' . $table);
+        
         // Check if table exists
         $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        error_log('SRWM: Table exists: ' . ($table_exists ? 'yes' : 'no'));
+        
         if (!$table_exists) {
+            error_log('SRWM: Suppliers table does not exist');
             return array();
         }
         
-        return $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC") ?: array();
+        $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+        error_log('SRWM: Found suppliers: ' . count($suppliers));
+        
+        // If no suppliers exist, add test suppliers
+        if (empty($suppliers)) {
+            $this->add_test_suppliers();
+            $suppliers = $wpdb->get_results("SELECT * FROM $table ORDER BY name ASC");
+            error_log('SRWM: After adding test suppliers: ' . count($suppliers));
+        }
+        
+        return $suppliers ?: array();
+    }
+    
+    /**
+     * Add test suppliers if none exist
+     */
+    private function add_test_suppliers() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_suppliers';
+        
+        // Check if we already have suppliers
+        $existing_count = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        if ($existing_count > 0) {
+            return; // Already have suppliers
+        }
+        
+        // Add test suppliers
+        $test_suppliers = array(
+            array(
+                'name' => 'ABC Electronics',
+                'email' => 'orders@abcelectronics.com',
+                'phone' => '+1-555-0123',
+                'address' => '123 Tech Street, Silicon Valley, CA 94025',
+                'category' => 'Electronics',
+                'status' => 'active',
+                'created_at' => current_time('mysql')
+            ),
+            array(
+                'name' => 'Global Parts Co.',
+                'email' => 'purchasing@globalparts.com',
+                'phone' => '+1-555-0456',
+                'address' => '456 Industrial Blvd, Manufacturing District, TX 75001',
+                'category' => 'Industrial',
+                'status' => 'active',
+                'created_at' => current_time('mysql')
+            ),
+            array(
+                'name' => 'Premium Supplies Ltd.',
+                'email' => 'orders@premiumsupplies.com',
+                'phone' => '+1-555-0789',
+                'address' => '789 Quality Lane, Business Park, NY 10001',
+                'category' => 'General',
+                'status' => 'active',
+                'created_at' => current_time('mysql')
+            )
+        );
+        
+        foreach ($test_suppliers as $supplier) {
+            $wpdb->insert($table, $supplier);
+        }
+        
+        error_log('SRWM: Added ' . count($test_suppliers) . ' test suppliers');
     }
     
     /**
@@ -6309,14 +6433,18 @@ If you no longer wish to receive these emails, please contact us.';
                                         <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
                                         <?php 
                                         $suppliers = $this->get_suppliers();
+                                        error_log('SRWM: Modal suppliers count: ' . count($suppliers));
                                         if ($suppliers && is_array($suppliers)) {
                                             foreach ($suppliers as $supplier): 
+                                                error_log('SRWM: Adding supplier: ' . $supplier->name);
                                         ?>
                                             <option value="<?php echo esc_attr($supplier->id); ?>">
                                                 <?php echo esc_html($supplier->name); ?> (<?php echo esc_html($supplier->email); ?>)
                                             </option>
                                         <?php 
                                             endforeach;
+                                        } else {
+                                            error_log('SRWM: No suppliers found for modal');
                                         }
                                         ?>
                                     </select>
