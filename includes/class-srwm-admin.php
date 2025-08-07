@@ -4572,34 +4572,315 @@ class SRWM_Admin {
      * Get default waitlist email template
      */
     private function get_default_waitlist_email_template() {
-        return "Hi {customer_name},\n\n" .
-               "Thank you for joining the waitlist for {product_name}.\n\n" .
-               "We'll notify you as soon as this product is back in stock.\n\n" .
-               "Best regards,\n" . get_bloginfo('name');
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        
+        return '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to the Waitlist - ' . $site_name . '</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #007cba 0%, #005a87 100%); padding: 40px 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
+        .content { padding: 40px 30px; }
+        .welcome-message { font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px; }
+        .product-info { background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #007cba; }
+        .product-name { font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 10px; }
+        .product-description { color: #666666; font-size: 16px; line-height: 1.5; }
+        .status-badge { display: inline-block; background-color: #e3f2fd; color: #1976d2; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin: 15px 0; }
+        .next-steps { background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
+        .next-steps h3 { color: #e65100; margin: 0 0 15px 0; font-size: 18px; }
+        .next-steps ul { margin: 0; padding-left: 20px; color: #666666; }
+        .next-steps li { margin-bottom: 8px; line-height: 1.5; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }
+        .footer p { margin: 0; color: #666666; font-size: 14px; }
+        .social-links { margin-top: 20px; }
+        .social-links a { display: inline-block; margin: 0 10px; color: #007cba; text-decoration: none; }
+        .social-links a:hover { text-decoration: underline; }
+        @media only screen and (max-width: 600px) {
+            .header { padding: 30px 20px; }
+            .header h1 { font-size: 24px; }
+            .content { padding: 30px 20px; }
+            .footer { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🎉 Welcome to the Waitlist!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                Hi <strong>{customer_name}</strong>,
+                <br><br>
+                Thank you for joining our exclusive waitlist! We\'re excited to have you as part of our community.
+            </div>
+            
+            <div class="product-info">
+                <div class="product-name">{product_name}</div>
+                <div class="product-description">
+                    You\'ve successfully joined the waitlist for this amazing product. We\'ll keep you updated on its availability.
+                </div>
+                <div class="status-badge">✅ Waitlist Confirmed</div>
+            </div>
+            
+            <div class="next-steps">
+                <h3>📋 What Happens Next?</h3>
+                <ul>
+                    <li><strong>Priority Notification:</strong> You\'ll be among the first to know when this product is back in stock</li>
+                    <li><strong>Exclusive Access:</strong> Get early access to purchase before the general public</li>
+                    <li><strong>Special Offers:</strong> Receive exclusive discounts and promotions</li>
+                    <li><strong>No Spam:</strong> We only email you when there\'s important news about this product</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{product_url}" style="display: inline-block; background: linear-gradient(135deg, #007cba 0%, #005a87 100%); color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    View Product Details
+                </a>
+            </div>
+            
+            <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px;">
+                <p><strong>Need to make changes?</strong> You can manage your waitlist preferences anytime by visiting our website.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>' . $site_name . '</strong></p>
+            <p>Thank you for choosing us!</p>
+            <div class="social-links">
+                <a href="' . $site_url . '">Visit Website</a> |
+                <a href="mailto:' . get_option('admin_email') . '">Contact Support</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #999999;">
+                This email was sent to you because you joined the waitlist for {product_name}.<br>
+                If you no longer wish to receive these emails, please contact us.
+            </p>
+        </div>
+    </div>
+</body>
+</html>';
     }
     
     /**
      * Get default restock email template
      */
     private function get_default_restock_email_template() {
-        return "Hi {customer_name},\n\n" .
-               "Great news! {product_name} is now back in stock.\n\n" .
-               "You can purchase it here: {product_link}\n\n" .
-               "Best regards,\n" . get_bloginfo('name');
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        
+        return '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Back in Stock - ' . $site_name . '</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); padding: 40px 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
+        .content { padding: 40px 30px; }
+        .announcement { font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px; }
+        .product-info { background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #4caf50; }
+        .product-name { font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 10px; }
+        .product-description { color: #666666; font-size: 16px; line-height: 1.5; }
+        .status-badge { display: inline-block; background-color: #e8f5e8; color: #2e7d32; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin: 15px 0; }
+        .urgency-notice { background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
+        .urgency-notice h3 { color: #e65100; margin: 0 0 15px 0; font-size: 18px; }
+        .urgency-notice p { margin: 0; color: #666666; line-height: 1.5; }
+        .cta-button { text-align: center; margin: 40px 0; }
+        .cta-button a { display: inline-block; background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }
+        .footer p { margin: 0; color: #666666; font-size: 14px; }
+        .social-links { margin-top: 20px; }
+        .social-links a { display: inline-block; margin: 0 10px; color: #4caf50; text-decoration: none; }
+        .social-links a:hover { text-decoration: underline; }
+        @media only screen and (max-width: 600px) {
+            .header { padding: 30px 20px; }
+            .header h1 { font-size: 24px; }
+            .content { padding: 30px 20px; }
+            .footer { padding: 20px; }
+            .cta-button a { padding: 15px 30px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🎉 Great News! Product Back in Stock</h1>
+        </div>
+        
+        <div class="content">
+            <div class="announcement">
+                Hi <strong>{customer_name}</strong>,
+                <br><br>
+                Excellent news! The product you\'ve been waiting for is now back in stock and ready for purchase.
+            </div>
+            
+            <div class="product-info">
+                <div class="product-name">{product_name}</div>
+                <div class="product-description">
+                    This product is now available for immediate purchase. Don\'t miss out on this opportunity!
+                </div>
+                <div class="status-badge">✅ Now Available</div>
+            </div>
+            
+            <div class="urgency-notice">
+                <h3>⏰ Limited Time Offer</h3>
+                <p>Due to high demand, we recommend purchasing soon to secure your item. Stock levels may be limited.</p>
+            </div>
+            
+            <div class="cta-button">
+                <a href="{product_link}">
+                    🛒 Purchase Now
+                </a>
+            </div>
+            
+            <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px; text-align: center;">
+                <p><strong>Questions?</strong> Our customer support team is here to help!</p>
+                <p>Email us at <a href="mailto:' . get_option('admin_email') . '" style="color: #4caf50;">' . get_option('admin_email') . '</a></p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>' . $site_name . '</strong></p>
+            <p>Thank you for your patience and loyalty!</p>
+            <div class="social-links">
+                <a href="' . $site_url . '">Visit Website</a> |
+                <a href="mailto:' . get_option('admin_email') . '">Contact Support</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #999999;">
+                This email was sent to you because you joined the waitlist for {product_name}.<br>
+                If you no longer wish to receive these emails, please contact us.
+            </p>
+        </div>
+    </div>
+</body>
+</html>';
     }
     
     /**
      * Get default supplier email template
      */
     private function get_default_supplier_email_template() {
-        return "Hi {supplier_name},\n\n" .
-               "We need to restock the following product:\n\n" .
-               "Product: {product_name}\n" .
-               "SKU: {sku}\n" .
-               "Current Stock: {current_stock}\n" .
-               "Waitlist Count: {waitlist_count}\n\n" .
-               "Please use the following link to restock:\n{restock_link}\n\n" .
-               "Thank you,\n" . get_bloginfo('name');
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        
+        return '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restock Request - ' . $site_name . '</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 40px 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }
+        .content { padding: 40px 30px; }
+        .greeting { font-size: 18px; color: #333333; line-height: 1.6; margin-bottom: 30px; }
+        .product-details { background-color: #f8f9fa; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
+        .product-name { font-size: 20px; font-weight: 700; color: #333333; margin-bottom: 15px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+        .detail-label { font-weight: 600; color: #666666; }
+        .detail-value { font-weight: 700; color: #333333; }
+        .urgency-alert { background-color: #fff3e0; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #ff9800; }
+        .urgency-alert h3 { color: #e65100; margin: 0 0 15px 0; font-size: 18px; }
+        .urgency-alert p { margin: 0; color: #666666; line-height: 1.5; }
+        .cta-button { text-align: center; margin: 40px 0; }
+        .cta-button a { display: inline-block; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; }
+        .footer p { margin: 0; color: #666666; font-size: 14px; }
+        .social-links { margin-top: 20px; }
+        .social-links a { display: inline-block; margin: 0 10px; color: #ff9800; text-decoration: none; }
+        .social-links a:hover { text-decoration: underline; }
+        @media only screen and (max-width: 600px) {
+            .header { padding: 30px 20px; }
+            .header h1 { font-size: 24px; }
+            .content { padding: 30px 20px; }
+            .footer { padding: 20px; }
+            .cta-button a { padding: 15px 30px; font-size: 16px; }
+            .detail-row { flex-direction: column; }
+            .detail-value { margin-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📦 Restock Request</h1>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                Hi <strong>{supplier_name}</strong>,
+                <br><br>
+                We need to restock a product that\'s currently in high demand. Please review the details below and take action as soon as possible.
+            </div>
+            
+            <div class="product-details">
+                <div class="product-name">{product_name}</div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">SKU:</span>
+                    <span class="detail-value">{sku}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Current Stock:</span>
+                    <span class="detail-value">{current_stock} units</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Waitlist Count:</span>
+                    <span class="detail-value">{waitlist_count} customers</span>
+                </div>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" style="color: #d32f2f; font-weight: 700;">⚠️ Low Stock Alert</span>
+                </div>
+            </div>
+            
+            <div class="urgency-alert">
+                <h3>🚨 Urgent Action Required</h3>
+                <p>This product has customers waiting on the waitlist. Please restock as soon as possible to avoid losing sales and disappointing customers.</p>
+            </div>
+            
+            <div class="cta-button">
+                <a href="{restock_link}">
+                    📋 Process Restock
+                </a>
+            </div>
+            
+            <div style="color: #666666; font-size: 14px; line-height: 1.5; margin-top: 30px; text-align: center;">
+                <p><strong>Need assistance?</strong> Contact our procurement team for support.</p>
+                <p>Email: <a href="mailto:' . get_option('admin_email') . '" style="color: #ff9800;">' . get_option('admin_email') . '</a></p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>' . $site_name . '</strong></p>
+            <p>Thank you for your partnership!</p>
+            <div class="social-links">
+                <a href="' . $site_url . '">Visit Website</a> |
+                <a href="mailto:' . get_option('admin_email') . '">Contact Support</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #999999;">
+                This is an automated restock request from ' . $site_name . '.<br>
+                Please respond promptly to maintain our inventory levels.
+            </p>
+        </div>
+    </div>
+</body>
+</html>';
     }
     
     /**
