@@ -63,12 +63,17 @@ class SRWM_Waitlist {
         
         ?>
         <div class="srwm-waitlist-container">
+            <?php 
+            $hide_header_after_submit = get_option('srwm_hide_header_after_submit', '1');
+            if (!$is_on_waitlist || !$hide_header_after_submit): 
+            ?>
             <div class="srwm-waitlist-header">
                 <h3><?php _e('Join the Waitlist', 'smart-restock-waitlist'); ?></h3>
                 <div class="srwm-waitlist-subtitle">
                     <?php _e('Be the first to know when this product is back in stock!', 'smart-restock-waitlist'); ?>
                 </div>
             </div>
+            <?php endif; ?>
             
             <?php if ($is_on_waitlist): ?>
                 <!-- User is on waitlist - Show success status -->

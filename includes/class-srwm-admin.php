@@ -142,6 +142,7 @@ class SRWM_Admin {
         // Social proof display settings
         register_setting('srwm_settings', 'srwm_hide_social_proof');
         register_setting('srwm_settings', 'srwm_social_proof_style');
+        register_setting('srwm_settings', 'srwm_hide_header_after_submit');
         
         // Pro settings
         if ($this->license_manager->is_pro_active()) {
@@ -226,6 +227,10 @@ class SRWM_Admin {
         
         update_option('srwm_hide_social_proof', $hide_social_proof);
         update_option('srwm_social_proof_style', $social_proof_style);
+        
+        // Save header display setting
+        $hide_header_after_submit = isset($_POST['srwm_hide_header_after_submit']) ? '1' : '0';
+        update_option('srwm_hide_header_after_submit', $hide_header_after_submit);
         
         // Save Pro settings if license is active
         if ($this->license_manager->is_pro_active()) {
@@ -325,6 +330,7 @@ class SRWM_Admin {
         // Reset social proof display settings to defaults
         update_option('srwm_hide_social_proof', '0');
         update_option('srwm_social_proof_style', 'full');
+        update_option('srwm_hide_header_after_submit', '1');
         
         // Reset Pro settings if license is active
         if ($this->license_manager->is_pro_active()) {
@@ -7194,6 +7200,15 @@ class SRWM_Admin {
                                     <option value="full" <?php selected(get_option('srwm_social_proof_style', 'full'), 'full'); ?>><?php _e('Full (Detailed)', 'smart-restock-waitlist'); ?></option>
                                 </select>
                                 <p class="description"><?php _e('Choose between compact or full social proof display', 'smart-restock-waitlist'); ?></p>
+                            </div>
+                            
+                            <div class="srwm-option">
+                                <label>
+                                    <input type="checkbox" name="srwm_hide_header_after_submit" 
+                                           value="1" <?php checked(get_option('srwm_hide_header_after_submit', '1'), '1'); ?>>
+                                    <?php _e('Hide Header After Submission', 'smart-restock-waitlist'); ?>
+                                </label>
+                                <p class="description"><?php _e('Hide "Join the Waitlist" header when user is already on waitlist', 'smart-restock-waitlist'); ?></p>
                             </div>
                         </div>
                     </div>
