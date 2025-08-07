@@ -4403,6 +4403,66 @@ class SRWM_Admin {
             font-size: 10px;
         }
         
+        /* Notification styles */
+        .srwm-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            padding: 16px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        .srwm-notification-success {
+            background: #10b981;
+        }
+        
+        .srwm-notification-error {
+            background: #ef4444;
+        }
+        
+        .srwm-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .srwm-notification-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+        
+        .srwm-notification-close:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         .srwm-product-info strong {
             display: block;
             color: #1e293b;
@@ -6551,6 +6611,17 @@ If you no longer wish to receive these emails, please contact us.';
             } else {
                 $po->supplier_name = __('Unknown Supplier', 'smart-restock-waitlist');
             }
+            
+            // Map database status to frontend status for display
+            $status_mapping = array(
+                'draft' => 'pending',
+                'confirmed' => 'confirmed',
+                'sent' => 'shipped', 
+                'received' => 'completed',
+                'cancelled' => 'cancelled'
+            );
+            
+            $po->display_status = isset($status_mapping[$po->status]) ? $status_mapping[$po->status] : $po->status;
         }
         
         return $results;
@@ -7116,11 +7187,11 @@ If you no longer wish to receive these emails, please contact us.';
                                                     <span class="srwm-quantity-badge"><?php echo esc_html($po->quantity); ?></span>
                                                 </td>
                                                 <td>
-                                                    <select class="srwm-status-select update-po-status" data-po-id="<?php echo $po->id; ?>" data-original-value="<?php echo esc_attr($po->status); ?>">
-                                                        <option value="pending" <?php selected($po->status, 'pending'); ?>><?php _e('⏳ Pending', 'smart-restock-waitlist'); ?></option>
-                                                        <option value="confirmed" <?php selected($po->status, 'confirmed'); ?>><?php _e('✅ Confirmed', 'smart-restock-waitlist'); ?></option>
-                                                        <option value="shipped" <?php selected($po->status, 'shipped'); ?>><?php _e('🚚 Shipped', 'smart-restock-waitlist'); ?></option>
-                                                        <option value="completed" <?php selected($po->status, 'completed'); ?>><?php _e('🎉 Completed', 'smart-restock-waitlist'); ?></option>
+                                                    <select class="srwm-status-select update-po-status" data-po-id="<?php echo $po->id; ?>" data-original-value="<?php echo esc_attr($po->display_status); ?>">
+                                                        <option value="pending" <?php selected($po->display_status, 'pending'); ?>><?php _e('⏳ Pending', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="confirmed" <?php selected($po->display_status, 'confirmed'); ?>><?php _e('✅ Confirmed', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="shipped" <?php selected($po->display_status, 'shipped'); ?>><?php _e('🚚 Shipped', 'smart-restock-waitlist'); ?></option>
+                                                        <option value="completed" <?php selected($po->display_status, 'completed'); ?>><?php _e('🎉 Completed', 'smart-restock-waitlist'); ?></option>
                                                     </select>
                                                 </td>
                                                 <td>
@@ -8321,6 +8392,7 @@ If you no longer wish to receive these emails, please contact us.';
                         nonce: '<?php echo wp_create_nonce('srwm_update_po_status'); ?>'
                     },
                     success: function(response) {
+                        console.log('SRWM: Status update response:', response);
                         if (response.success) {
                             showNotification('<?php _e('PO status updated successfully!', 'smart-restock-waitlist'); ?>', 'success');
                             // Update the status badge in the table
@@ -8328,13 +8400,19 @@ If you no longer wish to receive these emails, please contact us.';
                             statusBadge.removeClass().addClass('srwm-status-badge srwm-status-' + newStatus);
                             statusBadge.html('<i class="fas fa-circle"></i> ' + newStatus.charAt(0).toUpperCase() + newStatus.slice(1));
                         } else {
-                            alert('<?php _e('Failed to update status. Please try again.', 'smart-restock-waitlist'); ?>');
+                            var errorMessage = response.data || '<?php _e('Failed to update status. Please try again.', 'smart-restock-waitlist'); ?>';
+                            showNotification(errorMessage, 'error');
                             // Revert select value
                             select.val(select.data('original-value'));
                         }
                     },
-                    error: function() {
-                        alert('<?php _e('Error updating status. Please try again.', 'smart-restock-waitlist'); ?>');
+                    error: function(xhr, status, error) {
+                        console.log('SRWM: Status update error:', {xhr: xhr, status: status, error: error});
+                        var errorMessage = '<?php _e('Error updating status. Please try again.', 'smart-restock-waitlist'); ?>';
+                        if (xhr.responseJSON && xhr.responseJSON.data) {
+                            errorMessage = xhr.responseJSON.data;
+                        }
+                        showNotification(errorMessage, 'error');
                         // Revert select value
                         select.val(select.data('original-value'));
                     },
