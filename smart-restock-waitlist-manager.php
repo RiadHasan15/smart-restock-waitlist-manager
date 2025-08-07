@@ -1415,6 +1415,8 @@ class SmartRestockWaitlistManager {
             
             // Generate PO for each product
             $results = array();
+            $saved_pos = array();
+            
             foreach ($form_data['products'] as $product_data) {
                 $product_id = intval($product_data['id']);
                 $quantity = intval($product_data['quantity']);
@@ -1423,27 +1425,102 @@ class SmartRestockWaitlistManager {
                     continue; // Skip invalid products
                 }
                 
-                // For now, just log the PO generation
-                error_log("SRWM: Would generate PO for product {$product_id}, quantity {$quantity} to {$supplier_data['name']} ({$supplier_data['email']})");
+                // Generate PO number
+                $po_number = $this->generate_po_number();
                 
-                $results[] = array(
+                // Get product details
+                $product = wc_get_product($product_id);
+                if (!$product) {
+                    continue; // Skip if product doesn't exist
+                }
+                
+                // Save PO to database
+                global $wpdb;
+                $table = $wpdb->prefix . 'srwm_purchase_orders';
+                
+                $insert_data = array(
+                    'po_number' => $po_number,
                     'product_id' => $product_id,
+                    'supplier_email' => $supplier_data['email'],
                     'quantity' => $quantity,
-                    'supplier' => $supplier_data,
-                    'status' => 'success'
+                    'status' => 'pending',
+                    'created_at' => current_time('mysql')
                 );
+                
+                $inserted = $wpdb->insert($table, $insert_data);
+                
+                if ($inserted) {
+                    $po_id = $wpdb->insert_id;
+                    
+                    // Log the PO generation
+                    error_log("SRWM: Generated PO {$po_number} for product {$product_id}, quantity {$quantity} to {$supplier_data['name']} ({$supplier_data['email']})");
+                    
+                    $results[] = array(
+                        'po_id' => $po_id,
+                        'po_number' => $po_number,
+                        'product_id' => $product_id,
+                        'product_name' => $product->get_name(),
+                        'quantity' => $quantity,
+                        'supplier' => $supplier_data,
+                        'status' => 'success'
+                    );
+                    
+                    $saved_pos[] = $po_number;
+                } else {
+                    error_log("SRWM: Failed to save PO to database: " . $wpdb->last_error);
+                    $results[] = array(
+                        'product_id' => $product_id,
+                        'quantity' => $quantity,
+                        'supplier' => $supplier_data,
+                        'status' => 'error',
+                        'message' => 'Database error'
+                    );
+                }
             }
             
-            // For now, return success (actual PO generation will be implemented later)
-            wp_send_json_success(array(
-                'message' => __('Purchase order generated successfully!', 'smart-restock-waitlist'),
-                'results' => $results
-            ));
+            if (!empty($saved_pos)) {
+                wp_send_json_success(array(
+                    'message' => sprintf(__('Purchase orders generated successfully! PO Numbers: %s', 'smart-restock-waitlist'), implode(', ', $saved_pos)),
+                    'results' => $results,
+                    'po_numbers' => $saved_pos
+                ));
+            } else {
+                wp_send_json_error(__('Failed to generate any purchase orders.', 'smart-restock-waitlist'));
+            }
             
         } catch (Exception $e) {
             error_log('SRWM: Exception in ajax_generate_po: ' . $e->getMessage());
             wp_send_json_error(__('Error generating purchase order: ', 'smart-restock-waitlist') . $e->getMessage());
         }
+    }
+    
+    /**
+     * Generate a unique PO number
+     */
+    private function generate_po_number() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Get the current year and month
+        $year = date('Y');
+        $month = date('m');
+        
+        // Get the last PO number for this year/month
+        $last_po = $wpdb->get_var($wpdb->prepare(
+            "SELECT po_number FROM $table WHERE po_number LIKE %s ORDER BY po_number DESC LIMIT 1",
+            "PO-{$year}{$month}-%"
+        ));
+        
+        if ($last_po) {
+            // Extract the sequence number and increment it
+            $parts = explode('-', $last_po);
+            $sequence = intval(end($parts)) + 1;
+        } else {
+            $sequence = 1;
+        }
+        
+        // Format: PO-YYYYMM-001
+        return sprintf("PO-%s%s-%03d", $year, $month, $sequence);
     }
     
     /**

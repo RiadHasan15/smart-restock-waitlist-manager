@@ -2905,6 +2905,87 @@ class SRWM_Admin {
             background: #f9fafb;
         }
         
+        /* Notification Styling */
+        .srwm-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #10b981;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .srwm-notification-success {
+            border-left-color: #10b981;
+        }
+        
+        .srwm-notification-error {
+            border-left-color: #ef4444;
+        }
+        
+        .srwm-notification-warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .srwm-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+        }
+        
+        .srwm-notification-content i {
+            font-size: 20px;
+            color: #10b981;
+        }
+        
+        .srwm-notification-error .srwm-notification-content i {
+            color: #ef4444;
+        }
+        
+        .srwm-notification-warning .srwm-notification-content i {
+            color: #f59e0b;
+        }
+        
+        .srwm-notification-content span {
+            color: #111827;
+            font-weight: 500;
+        }
+        
+        .srwm-notification-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .srwm-notification-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         /* Dashboard Loading State */
         .srwm-loading {
             position: relative;
@@ -5660,6 +5741,13 @@ If you no longer wish to receive these emails, please contact us.';
     private function get_total_purchase_orders() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
         return $wpdb->get_var("SELECT COUNT(*) FROM $table") ?: 0;
     }
     
@@ -5669,6 +5757,13 @@ If you no longer wish to receive these emails, please contact us.';
     private function get_pending_purchase_orders() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
         return $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 'pending'") ?: 0;
     }
     
@@ -5678,6 +5773,13 @@ If you no longer wish to receive these emails, please contact us.';
     private function get_completed_purchase_orders() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return 0;
+        }
+        
         return $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE status = 'completed'") ?: 0;
     }
     
@@ -5687,7 +5789,41 @@ If you no longer wish to receive these emails, please contact us.';
     private function get_purchase_orders() {
         global $wpdb;
         $table = $wpdb->prefix . 'srwm_purchase_orders';
-        return $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return array();
+        }
+        
+        $results = $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 10") ?: array();
+        
+        // Enhance results with product and supplier information
+        foreach ($results as $po) {
+            // Get product information
+            $product = wc_get_product($po->product_id);
+            if ($product) {
+                $po->product_name = $product->get_name();
+                $po->sku = $product->get_sku();
+            } else {
+                $po->product_name = __('Product not found', 'smart-restock-waitlist');
+                $po->sku = '';
+            }
+            
+            // Get supplier information
+            $supplier = $wpdb->get_row($wpdb->prepare(
+                "SELECT supplier_name FROM {$wpdb->prefix}srwm_suppliers WHERE supplier_email = %s",
+                $po->supplier_email
+            ));
+            
+            if ($supplier) {
+                $po->supplier_name = $supplier->supplier_name;
+            } else {
+                $po->supplier_name = __('Unknown Supplier', 'smart-restock-waitlist');
+            }
+        }
+        
+        return $results;
     }
     
     /**
@@ -7138,8 +7274,34 @@ If you no longer wish to receive these emails, please contact us.';
                     },
                     success: function(response) {
                         if (response.success) {
+                            // Show success message
+                            var message = response.data.message || '<?php _e('Purchase order generated successfully!', 'smart-restock-waitlist'); ?>';
+                            
+                            // Create success notification
+                            var notification = $('<div class="srwm-notification srwm-notification-success">' +
+                                '<div class="srwm-notification-content">' +
+                                '<i class="fas fa-check-circle"></i>' +
+                                '<span>' + message + '</span>' +
+                                '</div>' +
+                                '<button class="srwm-notification-close">&times;</button>' +
+                                '</div>');
+                            
+                            $('body').append(notification);
+                            
+                            // Auto-hide after 5 seconds
+                            setTimeout(function() {
+                                notification.fadeOut(function() {
+                                    $(this).remove();
+                                });
+                            }, 5000);
+                            
+                            // Close modal and reload
                             $('#srwm-po-modal').hide().removeClass('srwm-modal-active');
-                            location.reload(); // Refresh to show new PO
+                            
+                            // Small delay before reload to show notification
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1000);
                         } else {
                             alert(response.data.message || '<?php _e('Failed to generate purchase order', 'smart-restock-waitlist'); ?>');
                         }
@@ -7161,6 +7323,13 @@ If you no longer wish to receive these emails, please contact us.';
                 updateStepDisplay();
                 $('#po-products-grid').html('<div class="srwm-loading"><i class="fas fa-spinner fa-spin"></i> <?php _e('Loading products...', 'smart-restock-waitlist'); ?></div>');
             }
+            
+            // Notification close functionality
+            $(document).on('click', '.srwm-notification-close', function() {
+                $(this).closest('.srwm-notification').fadeOut(function() {
+                    $(this).remove();
+                });
+            });
             
             // Enhanced Search functionality for PO table
             $('#po-search').on('input', function() {
