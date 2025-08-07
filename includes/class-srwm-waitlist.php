@@ -100,52 +100,80 @@ class SRWM_Waitlist {
                 </div>
             <?php endif; ?>
             
-            <!-- Social Proof Section - Always show when there are people on waitlist -->
-            <?php if ($waitlist_count > 0): ?>
-            <div class="srwm-waitlist-preview">
-                <div class="srwm-preview-header">
-                    <div class="srwm-preview-icon">
-                        <span class="dashicons dashicons-groups"></span>
-                    </div>
-                    <div class="srwm-preview-content">
-                        <div class="srwm-preview-count">
+            <!-- Social Proof Section - Respect admin settings -->
+            <?php 
+            $hide_social_proof = get_option('srwm_hide_social_proof', '0');
+            $social_proof_style = get_option('srwm_social_proof_style', 'full');
+            
+            if ($waitlist_count > 0 && !$hide_social_proof): 
+            ?>
+            <div class="srwm-waitlist-preview <?php echo $social_proof_style === 'compact' ? 'srwm-compact' : ''; ?>">
+                <?php if ($social_proof_style === 'compact'): ?>
+                    <!-- Compact Social Proof -->
+                    <div class="srwm-preview-compact">
+                        <div class="srwm-compact-count">
                             <span class="srwm-count-number" data-count="<?php echo $waitlist_count; ?>">0</span>
-                            <span class="srwm-count-label">
+                            <span class="srwm-compact-label">
                                 <?php printf(
-                                    _n('%s person is waiting', '%s people are waiting', $waitlist_count, 'smart-restock-waitlist'),
+                                    _n('%s person waiting', '%s people waiting', $waitlist_count, 'smart-restock-waitlist'),
                                     number_format($waitlist_count)
                                 ); ?>
                             </span>
                         </div>
-                        <div class="srwm-preview-subtitle">
+                        <div class="srwm-compact-subtitle">
                             <?php if ($is_on_waitlist): ?>
-                                <?php _e('You\'re part of an exclusive group!', 'smart-restock-waitlist'); ?>
+                                <?php _e('You\'re on the list!', 'smart-restock-waitlist'); ?>
                             <?php else: ?>
-                                <?php _e('Join them and get notified first!', 'smart-restock-waitlist'); ?>
+                                <?php _e('Join the waitlist', 'smart-restock-waitlist'); ?>
                             <?php endif; ?>
                         </div>
                     </div>
-                </div>
-                
-                <div class="srwm-queue-visualization">
-                    <div class="srwm-queue-bar">
-                        <div class="srwm-queue-fill" style="width: <?php echo min(100, ($waitlist_count / 100) * 100); ?>%"></div>
+                <?php else: ?>
+                    <!-- Full Social Proof -->
+                    <div class="srwm-preview-header">
+                        <div class="srwm-preview-icon">
+                            <span class="dashicons dashicons-groups"></span>
+                        </div>
+                        <div class="srwm-preview-content">
+                            <div class="srwm-preview-count">
+                                <span class="srwm-count-number" data-count="<?php echo $waitlist_count; ?>">0</span>
+                                <span class="srwm-count-label">
+                                    <?php printf(
+                                        _n('%s person is waiting', '%s people are waiting', $waitlist_count, 'smart-restock-waitlist'),
+                                        number_format($waitlist_count)
+                                    ); ?>
+                                </span>
+                            </div>
+                            <div class="srwm-preview-subtitle">
+                                <?php if ($is_on_waitlist): ?>
+                                    <?php _e('You\'re part of an exclusive group!', 'smart-restock-waitlist'); ?>
+                                <?php else: ?>
+                                    <?php _e('Join them and get notified first!', 'smart-restock-waitlist'); ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
-                    <div class="srwm-queue-stats">
-                        <span class="srwm-stat-item">
-                            <span class="srwm-stat-icon">⚡</span>
-                            <?php _e('Fast notifications', 'smart-restock-waitlist'); ?>
-                        </span>
-                        <span class="srwm-stat-item">
-                            <span class="srwm-stat-icon">🎯</span>
-                            <?php _e('Priority access', 'smart-restock-waitlist'); ?>
-                        </span>
-                        <span class="srwm-stat-item">
-                            <span class="srwm-stat-icon">🔒</span>
-                            <?php _e('Secure & private', 'smart-restock-waitlist'); ?>
-                        </span>
+                    
+                    <div class="srwm-queue-visualization">
+                        <div class="srwm-queue-bar">
+                            <div class="srwm-queue-fill" style="width: <?php echo min(100, ($waitlist_count / 100) * 100); ?>%"></div>
+                        </div>
+                        <div class="srwm-queue-stats">
+                            <span class="srwm-stat-item">
+                                <span class="srwm-stat-icon">⚡</span>
+                                <?php _e('Fast notifications', 'smart-restock-waitlist'); ?>
+                            </span>
+                            <span class="srwm-stat-item">
+                                <span class="srwm-stat-icon">🎯</span>
+                                <?php _e('Priority access', 'smart-restock-waitlist'); ?>
+                            </span>
+                            <span class="srwm-stat-item">
+                                <span class="srwm-stat-icon">🔒</span>
+                                <?php _e('Secure & private', 'smart-restock-waitlist'); ?>
+                            </span>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
             
