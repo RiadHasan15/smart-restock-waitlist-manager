@@ -6579,6 +6579,36 @@ This email was sent to you because you joined the waitlist for {product_name}.
 If you no longer wish to receive these emails, please contact us.';
     }
     
+    /**
+     * Get default restock email template
+     */
+    public function get_default_restock_email_template() {
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
+        
+        return 'Hi {customer_name},
+
+Great news! {product_name} is back in stock and ready for purchase.
+
+You can purchase it here: {product_url}
+
+Current stock level: {stock_quantity} units available.
+
+Due to high demand, we recommend purchasing soon to secure your item. Stock levels may be limited.
+
+If you have any questions, please contact our customer support team at ' . $admin_email . '.
+
+Thank you for your patience and loyalty!
+
+Best regards,
+' . $site_name . '
+' . $site_url . '
+
+This email was sent to you because you joined the waitlist for {product_name}.
+If you no longer wish to receive these emails, please contact us.';
+    }
+    
     
     
     /**
@@ -6701,7 +6731,7 @@ If you no longer wish to receive these emails, please contact us.';
     /**
      * Get default purchase order email template
      */
-    private function get_default_po_email_template() {
+    public function get_default_po_email_template() {
         return "Hi {supplier_name},\n\n" .
                "Please find attached Purchase Order #{po_number} for the following items:\n\n" .
                "Product: {product_name}\n" .
