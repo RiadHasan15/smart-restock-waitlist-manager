@@ -4700,17 +4700,6 @@ Best regards,
             error_log('SRWM: updated_at column already exists');
         }
         
-        // Check if updated_at column exists, if not add it
-        $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table LIKE 'updated_at'");
-        if (!$column_exists) {
-            error_log('SRWM: updated_at column does not exist, adding it');
-            $alter_result = $wpdb->query("ALTER TABLE $table ADD COLUMN `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
-            error_log('SRWM: ALTER TABLE result: ' . ($alter_result !== false ? 'success' : 'failed'));
-            error_log('SRWM: ALTER TABLE error: ' . $wpdb->last_error);
-        } else {
-            error_log('SRWM: updated_at column already exists');
-        }
-        
         // Try to update with updated_at first, if it fails, update without it
         $result = $wpdb->update(
             $table,
