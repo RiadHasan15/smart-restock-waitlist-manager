@@ -1350,11 +1350,23 @@ class SmartRestockWaitlistManager {
      * AJAX: Generate purchase order (Pro)
      */
     public function ajax_generate_po() {
-        check_ajax_referer('srwm_generate_po', 'nonce');
+        error_log('SRWM: ajax_generate_po called - START');
+        
+        try {
+            check_ajax_referer('srwm_generate_po', 'nonce');
+            error_log('SRWM: Nonce check passed');
+        } catch (Exception $e) {
+            error_log('SRWM: Nonce check failed: ' . $e->getMessage());
+            wp_send_json_error(__('Security check failed.', 'smart-restock-waitlist'));
+            return;
+        }
         
         if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Insufficient permissions');
             wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
         }
+        
+        error_log('SRWM: Permissions check passed');
         
         // Add debugging
         error_log('SRWM: ajax_generate_po called');
