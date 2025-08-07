@@ -7269,7 +7269,11 @@ If you no longer wish to receive these emails, please contact us.';
                 
                 // Add delivery method specific data
                 if (deliveryMethod === 'supplier') {
-                    formData.supplier_id = $('#po-supplier').val();
+                    var supplierId = $('#po-supplier').val();
+                    console.log('SRWM: Supplier ID from dropdown:', supplierId);
+                    console.log('SRWM: Supplier dropdown element:', $('#po-supplier'));
+                    console.log('SRWM: Supplier dropdown options:', $('#po-supplier option').length);
+                    formData.supplier_id = supplierId;
                 } else if (deliveryMethod === 'email') {
                     formData.email_address = $('#po-email-address').val();
                     formData.supplier_name = $('#po-supplier-name').val();
