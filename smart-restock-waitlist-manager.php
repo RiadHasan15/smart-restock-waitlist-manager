@@ -1027,6 +1027,9 @@ class SmartRestockWaitlistManager {
         add_action('wp_ajax_srwm_resend_po', array($this, 'ajax_resend_po'));
         add_action('wp_ajax_srwm_update_po_status', array($this, 'ajax_update_po_status'));
         add_action('wp_ajax_srwm_update_po_status_safe', array($this, 'ajax_update_po_status_safe'));
+        add_action('wp_ajax_srwm_export_pos', array($this, 'ajax_export_pos'));
+        add_action('wp_ajax_srwm_get_pos_for_bulk', array($this, 'ajax_get_pos_for_bulk'));
+        add_action('wp_ajax_srwm_execute_bulk_action', array($this, 'ajax_execute_bulk_action'));
     }
     
     /**
@@ -4920,6 +4923,410 @@ Best regards,
         $diagnostics[] = "- PHP mail(): " . ($test3 ? 'Success' : 'Failed');
         
         return implode("\n", $diagnostics);
+    }
+    
+    /**
+     * AJAX: Export purchase orders to CSV
+     */
+    public function ajax_export_pos() {
+        // Prevent any output before JSON response
+        ob_clean();
+        
+        error_log('SRWM: ajax_export_pos called');
+        
+        // Check if nonce exists
+        if (!isset($_POST['nonce'])) {
+            error_log('SRWM: Export POs - Nonce not provided');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Check nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'srwm_export_pos')) {
+            error_log('SRWM: Export POs - Nonce verification failed');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Export POs - Insufficient permissions');
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") == $table;
+        if (!$table_exists) {
+            error_log('SRWM: Purchase orders table does not exist for export');
+            wp_send_json_error(__('Purchase orders table not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Get all purchase orders with enriched data
+        $purchase_orders = $this->get_purchase_orders();
+        
+        if (empty($purchase_orders)) {
+            wp_send_json_error(__('No purchase orders found to export.', 'smart-restock-waitlist'));
+        }
+        
+        // Create CSV content
+        $csv_data = array();
+        
+        // CSV Headers
+        $csv_data[] = array(
+            'PO Number',
+            'Product Name',
+            'SKU',
+            'Supplier Name',
+            'Supplier Email',
+            'Quantity',
+            'Status',
+            'Delivery Date',
+            'Urgency',
+            'Notes',
+            'Created Date',
+            'Last Sent Date'
+        );
+        
+        // CSV Data
+        foreach ($purchase_orders as $po) {
+            $csv_data[] = array(
+                $po->po_number,
+                $po->product_name,
+                $po->sku,
+                $po->supplier_name,
+                $po->supplier_email,
+                $po->quantity,
+                $po->display_status,
+                isset($po->delivery_date) ? $po->delivery_date : '',
+                isset($po->urgency) ? $po->urgency : 'normal',
+                isset($po->notes) ? $po->notes : '',
+                $po->created_at,
+                isset($po->last_sent_at) ? $po->last_sent_at : ''
+            );
+        }
+        
+        // Convert to CSV string
+        $csv_string = '';
+        foreach ($csv_data as $row) {
+            $csv_string .= '"' . implode('","', array_map('str_replace', array('"'), array('""'), $row)) . '"' . "\n";
+        }
+        
+        error_log('SRWM: Export POs - Generated CSV with ' . count($purchase_orders) . ' records');
+        
+        wp_send_json_success($csv_string);
+    }
+    
+    /**
+     * Get purchase orders for export
+     */
+    private function get_purchase_orders() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $pos = $wpdb->get_results("
+            SELECT po.*, 
+                   p.post_title as product_name,
+                   pm.meta_value as sku,
+                   s.supplier_name
+            FROM $table po
+            LEFT JOIN {$wpdb->posts} p ON po.product_id = p.ID
+            LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_sku'
+            LEFT JOIN {$wpdb->prefix}srwm_suppliers s ON po.supplier_email = s.supplier_email
+            ORDER BY po.created_at DESC
+        ");
+        
+        // Add display status mapping
+        foreach ($pos as $po) {
+            $status_mapping = array(
+                'draft' => 'Pending',
+                'confirmed' => 'Confirmed',
+                'sent' => 'Shipped',
+                'received' => 'Completed'
+            );
+            $po->display_status = isset($status_mapping[$po->status]) ? $status_mapping[$po->status] : ucfirst($po->status);
+        }
+        
+        return $pos;
+    }
+    
+    /**
+     * AJAX: Get purchase orders for bulk actions
+     */
+    public function ajax_get_pos_for_bulk() {
+        // Prevent any output before JSON response
+        ob_clean();
+        
+        error_log('SRWM: ajax_get_pos_for_bulk called');
+        
+        // Check if nonce exists
+        if (!isset($_POST['nonce'])) {
+            error_log('SRWM: Get POs for bulk - Nonce not provided');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Check nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'srwm_get_pos_for_bulk')) {
+            error_log('SRWM: Get POs for bulk - Nonce verification failed');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Get POs for bulk - Insufficient permissions');
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") == $table;
+        if (!$table_exists) {
+            error_log('SRWM: Purchase orders table does not exist for bulk actions');
+            wp_send_json_error(__('Purchase orders table not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Get purchase orders with basic info
+        $pos = $wpdb->get_results("
+            SELECT po.id, po.po_number, p.post_title as product_name
+            FROM $table po
+            LEFT JOIN {$wpdb->posts} p ON po.product_id = p.ID
+            ORDER BY po.created_at DESC
+        ");
+        
+        error_log('SRWM: Get POs for bulk - Found ' . count($pos) . ' purchase orders');
+        
+        wp_send_json_success($pos);
+    }
+    
+    /**
+     * AJAX: Execute bulk actions
+     */
+    public function ajax_execute_bulk_action() {
+        // Prevent any output before JSON response
+        ob_clean();
+        
+        error_log('SRWM: ajax_execute_bulk_action called');
+        error_log('SRWM: POST data: ' . print_r($_POST, true));
+        
+        // Check if nonce exists
+        if (!isset($_POST['nonce'])) {
+            error_log('SRWM: Execute bulk action - Nonce not provided');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        // Check nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'srwm_execute_bulk_action')) {
+            error_log('SRWM: Execute bulk action - Nonce verification failed');
+            wp_send_json_error(__('Security check failed. Please refresh the page and try again.', 'smart-restock-waitlist'));
+        }
+        
+        if (!current_user_can('manage_woocommerce')) {
+            error_log('SRWM: Execute bulk action - Insufficient permissions');
+            wp_send_json_error(__('Insufficient permissions.', 'smart-restock-waitlist'));
+        }
+        
+        $po_ids = isset($_POST['po_ids']) ? array_map('intval', $_POST['po_ids']) : array();
+        $bulk_action = sanitize_text_field($_POST['bulk_action']);
+        $status = sanitize_text_field($_POST['status']);
+        
+        if (empty($po_ids)) {
+            wp_send_json_error(__('No purchase orders selected.', 'smart-restock-waitlist'));
+        }
+        
+        error_log('SRWM: Bulk action - PO IDs: ' . implode(', ', $po_ids));
+        error_log('SRWM: Bulk action - Action: ' . $bulk_action);
+        error_log('SRWM: Bulk action - Status: ' . $status);
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'") == $table;
+        if (!$table_exists) {
+            error_log('SRWM: Purchase orders table does not exist for bulk actions');
+            wp_send_json_error(__('Purchase orders table not found.', 'smart-restock-waitlist'));
+        }
+        
+        $success_count = 0;
+        $error_count = 0;
+        $errors = array();
+        
+        switch ($bulk_action) {
+            case 'status_update':
+                $success_count = $this->bulk_update_status($po_ids, $status);
+                $message = sprintf(__('Successfully updated status for %d purchase orders.', 'smart-restock-waitlist'), $success_count);
+                break;
+                
+            case 'resend':
+                $success_count = $this->bulk_resend_pos($po_ids);
+                $message = sprintf(__('Successfully resent %d purchase orders to suppliers.', 'smart-restock-waitlist'), $success_count);
+                break;
+                
+            case 'delete':
+                $success_count = $this->bulk_delete_pos($po_ids);
+                $message = sprintf(__('Successfully deleted %d purchase orders.', 'smart-restock-waitlist'), $success_count);
+                break;
+                
+            default:
+                wp_send_json_error(__('Invalid bulk action.', 'smart-restock-waitlist'));
+        }
+        
+        error_log('SRWM: Bulk action completed - Success: ' . $success_count);
+        
+        wp_send_json_success(array(
+            'message' => $message,
+            'success_count' => $success_count,
+            'error_count' => $error_count,
+            'errors' => $errors
+        ));
+    }
+    
+    /**
+     * Bulk update status
+     */
+    private function bulk_update_status($po_ids, $status) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Map frontend status values to database enum values
+        $status_mapping = array(
+            'pending' => 'draft',
+            'confirmed' => 'confirmed', 
+            'shipped' => 'sent',
+            'completed' => 'received'
+        );
+        
+        if (!array_key_exists($status, $status_mapping)) {
+            return 0;
+        }
+        
+        $db_status = $status_mapping[$status];
+        
+        // Check if updated_at column exists
+        $columns = $wpdb->get_results("SHOW COLUMNS FROM $table");
+        $column_names = array_column($columns, 'Field');
+        $has_updated_at = in_array('updated_at', $column_names);
+        
+        $success_count = 0;
+        foreach ($po_ids as $po_id) {
+            if ($has_updated_at) {
+                $result = $wpdb->update(
+                    $table,
+                    array(
+                        'status' => $db_status,
+                        'updated_at' => current_time('mysql')
+                    ),
+                    array('id' => $po_id),
+                    array('%s', '%s'),
+                    array('%d')
+                );
+            } else {
+                $result = $wpdb->update(
+                    $table,
+                    array('status' => $db_status),
+                    array('id' => $po_id),
+                    array('%s'),
+                    array('%d')
+                );
+            }
+            
+            if ($result !== false) {
+                $success_count++;
+            }
+        }
+        
+        return $success_count;
+    }
+    
+    /**
+     * Bulk resend POs
+     */
+    private function bulk_resend_pos($po_ids) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $success_count = 0;
+        foreach ($po_ids as $po_id) {
+            $po = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM $table WHERE id = %d",
+                $po_id
+            ));
+            
+            if ($po) {
+                // Get product details
+                $product = wc_get_product($po->product_id);
+                $product_name = $product ? $product->get_name() : __('Product not found', 'smart-restock-waitlist');
+                
+                // Send email to supplier
+                $subject = sprintf(__('Purchase Order %s - %s', 'smart-restock-waitlist'), $po->po_number, $product_name);
+                
+                $message = sprintf(
+                    __('Dear Supplier,
+
+A purchase order has been resent for your review.
+
+Purchase Order Details:
+- PO Number: %s
+- Product: %s
+- Quantity: %d
+- Expected Delivery: %s
+- Urgency: %s
+
+Please review and confirm this order.
+
+Best regards,
+%s', 'smart-restock-waitlist'),
+                    $po->po_number,
+                    $product_name,
+                    $po->quantity,
+                    isset($po->delivery_date) && $po->delivery_date ? date('F j, Y', strtotime($po->delivery_date)) : __('Not specified', 'smart-restock-waitlist'),
+                    ucfirst(isset($po->urgency) && $po->urgency ? $po->urgency : 'normal'),
+                    get_bloginfo('name')
+                );
+                
+                $headers = array('Content-Type: text/plain; charset=UTF-8');
+                
+                $sent = wp_mail($po->supplier_email, $subject, $message, $headers);
+                
+                // Update last sent timestamp regardless of email success
+                $wpdb->update(
+                    $table,
+                    array('last_sent_at' => current_time('mysql')),
+                    array('id' => $po_id),
+                    array('%s'),
+                    array('%d')
+                );
+                
+                if ($sent) {
+                    $success_count++;
+                }
+            }
+        }
+        
+        return $success_count;
+    }
+    
+    /**
+     * Bulk delete POs
+     */
+    private function bulk_delete_pos($po_ids) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        $success_count = 0;
+        foreach ($po_ids as $po_id) {
+            $result = $wpdb->delete(
+                $table,
+                array('id' => $po_id),
+                array('%d')
+            );
+            
+            if ($result !== false) {
+                $success_count++;
+            }
+        }
+        
+        return $success_count;
     }
     
 
