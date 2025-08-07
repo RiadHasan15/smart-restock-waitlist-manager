@@ -1446,7 +1446,7 @@ class SmartRestockWaitlistManager {
                 }
                 
                 // Ensure purchase orders table exists
-                $this->create_tables();
+                $this->ensure_purchase_orders_table();
                 
                 // Save PO to database
                 global $wpdb;
@@ -1523,6 +1523,41 @@ class SmartRestockWaitlistManager {
     }
     
     /**
+     * Ensure purchase orders table exists
+     */
+    private function ensure_purchase_orders_table() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_purchase_orders';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            error_log('SRWM: Purchase orders table does not exist, creating it...');
+            
+            $charset_collate = $wpdb->get_charset_collate();
+            $sql = "CREATE TABLE $table (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                po_number varchar(50) NOT NULL,
+                product_id bigint(20) NOT NULL,
+                supplier_email varchar(255) NOT NULL,
+                quantity int(11) NOT NULL,
+                status varchar(50) DEFAULT 'pending',
+                pdf_path varchar(500) DEFAULT '',
+                created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY po_number (po_number),
+                KEY product_id (product_id),
+                KEY status (status)
+            ) $charset_collate;";
+            
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            dbDelta($sql);
+            
+            error_log('SRWM: Purchase orders table created successfully');
+        }
+    }
+    
+    /**
      * Generate a unique PO number
      */
     private function generate_po_number() {
@@ -1530,7 +1565,7 @@ class SmartRestockWaitlistManager {
         $table = $wpdb->prefix . 'srwm_purchase_orders';
         
         // Ensure table exists
-        $this->create_tables();
+        $this->ensure_purchase_orders_table();
         
         // Check if table exists
         $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
@@ -2410,65 +2445,75 @@ class SmartRestockWaitlistManager {
         
         // Pro tables - only create if license is active
         if ($this->license_manager->is_pro_active()) {
-            // Restock tokens table
+            // Restock tokens table - only create if it doesn't exist
             $table_tokens = $wpdb->prefix . 'srwm_restock_tokens';
-            $sql_tokens = "CREATE TABLE $table_tokens (
-                id bigint(20) NOT NULL AUTO_INCREMENT,
-                product_id bigint(20) NOT NULL,
-                supplier_email varchar(255) NOT NULL,
-                token varchar(255) NOT NULL,
-                expires_at datetime NOT NULL,
-                used tinyint(1) NOT NULL DEFAULT 0,
-                used_at datetime DEFAULT NULL,
-                ip_address varchar(45) DEFAULT NULL,
-                created_at datetime DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                UNIQUE KEY token (token),
-                KEY product_id (product_id),
-                KEY supplier_email (supplier_email),
-                KEY expires_at (expires_at),
-                KEY used (used)
-            ) $charset_collate;";
+            if ($wpdb->get_var("SHOW TABLES LIKE '$table_tokens'") != $table_tokens) {
+                $sql_tokens = "CREATE TABLE $table_tokens (
+                    id bigint(20) NOT NULL AUTO_INCREMENT,
+                    product_id bigint(20) NOT NULL,
+                    supplier_email varchar(255) NOT NULL,
+                    token varchar(255) NOT NULL,
+                    expires_at datetime NOT NULL,
+                    used tinyint(1) NOT NULL DEFAULT 0,
+                    used_at datetime DEFAULT NULL,
+                    ip_address varchar(45) DEFAULT NULL,
+                    created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    UNIQUE KEY token (token),
+                    KEY product_id (product_id),
+                    KEY supplier_email (supplier_email),
+                    KEY expires_at (expires_at),
+                    KEY used (used)
+                ) $charset_collate;";
+                
+                require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+                dbDelta($sql_tokens);
+            }
             
-            // CSV upload tokens table
+            // CSV upload tokens table - only create if it doesn't exist
             $table_csv_tokens = $wpdb->prefix . 'srwm_csv_tokens';
-            $sql_csv_tokens = "CREATE TABLE $table_csv_tokens (
-                id bigint(20) NOT NULL AUTO_INCREMENT,
-                supplier_email varchar(255) NOT NULL,
-                token varchar(255) NOT NULL,
-                expires_at datetime NOT NULL,
-                used tinyint(1) NOT NULL DEFAULT 0,
-                used_at datetime DEFAULT NULL,
-                ip_address varchar(45) DEFAULT NULL,
-                created_at datetime DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                KEY token (token),
-                KEY supplier_email (supplier_email),
-                KEY expires_at (expires_at),
-                KEY used (used)
-            ) $charset_collate;";
+            if ($wpdb->get_var("SHOW TABLES LIKE '$table_csv_tokens'") != $table_csv_tokens) {
+                $sql_csv_tokens = "CREATE TABLE $table_csv_tokens (
+                    id bigint(20) NOT NULL AUTO_INCREMENT,
+                    supplier_email varchar(255) NOT NULL,
+                    token varchar(255) NOT NULL,
+                    expires_at datetime NOT NULL,
+                    used tinyint(1) NOT NULL DEFAULT 0,
+                    used_at datetime DEFAULT NULL,
+                    ip_address varchar(45) DEFAULT NULL,
+                    created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    KEY token (token),
+                    KEY supplier_email (supplier_email),
+                    KEY expires_at (expires_at),
+                    KEY used (used)
+                ) $charset_collate;";
+                
+                require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+                dbDelta($sql_csv_tokens);
+            }
             
-            // Purchase orders table
+            // Purchase orders table - only create if it doesn't exist
             $table_po = $wpdb->prefix . 'srwm_purchase_orders';
-            $sql_po = "CREATE TABLE $table_po (
-                id bigint(20) NOT NULL AUTO_INCREMENT,
-                po_number varchar(50) NOT NULL,
-                product_id bigint(20) NOT NULL,
-                supplier_email varchar(255) NOT NULL,
-                quantity int(11) NOT NULL,
-                status varchar(50) DEFAULT 'pending',
-                pdf_path varchar(500) DEFAULT '',
-                created_at datetime DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id),
-                KEY po_number (po_number),
-                KEY product_id (product_id),
-                KEY status (status)
-            ) $charset_collate;";
-            
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            dbDelta($sql_tokens);
-            dbDelta($sql_csv_tokens);
-            dbDelta($sql_po);
+            if ($wpdb->get_var("SHOW TABLES LIKE '$table_po'") != $table_po) {
+                $sql_po = "CREATE TABLE $table_po (
+                    id bigint(20) NOT NULL AUTO_INCREMENT,
+                    po_number varchar(50) NOT NULL,
+                    product_id bigint(20) NOT NULL,
+                    supplier_email varchar(255) NOT NULL,
+                    quantity int(11) NOT NULL,
+                    status varchar(50) DEFAULT 'pending',
+                    pdf_path varchar(500) DEFAULT '',
+                    created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    KEY po_number (po_number),
+                    KEY product_id (product_id),
+                    KEY status (status)
+                ) $charset_collate;";
+                
+                require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+                dbDelta($sql_po);
+            }
         }
         
         // CSV upload approvals table (always create, needed for AJAX calls)
