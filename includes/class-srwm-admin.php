@@ -5792,6 +5792,30 @@ class SRWM_Admin {
             gap: 10px;
         }
         
+        .srwm-modal-actions .srwm-modal-close {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .srwm-modal-actions .srwm-modal-close:hover {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        
+        .srwm-modal-actions .srwm-modal-close i {
+            font-size: 16px;
+        }
+        
         .srwm-modal-footer-actions {
             display: flex;
             justify-content: space-between;
@@ -7356,9 +7380,8 @@ If you no longer wish to receive these emails, please contact us.';
                             </div>
                         </div>
                         <div class="srwm-modal-actions">
-                            <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
+                            <button type="button" class="srwm-modal-close" title="<?php _e('Close', 'smart-restock-waitlist'); ?>">
                                 <i class="fas fa-times"></i>
-                                <?php _e('Close', 'smart-restock-waitlist'); ?>
                             </button>
                         </div>
                     </div>
@@ -7368,10 +7391,6 @@ If you no longer wish to receive these emails, please contact us.';
                 </div>
                 <div class="srwm-modal-footer">
                     <div class="srwm-modal-footer-actions">
-                        <button type="button" class="srwm-btn srwm-btn-outline srwm-modal-close">
-                            <i class="fas fa-times"></i>
-                            <?php _e('Close', 'smart-restock-waitlist'); ?>
-                        </button>
                         <div class="srwm-modal-footer-primary">
                             <button type="button" class="srwm-btn srwm-btn-secondary" id="srwm-modal-resend-po">
                                 <i class="fas fa-envelope"></i>
@@ -8198,16 +8217,23 @@ If you no longer wish to receive these emails, please contact us.';
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Create download link
-                            var link = document.createElement('a');
-                            link.href = response.data.download_url;
-                            link.download = response.data.filename;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+                            // Open PDF in new window for printing/saving
+                            var newWindow = window.open(response.data.download_url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
                             
-                            // Show success notification
-                            showNotification('<?php _e('PO PDF downloaded successfully!', 'smart-restock-waitlist'); ?>', 'success');
+                            if (newWindow) {
+                                // Show success notification
+                                showNotification('<?php _e('PO opened in new window. Use the Print button to save as PDF!', 'smart-restock-waitlist'); ?>', 'success');
+                            } else {
+                                // Fallback: direct download
+                                var link = document.createElement('a');
+                                link.href = response.data.download_url;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                
+                                showNotification('<?php _e('PO opened in new tab. Use browser print to save as PDF!', 'smart-restock-waitlist'); ?>', 'success');
+                            }
                         } else {
                             alert('<?php _e('Failed to generate PDF. Please try again.', 'smart-restock-waitlist'); ?>');
                         }
