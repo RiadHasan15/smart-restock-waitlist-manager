@@ -21,7 +21,7 @@ class SRWM_Pro_Restock {
     }
     
     private function __construct() {
-        add_action('init', array($this, 'handle_restock_request'));
+        add_action('init', array($this, 'handle_restock_request'), 1);
         // AJAX handler moved to main plugin file to avoid conflicts
     }
     
@@ -32,6 +32,7 @@ class SRWM_Pro_Restock {
         if (!isset($_GET['srwm_restock']) || !isset($_GET['product_id'])) {
             return;
         }
+        error_log('SRWM_PRO: Pro restock handler running for token: ' . $_GET['srwm_restock']);
         
         $token = sanitize_text_field($_GET['srwm_restock']);
         $product_id = intval($_GET['product_id']);
