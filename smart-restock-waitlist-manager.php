@@ -3732,15 +3732,20 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Product not found.', 'smart-restock-waitlist'));
         }
         
-        // Get supplier details
+        // Get supplier details (optional for quick restock)
         global $wpdb;
         $supplier = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}srwm_suppliers WHERE supplier_email = %s",
             $supplier_email
         ));
         
+        // If supplier not found, create a temporary supplier object for email sending
         if (!$supplier) {
-            wp_send_json_error(__('Supplier not found.', 'smart-restock-waitlist'));
+            $supplier = (object) array(
+                'supplier_name' => 'Supplier',
+                'supplier_email' => $supplier_email,
+                'company_name' => ''
+            );
         }
         
         // Generate secure token
@@ -3767,11 +3772,11 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Failed to generate restock link. Please try again.', 'smart-restock-waitlist'));
         }
         
-        // Generate the restock URL
+        // Generate the restock URL - use home_url() for proper restock page
         $restock_url = add_query_arg(array(
-            'srwm_restock' => '1',
-            'token' => $token
-        ), site_url());
+            'srwm_restock' => $token,
+            'product_id' => $product_id
+        ), home_url());
         
         // Send email notification to supplier
         $this->send_quick_restock_email($supplier, $product, $restock_url, $expires_at);
@@ -3876,7 +3881,7 @@ class SmartRestockWaitlistManager {
             wp_send_json_error(__('Please provide product IDs and supplier email.', 'smart-restock-waitlist'));
         }
         
-        // Validate supplier exists
+        // Validate supplier exists (optional for bulk restock)
         global $wpdb;
         $suppliers_table = $wpdb->prefix . 'srwm_suppliers';
         $supplier = $wpdb->get_row($wpdb->prepare(
@@ -3884,8 +3889,13 @@ class SmartRestockWaitlistManager {
             $supplier_email
         ));
         
+        // If supplier not found, create a temporary supplier object for email sending
         if (!$supplier) {
-            wp_send_json_error(__('Supplier not found.', 'smart-restock-waitlist'));
+            $supplier = (object) array(
+                'supplier_name' => 'Supplier',
+                'supplier_email' => $supplier_email,
+                'company_name' => ''
+            );
         }
         
         $generated_count = 0;
@@ -3924,11 +3934,11 @@ class SmartRestockWaitlistManager {
                 continue;
             }
             
-            // Generate restock URL
+            // Generate restock URL - use home_url() for proper restock page
             $restock_url = add_query_arg(array(
-                'srwm_restock' => '1',
-                'token' => $token
-            ), site_url());
+                'srwm_restock' => $token,
+                'product_id' => $product_id
+            ), home_url());
             
             // Send email notification
             $this->send_quick_restock_email($supplier, $product, $restock_url, $expires_at);
