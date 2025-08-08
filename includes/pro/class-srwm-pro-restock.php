@@ -29,10 +29,15 @@ class SRWM_Pro_Restock {
      * Handle restock request from supplier link
      */
     public function handle_restock_request() {
+        error_log('SRWM_PRO: Pro restock handler running for token: ' . (isset($_GET['srwm_restock']) ? $_GET['srwm_restock'] : 'NONE'));
         if (!isset($_GET['srwm_restock']) || !isset($_GET['product_id'])) {
             return;
         }
-        error_log('SRWM_PRO: Pro restock handler running for token: ' . $_GET['srwm_restock']);
+        // DEBUG: Force output to confirm handler is running
+        if (isset($_GET['srwm_restock'])) {
+            echo '<h1>SRWM_PRO: Pro restock handler reached for token: ' . esc_html($_GET['srwm_restock']) . '</h1>';
+            exit;
+        }
         
         $token = sanitize_text_field($_GET['srwm_restock']);
         $product_id = intval($_GET['product_id']);
