@@ -65,7 +65,7 @@ class SRWM_Pro_Restock {
      * Display restock form for supplier
      */
     private function display_restock_form($product_id, $token) {
-        echo '<!-- SRWM_PRO: display_restock_form entry -->'; @flush();
+        echo '<h1>SRWM_PRO: display_restock_form reached</h1>'; exit;
         $product = wc_get_product($product_id);
         
         if (!$product) {
