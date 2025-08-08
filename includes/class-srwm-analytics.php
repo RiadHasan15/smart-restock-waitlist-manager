@@ -526,8 +526,23 @@ class SRWM_Analytics {
                 '' as customer_name,
                 '' as customer_email,
                 product_id,
+                product_name,
+                sku,
+                supplier_email,
+                method,
+                quantity,
+                action_details,
+                ip_address,
+                waitlist_count,
                 timestamp,
-                CONCAT('restocked ', quantity, ' units') as action
+                CASE 
+                    WHEN method = 'restock_link_generated' THEN CONCAT('Restock link generated for ', COALESCE(product_name, 'Product #', product_id))
+                    WHEN method = 'quick_restock' THEN CONCAT('Quick restock: ', quantity, ' units added to ', COALESCE(product_name, 'Product #', product_id))
+                    WHEN method = 'supplier_link' THEN CONCAT('Supplier restock: ', quantity, ' units added to ', COALESCE(product_name, 'Product #', product_id))
+                    WHEN method = 'csv_upload' THEN CONCAT('CSV upload: ', quantity, ' units added to ', COALESCE(product_name, 'Product #', product_id))
+                    WHEN method = 'manual' THEN CONCAT('Manual restock: ', quantity, ' units added to ', COALESCE(product_name, 'Product #', product_id))
+                    ELSE CONCAT('Restocked ', quantity, ' units of ', COALESCE(product_name, 'Product #', product_id))
+                END as action
             FROM {$table_name}
             WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
             ORDER BY timestamp DESC

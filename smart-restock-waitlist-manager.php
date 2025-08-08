@@ -1621,6 +1621,52 @@ class SmartRestockWaitlistManager {
     }
     
     /**
+     * Ensure restock logs table has enhanced columns
+     */
+    private function ensure_restock_logs_table_enhanced() {
+        global $wpdb;
+        
+        $table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            return; // Table will be created by create_tables()
+        }
+        
+        // Check if enhanced columns exist
+        $columns = $wpdb->get_results("SHOW COLUMNS FROM $table");
+        $column_names = array_column($columns, 'Field');
+        
+        // Add missing columns if they don't exist
+        if (!in_array('product_name', $column_names)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN product_name varchar(255) DEFAULT NULL AFTER product_id");
+        }
+        
+        if (!in_array('sku', $column_names)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN sku varchar(100) DEFAULT NULL AFTER product_name");
+        }
+        
+        if (!in_array('supplier_email', $column_names)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN supplier_email varchar(255) DEFAULT NULL AFTER method");
+        }
+        
+        if (!in_array('waitlist_count', $column_names)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN waitlist_count int(11) DEFAULT 0 AFTER ip_address");
+        }
+        
+        if (!in_array('action_details', $column_names)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN action_details text DEFAULT NULL AFTER waitlist_count");
+        }
+        
+        // Update method enum if needed
+        $method_column = $wpdb->get_row("SHOW COLUMNS FROM $table LIKE 'method'");
+        if ($method_column && strpos($method_column->Type, 'restock_link_generated') === false) {
+            $wpdb->query("ALTER TABLE $table MODIFY COLUMN method enum('manual','supplier_link','csv_upload','api','restock_link_generated','quick_restock') NOT NULL DEFAULT 'manual'");
+        }
+    }
+    
+    /**
      * Ensure purchase orders table exists
      */
     private function ensure_purchase_orders_table() {
@@ -2531,15 +2577,23 @@ class SmartRestockWaitlistManager {
             KEY created_at (created_at)
         ) $charset_collate;";
         
-        // Restock logs table
+        // Enhanced Restock logs table
         $table_logs = $wpdb->prefix . 'srwm_restock_logs';
         $sql_logs = "CREATE TABLE $table_logs (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             product_id bigint(20) NOT NULL,
+            product_name varchar(255) DEFAULT NULL,
+            sku varchar(100) DEFAULT NULL,
             quantity int(11) NOT NULL,
-            method varchar(50) DEFAULT 'manual',
-            ip_address varchar(45) DEFAULT '',
+            method enum('manual','supplier_link','csv_upload','api','restock_link_generated','quick_restock') NOT NULL DEFAULT 'manual',
+            supplier_email varchar(255) DEFAULT NULL,
+            admin_user_id bigint(20) unsigned DEFAULT NULL,
+            ip_address varchar(45) DEFAULT NULL,
+            user_agent text DEFAULT NULL,
+            waitlist_count int(11) DEFAULT 0,
+            action_details text DEFAULT NULL,
             timestamp datetime DEFAULT CURRENT_TIMESTAMP,
+            notes text DEFAULT NULL,
             PRIMARY KEY (id),
             KEY product_id (product_id),
             KEY method (method),
@@ -2618,6 +2672,9 @@ class SmartRestockWaitlistManager {
                 dbDelta($sql_po);
             }
         }
+        
+        // Ensure restock logs table has enhanced columns
+        $this->ensure_restock_logs_table_enhanced();
         
         // CSV upload approvals table (always create, needed for AJAX calls)
         $table_approvals = $wpdb->prefix . 'srwm_csv_approvals';
