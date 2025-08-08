@@ -33,19 +33,11 @@ class SRWM_Pro_Restock {
         if (!isset($_GET['srwm_restock']) || !isset($_GET['product_id'])) {
             return;
         }
-        // DEBUG: Force output to confirm handler is running
-        if (isset($_GET['srwm_restock'])) {
-            echo '<h1>SRWM_PRO: Pro restock handler reached for token: ' . esc_html($_GET['srwm_restock']) . '</h1>';
-            exit;
-        }
-        
         $token = sanitize_text_field($_GET['srwm_restock']);
         $product_id = intval($_GET['product_id']);
-        
         if (!$this->validate_restock_token($token, $product_id)) {
             wp_die(__('Invalid or expired restock link.', 'smart-restock-waitlist'));
         }
-        
         // Handle the restock form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_restock_submit'])) {
             $this->process_restock_request($product_id, $token);
