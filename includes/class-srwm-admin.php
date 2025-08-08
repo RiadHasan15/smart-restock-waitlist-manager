@@ -180,6 +180,10 @@ class SRWM_Admin {
         register_setting('srwm_settings', 'srwm_low_stock_threshold');
         register_setting('srwm_settings', 'srwm_auto_disable_at_zero');
         
+        // Basic supplier alerts (FREE version)
+        register_setting('srwm_settings', 'srwm_basic_supplier_alerts_enabled');
+        register_setting('srwm_settings', 'srwm_basic_supplier_alert_threshold');
+        
         // Social proof display settings
         register_setting('srwm_settings', 'srwm_hide_social_proof');
         register_setting('srwm_settings', 'srwm_social_proof_style');
@@ -10973,10 +10977,54 @@ Please respond promptly to maintain our inventory levels.';
                 <?php endif; ?>
                 
                 <?php if (!$this->license_manager->is_pro_active()): ?>
+                <!-- Basic Supplier Alerts (FREE Version) -->
+                <div class="srwm-settings-section">
+                    <h2><?php _e('Basic Supplier Alerts', 'smart-restock-waitlist'); ?></h2>
+                    <p><?php _e('Send simple email alerts to suppliers when products are low in stock. Assign supplier emails directly in product settings.', 'smart-restock-waitlist'); ?></p>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('Enable Supplier Alerts', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="srwm_basic_supplier_alerts_enabled" value="1" 
+                                           <?php checked(get_option('srwm_basic_supplier_alerts_enabled', 1)); ?>>
+                                    <?php _e('Send email alerts to suppliers when products hit low stock thresholds', 'smart-restock-waitlist'); ?>
+                                </label>
+                                <p class="description">
+                                    <?php _e('When enabled, suppliers will receive plain text email notifications when products they supply are running low. Set supplier emails in individual product settings.', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('Default Alert Threshold', 'smart-restock-waitlist'); ?></th>
+                            <td>
+                                <input type="number" name="srwm_basic_supplier_alert_threshold" 
+                                       value="<?php echo esc_attr(get_option('srwm_basic_supplier_alert_threshold', 5)); ?>" 
+                                       min="0" max="100" class="small-text"> <?php _e('units', 'smart-restock-waitlist'); ?>
+                                <p class="description">
+                                    <?php _e('Default stock level threshold for sending supplier alerts. Individual products can override this in WooCommerce stock settings.', 'smart-restock-waitlist'); ?>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div class="notice notice-info inline">
+                        <p><strong><?php _e('How to Use:', 'smart-restock-waitlist'); ?></strong></p>
+                        <ol>
+                            <li><?php _e('Go to any WooCommerce product → Inventory tab', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Enter supplier email in the "Supplier Email" field', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Set up stock management and low stock thresholds', 'smart-restock-waitlist'); ?></li>
+                            <li><?php _e('Supplier will receive automatic alerts when stock runs low', 'smart-restock-waitlist'); ?></li>
+                        </ol>
+                    </div>
+                </div>
+                
                 <div class="srwm-settings-section">
                     <div class="notice notice-info">
                         <p><strong><?php _e('Upgrade to Pro', 'smart-restock-waitlist'); ?></strong></p>
-                        <p><?php _e('Unlock supplier management, automated notifications, and advanced features to streamline your restock workflow.', 'smart-restock-waitlist'); ?></p>
+                        <p><?php _e('Unlock advanced supplier management, one-click restock links, multi-channel notifications (WhatsApp, SMS), and automated purchase orders.', 'smart-restock-waitlist'); ?></p>
                         <p><a href="<?php echo admin_url('admin.php?page=smart-restock-waitlist-pro'); ?>" class="button button-primary"><?php _e('View Pro Features', 'smart-restock-waitlist'); ?></a></p>
                     </div>
                 </div>
@@ -15022,9 +15070,39 @@ Please respond promptly to maintain our inventory levels.';
      * Get products with supplier alerts
      */
     private function get_supplier_products() {
+        global $wpdb;
+        
         try {
-            $supplier = SRWM_Supplier::get_instance();
-            return $supplier->get_products_with_suppliers();
+            // For PRO version, use the advanced supplier system
+            if ($this->license_manager->is_pro_active()) {
+                $supplier = SRWM_Supplier::get_instance();
+                return $supplier->get_products_with_suppliers();
+            }
+            
+            // For FREE version, get products with basic supplier emails
+            $products = $wpdb->get_results("
+                SELECT p.ID as product_id, p.post_title as product_name, pm.meta_value as supplier_email
+                FROM {$wpdb->posts} p
+                INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                WHERE p.post_type = 'product'
+                AND p.post_status = 'publish'
+                AND pm.meta_key = '_srwm_supplier_email'
+                AND pm.meta_value != ''
+                ORDER BY p.post_title ASC
+            ");
+            
+            // Enhance with stock information
+            foreach ($products as $product) {
+                $wc_product = wc_get_product($product->product_id);
+                if ($wc_product) {
+                    $product->stock_quantity = $wc_product->get_stock_quantity();
+                    $product->stock_status = $wc_product->get_stock_status();
+                    $product->sku = $wc_product->get_sku();
+                    $product->low_stock_amount = $wc_product->get_low_stock_amount();
+                }
+            }
+            
+            return $products;
         } catch (Exception $e) {
             return array();
         }

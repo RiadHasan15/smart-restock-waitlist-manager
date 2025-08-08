@@ -965,6 +965,13 @@ class SmartRestockWaitlistManager {
         // Hook into stock status changes
         add_action('woocommerce_product_set_stock_status', array($supplier, 'check_stock_levels'), 10, 3);
         add_action('woocommerce_product_set_stock_status', array($waitlist, 'check_restock_notification'), 10, 3);
+        
+        // Add FREE version: Basic supplier email alerts
+        add_action('woocommerce_product_options_inventory_product_data', array($this, 'add_supplier_email_field'));
+        add_action('woocommerce_process_product_meta', array($this, 'save_supplier_email_field'));
+        add_action('woocommerce_low_stock_notification', array($this, 'send_basic_supplier_alert'), 10, 2);
+        add_action('woocommerce_no_stock_notification', array($this, 'send_basic_supplier_alert'), 10, 2);
+        add_action('woocommerce_product_set_stock', array($this, 'check_basic_supplier_alert_on_stock_change'), 10, 1);
     }
     
     /**
@@ -5354,6 +5361,173 @@ Best regards,
         echo '<div class="notice notice-error"><p>' . 
              __('Smart Restock & Waitlist Manager requires WooCommerce to be installed and activated.', 'smart-restock-waitlist') . 
              '</p></div>';
+    }
+    
+    /**
+     * Add supplier email field to WooCommerce product inventory settings (FREE version)
+     */
+    public function add_supplier_email_field() {
+        global $post;
+        
+        echo '<div class="options_group">';
+        
+        woocommerce_wp_text_input(array(
+            'id' => '_srwm_supplier_email',
+            'label' => __('Supplier Email', 'smart-restock-waitlist'),
+            'placeholder' => __('supplier@example.com', 'smart-restock-waitlist'),
+            'description' => __('Enter supplier email to receive low stock alerts for this product.', 'smart-restock-waitlist'),
+            'type' => 'email',
+            'desc_tip' => true,
+            'value' => get_post_meta($post->ID, '_srwm_supplier_email', true)
+        ));
+        
+        echo '</div>';
+    }
+    
+    /**
+     * Save supplier email field (FREE version)
+     */
+    public function save_supplier_email_field($post_id) {
+        $supplier_email = isset($_POST['_srwm_supplier_email']) ? sanitize_email($_POST['_srwm_supplier_email']) : '';
+        
+        if (!empty($supplier_email)) {
+            update_post_meta($post_id, '_srwm_supplier_email', $supplier_email);
+        } else {
+            delete_post_meta($post_id, '_srwm_supplier_email');
+        }
+    }
+    
+    /**
+     * Send basic supplier alert when product is low/out of stock (FREE version)
+     */
+    public function send_basic_supplier_alert($product) {
+        // Only for FREE version - don't interfere with PRO supplier management
+        if ($this->license_manager->is_pro_active()) {
+            return;
+        }
+        
+        // Check if basic supplier alerts are enabled
+        if (!get_option('srwm_basic_supplier_alerts_enabled', 1)) {
+            return;
+        }
+        
+        $product_id = $product->get_id();
+        $supplier_email = get_post_meta($product_id, '_srwm_supplier_email', true);
+        
+        // Only send if supplier email is set
+        if (empty($supplier_email) || !is_email($supplier_email)) {
+            return;
+        }
+        
+        // Check if product meets the threshold for alerts
+        $current_stock = $product->get_stock_quantity();
+        $threshold = get_option('srwm_basic_supplier_alert_threshold', 5);
+        
+        // Use product-specific low stock threshold if set, otherwise use our global setting
+        $product_threshold = $product->get_low_stock_amount();
+        if ($product_threshold > 0) {
+            $threshold = $product_threshold;
+        }
+        
+        // Only send alert if stock is at or below threshold
+        if ($current_stock === null || $current_stock > $threshold) {
+            return;
+        }
+        
+        // Get product details
+        $product_name = $product->get_name();
+        $sku = $product->get_sku();
+        $current_stock = $product->get_stock_quantity();
+        $stock_status = $product->get_stock_status();
+        
+        // Get waitlist count for this product
+        global $wpdb;
+        $waitlist_count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}srwm_waitlist WHERE product_id = %d",
+            $product_id
+        ));
+        
+        // Create basic email content (plain text)
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
+        
+        $subject = sprintf(__('Low Stock Alert: %s', 'smart-restock-waitlist'), $product_name);
+        
+        $message = sprintf(__('Hi,
+
+STOCK ALERT: %s
+
+Product Details:
+- Product Name: %s
+- SKU: %s
+- Current Stock: %s
+- Stock Status: %s
+- Customers on Waitlist: %d
+
+This product needs to be restocked as soon as possible.
+
+Please contact us if you need any assistance:
+Email: %s
+Website: %s
+
+Best regards,
+%s Team
+
+---
+This is an automated stock alert from %s.', 'smart-restock-waitlist'),
+            $product_name,
+            $product_name,
+            $sku ?: __('N/A', 'smart-restock-waitlist'),
+            $current_stock !== null ? $current_stock . ' units' : __('N/A', 'smart-restock-waitlist'),
+            ucfirst($stock_status),
+            $waitlist_count,
+            $admin_email,
+            $site_url,
+            $site_name,
+            $site_name
+        );
+        
+        // Send email
+        $headers = array('Content-Type: text/plain; charset=UTF-8');
+        
+        $sent = wp_mail($supplier_email, $subject, $message, $headers);
+        
+        // Log the action
+        if ($sent) {
+            error_log(sprintf('SRWM: Basic supplier alert sent to %s for product %s (ID: %d)', $supplier_email, $product_name, $product_id));
+        } else {
+            error_log(sprintf('SRWM: Failed to send basic supplier alert to %s for product %s (ID: %d)', $supplier_email, $product_name, $product_id));
+        }
+    }
+    
+    /**
+     * Check if we should send basic supplier alert when stock quantity changes
+     */
+    public function check_basic_supplier_alert_on_stock_change($product) {
+        // Only for FREE version
+        if ($this->license_manager->is_pro_active()) {
+            return;
+        }
+        
+        // Check if alerts are enabled
+        if (!get_option('srwm_basic_supplier_alerts_enabled', 1)) {
+            return;
+        }
+        
+        $current_stock = $product->get_stock_quantity();
+        $threshold = get_option('srwm_basic_supplier_alert_threshold', 5);
+        
+        // Use product-specific threshold if set
+        $product_threshold = $product->get_low_stock_amount();
+        if ($product_threshold > 0) {
+            $threshold = $product_threshold;
+        }
+        
+        // Only send alert if stock is at or below threshold
+        if ($current_stock !== null && $current_stock <= $threshold && $current_stock >= 0) {
+            $this->send_basic_supplier_alert($product);
+        }
     }
 }
 
