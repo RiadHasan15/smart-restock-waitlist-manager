@@ -5625,3 +5625,30 @@ register_activation_hook(__FILE__, function() {
 if (isset($_GET['srwm_restock'])) {
     error_log('SRWM: GLOBAL - srwm_restock detected in URL: ' . $_GET['srwm_restock']);
 }
+
+// Register srwm_restock and product_id as public query vars
+add_filter('query_vars', function($vars) {
+    $vars[] = 'srwm_restock';
+    $vars[] = 'product_id';
+    return $vars;
+});
+
+// Handle quick restock links on template_redirect for maximum reliability
+add_action('template_redirect', function() {
+    $srwm_restock = get_query_var('srwm_restock');
+    $product_id = get_query_var('product_id');
+    if ($srwm_restock) {
+        // Try Pro handler first if available
+        if (class_exists('SRWM_Pro_Restock')) {
+            $pro = SRWM_Pro_Restock::get_instance();
+            $pro->handle_restock_request();
+            exit;
+        }
+        // Fallback: main plugin handler
+        global $srwm_plugin;
+        if (method_exists($srwm_plugin, 'handle_restock_url')) {
+            $srwm_plugin->handle_restock_url();
+            exit;
+        }
+    }
+});
