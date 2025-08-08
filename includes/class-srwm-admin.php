@@ -107,6 +107,15 @@ class SRWM_Admin {
                 'smart-restock-waitlist-suppliers',
                 array($this, 'render_suppliers_page')
             );
+            
+            add_submenu_page(
+                'smart-restock-waitlist',
+                __('Restock Activity Log', 'smart-restock-waitlist'),
+                __('Restock Activity Log', 'smart-restock-waitlist'),
+                'manage_woocommerce',
+                'smart-restock-waitlist-restock-log',
+                array($this, 'render_restock_log_page')
+            );
         }
         
         // Email Templates - available for all users (free and pro)
@@ -9110,6 +9119,293 @@ This is an automated stock alert from ' . $site_name . '.';
     }
     
     /**
+     * Render restock activity log page
+     */
+    public function render_restock_log_page() {
+        if (!$this->license_manager->is_pro_active()) {
+            $this->render_pro_feature_locked();
+            return;
+        }
+        
+        global $wpdb;
+        
+        // Get restock logs with enhanced data
+        $table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        // Check if table exists
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table'");
+        if (!$table_exists) {
+            echo '<div class="wrap"><h1>' . __('Restock Activity Log', 'smart-restock-waitlist') . '</h1>';
+            echo '<div class="notice notice-error"><p>' . __('Restock logs table not found. Please deactivate and reactivate the plugin.', 'smart-restock-waitlist') . '</p></div></div>';
+            return;
+        }
+        
+        // Get logs with pagination
+        $per_page = 20;
+        $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+        $offset = ($current_page - 1) * $per_page;
+        
+        $total_logs = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+        $total_pages = ceil($total_logs / $per_page);
+        
+        $logs = $wpdb->get_results($wpdb->prepare("
+            SELECT * FROM $table 
+            ORDER BY timestamp DESC 
+            LIMIT %d OFFSET %d
+        ", $per_page, $offset));
+        
+        ?>
+        <div class="wrap srwm-pro-page">
+            <div class="srwm-pro-header">
+                <h1><?php _e('Restock Activity Log', 'smart-restock-waitlist'); ?></h1>
+                <div class="srwm-pro-actions">
+                    <button class="button button-secondary" onclick="location.href='<?php echo admin_url('admin.php?page=smart-restock-waitlist'); ?>'">
+                        <span class="dashicons dashicons-arrow-left-alt"></span>
+                        <?php _e('Back to Dashboard', 'smart-restock-waitlist'); ?>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="srwm-pro-card">
+                <div class="srwm-pro-card-header">
+                    <h2><?php _e('Restock Activity Log', 'smart-restock-waitlist'); ?></h2>
+                    <p><?php _e('Track all restock activities including link generation, supplier actions, and stock updates.', 'smart-restock-waitlist'); ?></p>
+                </div>
+                
+                <div class="srwm-pro-card-content">
+                    <div class="srwm-stats-overview">
+                        <div class="srwm-stat-card">
+                            <h3><?php _e('Total Activities', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-stat-number"><?php echo number_format($total_logs); ?></div>
+                        </div>
+                        
+                        <?php
+                        $today_logs = $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE DATE(timestamp) = CURDATE()");
+                        $this_week_logs = $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)");
+                        ?>
+                        
+                        <div class="srwm-stat-card">
+                            <h3><?php _e('Today', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-stat-number"><?php echo number_format($today_logs); ?></div>
+                        </div>
+                        
+                        <div class="srwm-stat-card">
+                            <h3><?php _e('This Week', 'smart-restock-waitlist'); ?></h3>
+                            <div class="srwm-stat-number"><?php echo number_format($this_week_logs); ?></div>
+                        </div>
+                    </div>
+                    
+                    <div class="srwm-modern-table-container">
+                        <table class="srwm-modern-table">
+                            <thead>
+                                <tr>
+                                    <th><?php _e('Date/Time', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Product', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('SKU', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Action', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Supplier', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Quantity', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('IP Address', 'smart-restock-waitlist'); ?></th>
+                                    <th><?php _e('Details', 'smart-restock-waitlist'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($logs)): ?>
+                                <tr>
+                                    <td colspan="8" class="srwm-no-data">
+                                        <?php _e('No restock activities found.', 'smart-restock-waitlist'); ?>
+                                    </td>
+                                </tr>
+                                <?php else: ?>
+                                    <?php foreach ($logs as $log): ?>
+                                    <tr>
+                                        <td class="srwm-date-info">
+                                            <div class="srwm-date"><?php echo date('M j, Y', strtotime($log->timestamp)); ?></div>
+                                            <div class="srwm-time"><?php echo date('g:i A', strtotime($log->timestamp)); ?></div>
+                                        </td>
+                                        <td class="srwm-product-info">
+                                            <div class="srwm-product-name"><?php echo esc_html($log->product_name ?: 'Product #' . $log->product_id); ?></div>
+                                        </td>
+                                        <td class="srwm-product-info">
+                                            <div class="srwm-product-sku"><?php echo esc_html($log->sku ?: 'N/A'); ?></div>
+                                        </td>
+                                        <td class="srwm-action-info">
+                                            <?php
+                                            $method_labels = array(
+                                                'restock_link_generated' => '<span class="srwm-badge srwm-badge-info">Link Generated</span>',
+                                                'supplier_link' => '<span class="srwm-badge srwm-badge-success">Supplier Restock</span>',
+                                                'quick_restock' => '<span class="srwm-badge srwm-badge-warning">Quick Restock</span>',
+                                                'csv_upload' => '<span class="srwm-badge srwm-badge-primary">CSV Upload</span>',
+                                                'manual' => '<span class="srwm-badge srwm-badge-secondary">Manual</span>'
+                                            );
+                                            echo $method_labels[$log->method] ?? '<span class="srwm-badge srwm-badge-default">' . esc_html($log->method) . '</span>';
+                                            ?>
+                                        </td>
+                                        <td class="srwm-supplier-info">
+                                            <div class="srwm-supplier-email"><?php echo esc_html($log->supplier_email ?: 'N/A'); ?></div>
+                                        </td>
+                                        <td class="srwm-quantity-info">
+                                            <?php if ($log->quantity > 0): ?>
+                                                <span class="srwm-quantity">+<?php echo number_format($log->quantity); ?></span>
+                                            <?php else: ?>
+                                                <span class="srwm-quantity-zero">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="srwm-ip-info">
+                                            <div class="srwm-ip-address"><?php echo esc_html($log->ip_address ?: 'N/A'); ?></div>
+                                        </td>
+                                        <td class="srwm-details-info">
+                                            <div class="srwm-action-details"><?php echo esc_html($log->action_details ?: 'N/A'); ?></div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <?php if ($total_pages > 1): ?>
+                    <div class="srwm-pagination">
+                        <?php
+                        echo paginate_links(array(
+                            'base' => add_query_arg('paged', '%#%'),
+                            'format' => '',
+                            'prev_text' => __('&laquo; Previous'),
+                            'next_text' => __('Next &raquo;'),
+                            'total' => $total_pages,
+                            'current' => $current_page
+                        ));
+                        ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .srwm-stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .srwm-stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .srwm-stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .srwm-modern-table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .srwm-modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .srwm-modern-table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .srwm-modern-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+        }
+        
+        .srwm-modern-table tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .srwm-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .srwm-badge-info { background: #dbeafe; color: #1e40af; }
+        .srwm-badge-success { background: #d1fae5; color: #065f46; }
+        .srwm-badge-warning { background: #fef3c7; color: #92400e; }
+        .srwm-badge-primary { background: #e0e7ff; color: #3730a3; }
+        .srwm-badge-secondary { background: #f3f4f6; color: #374151; }
+        .srwm-badge-default { background: #f3f4f6; color: #6b7280; }
+        
+        .srwm-date-info .srwm-date { font-weight: 600; color: #374151; }
+        .srwm-date-info .srwm-time { font-size: 12px; color: #6b7280; }
+        
+        .srwm-product-info .srwm-product-name { font-weight: 600; color: #374151; }
+        .srwm-product-info .srwm-product-sku { font-size: 12px; color: #6b7280; }
+        
+        .srwm-supplier-info .srwm-supplier-email { color: #4f46e5; }
+        
+        .srwm-quantity-info .srwm-quantity { font-weight: 600; color: #059669; }
+        .srwm-quantity-info .srwm-quantity-zero { color: #6b7280; }
+        
+        .srwm-ip-info .srwm-ip-address { font-family: monospace; font-size: 12px; color: #6b7280; }
+        
+        .srwm-details-info .srwm-action-details { font-size: 12px; color: #6b7280; line-height: 1.4; }
+        
+        .srwm-no-data {
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            padding: 40px !important;
+        }
+        
+        .srwm-pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .srwm-pagination .page-numbers {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 2px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #374151;
+        }
+        
+        .srwm-pagination .current {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        </style>
+        <?php
+    }
+    
+    /**
      * Render CSV Approvals page
      */
     public function render_csv_approvals_page() {
@@ -11035,6 +11331,20 @@ This is an automated stock alert from ' . $site_name . '.';
                                        <?php checked(get_option('srwm_auto_generate_po'), 'yes'); ?>>
                                 <?php _e('Automatically generate purchase orders when stock is low', 'smart-restock-waitlist'); ?>
                             </label>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row"><?php _e('Auto-generate Restock Links', 'smart-restock-waitlist'); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="srwm_auto_generate_restock_links" value="1" 
+                                       <?php checked(get_option('srwm_auto_generate_restock_links', 1)); ?>>
+                                <?php _e('Automatically generate one-click restock links when notifying suppliers', 'smart-restock-waitlist'); ?>
+                            </label>
+                            <p class="description">
+                                <?php _e('When enabled, restock links will be automatically generated and included in supplier notification emails. This allows suppliers to restock products with one click.', 'smart-restock-waitlist'); ?>
+                            </p>
                         </td>
                     </tr>
                     

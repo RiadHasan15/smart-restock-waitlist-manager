@@ -366,16 +366,46 @@ class SRWM_Pro_Restock {
         
         $table = $wpdb->prefix . 'srwm_restock_logs';
         
+        $product = wc_get_product($product_id);
+        $product_name = $product ? $product->get_name() : 'Unknown Product';
+        $sku = $product ? $product->get_sku() : '';
+        $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
+        
+        // Get supplier email from token
+        $supplier_email = '';
+        if (isset($_GET['srwm_restock'])) {
+            $token = sanitize_text_field($_GET['srwm_restock']);
+            $token_data = $wpdb->get_row($wpdb->prepare(
+                "SELECT supplier_email FROM {$wpdb->prefix}srwm_restock_tokens WHERE token = %s",
+                $token
+            ));
+            if ($token_data) {
+                $supplier_email = $token_data->supplier_email;
+            }
+        }
+        
+        $action_details = sprintf(
+            'Product restocked via %s. Quantity: %d units. IP: %s',
+            $method,
+            $quantity,
+            $this->get_client_ip()
+        );
+        
         $wpdb->insert(
             $table,
             array(
                 'product_id' => $product_id,
+                'product_name' => $product_name,
+                'sku' => $sku,
                 'quantity' => $quantity,
                 'method' => $method,
+                'supplier_email' => $supplier_email,
                 'ip_address' => $this->get_client_ip(),
+                'waitlist_count' => $waitlist_count,
+                'action_details' => $action_details,
                 'timestamp' => current_time('mysql')
             ),
-            array('%d', '%d', '%s', '%s', '%s')
+            array('%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%s', '%s')
         );
     }
     

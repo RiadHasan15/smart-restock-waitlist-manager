@@ -84,8 +84,15 @@ class SRWM_Email {
         
         // Add Pro placeholders if license is active
         if ($this->license_manager && $this->license_manager->is_pro_active()) {
-            $placeholders['{restock_link}'] = $this->generate_restock_link($product->get_id(), $supplier_data['email']);
+            // Generate restock link for PRO users
+            $restock_link = $this->generate_restock_link($product->get_id(), $supplier_data['email']);
+            $placeholders['{restock_link}'] = $restock_link;
             $placeholders['{po_number}'] = $this->generate_po_number($product->get_id());
+            
+            // Log that restock link was included in email
+            if (!empty($restock_link)) {
+                $this->log_restock_link_generated($product->get_id(), $supplier_data['email'], $restock_link);
+            }
         }
         
         $subject = $this->replace_placeholders(
@@ -418,5 +425,59 @@ class SRWM_Email {
         }
         
         return 'PO-' . date('Y') . '-' . str_pad($product_id, 6, '0', STR_PAD_LEFT);
+    }
+    
+    /**
+     * Log restock link generation (Pro feature)
+     */
+    private function log_restock_link_generated($product_id, $supplier_email, $restock_link) {
+        if (!$this->license_manager->is_pro_active()) {
+            return;
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        $product = wc_get_product($product_id);
+        $product_name = $product ? $product->get_name() : 'Unknown Product';
+        $sku = $product ? $product->get_sku() : '';
+        $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
+        
+        $wpdb->insert(
+            $table,
+            array(
+                'product_id' => $product_id,
+                'product_name' => $product_name,
+                'sku' => $sku,
+                'supplier_email' => $supplier_email,
+                'quantity' => 0, // Link generated, not restocked yet
+                'method' => 'restock_link_generated',
+                'action_details' => 'Restock link generated and sent via email',
+                'ip_address' => $this->get_client_ip(),
+                'waitlist_count' => $waitlist_count,
+                'timestamp' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%s')
+        );
+    }
+    
+    /**
+     * Get client IP address
+     */
+    private function get_client_ip() {
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR');
+        
+        foreach ($ip_keys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        
+        return $_SERVER['REMOTE_ADDR'] ?? '';
     }
 }
