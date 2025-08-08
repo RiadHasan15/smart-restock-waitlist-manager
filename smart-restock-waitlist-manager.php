@@ -5606,73 +5606,6 @@ Best regards,
         // If Pro Restock class is available, let it handle the request fully
         if ($this->license_manager->is_pro_active() && class_exists('SRWM_Pro_Restock')) {
             return; // template_redirect hook above will delegate and exit
-        }
-
-        // Fallback: validate token from restock_tokens table
-        global $wpdb;
-        $table = $wpdb->prefix . 'srwm_restock_tokens';
-        $token_row = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM $table WHERE token = %s AND product_id = %d AND expires_at > NOW() AND used = 0",
-            $token,
-            $product_id
-        ));
-
-        if (!$token_row) {
-            wp_die(__('Invalid or expired restock link.', 'smart-restock-waitlist'));
-        }
-
-        // Process submission
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_restock_submit'])) {
-            $quantity = isset($_POST['restock_quantity']) ? intval($_POST['restock_quantity']) : 0;
-            if ($quantity <= 0) {
-                wp_die(__('Invalid quantity provided.', 'smart-restock-waitlist'));
-            }
-
-            // Update stock and notify customers
-            $result = SRWM_Waitlist::restock_and_notify($product_id, $quantity);
-            if ($result) {
-                // Mark token used
-                $wpdb->update(
-                    $table,
-                    array('used' => 1, 'used_at' => current_time('mysql'), 'ip_address' => $_SERVER['REMOTE_ADDR'] ?? ''),
-                    array('id' => $token_row->id),
-                    array('%d', '%s', '%s'),
-                    array('%d')
-                );
-
-                // Log action
-                global $wpdb;
-                $logs_table = $wpdb->prefix . 'srwm_restock_logs';
-                $product = wc_get_product($product_id);
-                $wpdb->insert(
-                    $logs_table,
-                    array(
-                        'product_id' => $product_id,
-                        'product_name' => $product ? $product->get_name() : '',
-                        'sku' => $product ? $product->get_sku() : '',
-                        'quantity' => $quantity,
-                        'method' => 'quick_restock',
-                        'supplier_email' => isset($token_row->supplier_email) ? $token_row->supplier_email : '',
-                        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
-                        'timestamp' => current_time('mysql')
-                    ),
-                    array('%d', '%s', '%s', '%d', '%s', '%s', '%s', '%s')
-                );
-
-                // Show success page
-                wp_die(
-                    sprintf(
-                        __('Successfully restocked product (ID: %d) with %d units. Customers have been notified.', 'smart-restock-waitlist'),
-                        $product_id,
-                        $quantity
-                    ),
-                    __('Restock Complete', 'smart-restock-waitlist'),
-                    array('response' => 200)
-                );
-            } else {
-                wp_die(__('Failed to restock the product.', 'smart-restock-waitlist'));
-            }
-        }
 
         // Render minimal restock form fallback
         $product = wc_get_product($product_id);
@@ -5680,57 +5613,7 @@ Best regards,
             wp_die(__('Product not found.', 'smart-restock-waitlist'));
         }
         $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
-        $title = esc_html__('Quick Restock', 'smart-restock-waitlist');
-        $site_name = esc_html(get_bloginfo('name'));
-        $product_name = esc_html($product->get_name());
-        $sku = esc_html($product->get_sku());
-        $current_stock = esc_html($product->get_stock_quantity());
-        $waiting = esc_html($waitlist_count);
-        $qty_label = esc_html__('Quantity to add:', 'smart-restock-waitlist');
-        $btn_text = esc_html__('Restock Product & Notify Customers', 'smart-restock-waitlist');
 
-        $html = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{$title}</title>
-  <style>
-    body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
-    .container{max-width:640px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}
-    .header{background:#2c3e50;color:#fff;padding:24px}
-    .content{padding:24px}
-    .product{background:#f8f9fa;border-radius:6px;padding:16px;margin-bottom:20px}
-    .btn{background:#27ae60;color:#fff;border:none;border-radius:4px;padding:12px 16px;cursor:pointer;width:100%;font-size:16px}
-  </style>
-  </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>{$title}</h1>
-      <p>{$site_name}</p>
-    </div>
-    <div class="content">
-      <div class="product">
-        <h2>{$product_name}</h2>
-        <p><strong>SKU:</strong> {$sku}</p>
-        <p><strong>Current Stock:</strong> {$current_stock}</p>
-        <p><strong>Customers Waiting:</strong> {$waiting}</p>
-      </div>
-      <form method="post">
-        <input type="hidden" name="srwm_restock_submit" value="1">
-        <label for="restock_quantity">{$qty_label}</label>
-        <input type="number" id="restock_quantity" name="restock_quantity" min="1" value="10" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;margin:10px 0 20px" required>
-        <button type="submit" class="btn">{$btn_text}</button>
-      </form>
-    </div>
-  </div>
-</body>
-</html>
-HTML;
-
-        echo $html;
         exit;
     }
 }
