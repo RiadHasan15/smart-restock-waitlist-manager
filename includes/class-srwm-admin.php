@@ -9405,36 +9405,50 @@ This is an automated stock alert from ' . $site_name . '.';
         /* Supplier Selection Tabs */
         .srwm-supplier-selection-tabs {
             display: flex;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-tab-btn {
             flex: 1;
-            background: #f9fafb;
+            background: transparent;
             border: none;
-            padding: 10px 15px;
+            padding: 14px 20px;
             font-size: 14px;
-            font-weight: 500;
-            color: #6b7280;
+            font-weight: 600;
+            color: #64748b;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            position: relative;
         }
         
         .srwm-tab-btn:hover {
-            background: #f3f4f6;
-            color: #374151;
+            background: rgba(79, 70, 229, 0.05);
+            color: #4f46e5;
         }
         
         .srwm-tab-btn.active {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+        }
+        
+        .srwm-tab-btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
         }
         
         .srwm-tab-btn i {
@@ -9451,16 +9465,44 @@ This is an automated stock alert from ' . $site_name . '.';
         
         .srwm-tab-content input[type="email"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .srwm-tab-content input[type="email"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            background: #ffffff;
+        }
+        
+        .srwm-tab-content input[type="email"]::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+        
+        .srwm-tab-content input[type="email"]:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .srwm-tab-content .description {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #6b7280;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            line-height: 1.4;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            border-left: 3px solid #4f46e5;
         }
         </style>
         <?php

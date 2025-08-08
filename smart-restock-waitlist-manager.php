@@ -956,6 +956,14 @@ class SmartRestockWaitlistManager {
         }
         SRWM_Pro_CSV_Upload::get_instance();
         
+        // Initialize Pro Restock class for frontend URL handling
+        if ($this->license_manager->is_pro_active()) {
+            if (!class_exists('SRWM_Pro_Restock')) {
+                require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-restock.php';
+            }
+            SRWM_Pro_Restock::get_instance();
+        }
+        
         // Add waitlist form to product pages
         add_action('woocommerce_single_product_summary', array($waitlist, 'display_waitlist_form'), 25);
         
@@ -972,6 +980,9 @@ class SmartRestockWaitlistManager {
         add_action('woocommerce_low_stock_notification', array($this, 'send_basic_supplier_alert'), 10, 2);
         add_action('woocommerce_no_stock_notification', array($this, 'send_basic_supplier_alert'), 10, 2);
         add_action('woocommerce_product_set_stock', array($this, 'check_basic_supplier_alert_on_stock_change'), 10, 1);
+        
+        // Add restock URL handler for both free and pro versions
+        add_action('init', array($this, 'handle_restock_url'));
     }
     
     /**
@@ -5578,6 +5589,377 @@ Best regards,
         if ($current_stock !== null && $current_stock <= $threshold && $current_stock >= 0) {
             $this->send_basic_supplier_alert($product);
         }
+    }
+    
+    /**
+     * Handle restock URL requests
+     */
+    public function handle_restock_url() {
+        if (!isset($_GET['srwm_restock'])) {
+            return;
+        }
+        
+        $token = sanitize_text_field($_GET['srwm_restock']);
+        $product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 0;
+        
+        // If Pro Restock class is available, let it handle the request
+        if ($this->license_manager->is_pro_active() && class_exists('SRWM_Pro_Restock')) {
+            return; // Let the Pro class handle it
+        }
+        
+        // Fallback for free version or if Pro class not loaded
+        if (!$product_id) {
+            wp_die(__('Invalid restock link. Product ID is missing.', 'smart-restock-waitlist'));
+        }
+        
+        // Validate token exists in database
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_restock_tokens';
+        
+        $token_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE token = %s AND product_id = %d AND expires_at > NOW() AND used = 0",
+            $token,
+            $product_id
+        ));
+        
+        if (!$token_data) {
+            wp_die(__('Invalid or expired restock link.', 'smart-restock-waitlist'));
+        }
+        
+        // Handle form submission
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_restock_submit'])) {
+            $this->process_simple_restock_request($product_id, $token);
+        } else {
+            // Display a simple restock form
+            $this->display_simple_restock_form($product_id, $token);
+        }
+    }
+    
+    /**
+     * Process simple restock request
+     */
+    private function process_simple_restock_request($product_id, $token) {
+        $quantity = intval($_POST['quantity']);
+        
+        if ($quantity <= 0) {
+            wp_die(__('Invalid quantity. Please enter a positive number.', 'smart-restock-waitlist'));
+        }
+        
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_die(__('Product not found.', 'smart-restock-waitlist'));
+        }
+        
+        // Update stock
+        $current_stock = $product->get_stock_quantity();
+        $new_stock = $current_stock + $quantity;
+        $product->set_stock_quantity($new_stock);
+        $product->save();
+        
+        // Mark token as used
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_restock_tokens';
+        $wpdb->update(
+            $table,
+            array('used' => 1, 'used_at' => current_time('mysql')),
+            array('token' => $token),
+            array('%d', '%s'),
+            array('%s')
+        );
+        
+        // Log the action
+        $this->log_restock_action($product_id, $quantity, 'quick_restock');
+        
+        // Display success message
+        $this->display_simple_success_message($product_id, $quantity);
+    }
+    
+    /**
+     * Display simple restock form for free version
+     */
+    private function display_simple_restock_form($product_id, $token) {
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_die(__('Product not found.', 'smart-restock-waitlist'));
+        }
+        
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?php _e('Restock Product', 'smart-restock-waitlist'); ?></title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    margin: 0;
+                    padding: 20px;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .container {
+                    max-width: 500px;
+                    width: 100%;
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                .header {
+                    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+                    color: white;
+                    padding: 30px;
+                    text-align: center;
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                }
+                .content {
+                    padding: 30px;
+                }
+                .product-info {
+                    background: #f8fafc;
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin-bottom: 25px;
+                    border-left: 4px solid #4f46e5;
+                }
+                .product-name {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1f2937;
+                    margin-bottom: 8px;
+                }
+                .product-sku {
+                    color: #6b7280;
+                    font-size: 14px;
+                }
+                .form-group {
+                    margin-bottom: 20px;
+                }
+                label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                    color: #374151;
+                }
+                input[type="number"] {
+                    width: 100%;
+                    padding: 12px 16px;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 500;
+                    color: #1f2937;
+                    background: #ffffff;
+                    transition: all 0.3s ease;
+                    box-sizing: border-box;
+                }
+                input[type="number"]:focus {
+                    outline: none;
+                    border-color: #4f46e5;
+                    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+                }
+                .submit-btn {
+                    width: 100%;
+                    padding: 14px 20px;
+                    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                .submit-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+                }
+                .submit-btn:active {
+                    transform: translateY(0);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1><?php _e('📦 Restock Product', 'smart-restock-waitlist'); ?></h1>
+                </div>
+                <div class="content">
+                    <div class="product-info">
+                        <div class="product-name"><?php echo esc_html($product->get_name()); ?></div>
+                        <div class="product-sku">SKU: <?php echo esc_html($product->get_sku() ?: 'N/A'); ?></div>
+                    </div>
+                    
+                    <form method="post" action="">
+                        <input type="hidden" name="srwm_restock_submit" value="1">
+                        <input type="hidden" name="token" value="<?php echo esc_attr($token); ?>">
+                        <input type="hidden" name="product_id" value="<?php echo esc_attr($product_id); ?>">
+                        
+                        <div class="form-group">
+                            <label for="quantity"><?php _e('Stock Quantity to Add', 'smart-restock-waitlist'); ?></label>
+                            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <?php _e('✅ Update Stock', 'smart-restock-waitlist'); ?>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+    
+    /**
+     * Display simple success message
+     */
+    private function display_simple_success_message($product_id, $quantity) {
+        $product = wc_get_product($product_id);
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?php _e('Stock Updated Successfully', 'smart-restock-waitlist'); ?></title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+                    margin: 0;
+                    padding: 20px;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .container {
+                    max-width: 500px;
+                    width: 100%;
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    text-align: center;
+                }
+                .header {
+                    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+                    color: white;
+                    padding: 30px;
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                }
+                .content {
+                    padding: 30px;
+                }
+                .success-icon {
+                    font-size: 48px;
+                    margin-bottom: 20px;
+                }
+                .success-message {
+                    font-size: 18px;
+                    color: #1f2937;
+                    margin-bottom: 15px;
+                }
+                .product-name {
+                    font-weight: 700;
+                    color: #4f46e5;
+                }
+                .quantity {
+                    font-weight: 700;
+                    color: #10b981;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1><?php _e('✅ Stock Updated', 'smart-restock-waitlist'); ?></h1>
+                </div>
+                <div class="content">
+                    <div class="success-icon">🎉</div>
+                    <div class="success-message">
+                        <?php printf(__('Successfully added <span class="quantity">%d</span> units to <span class="product-name">%s</span>', 'smart-restock-waitlist'), $quantity, esc_html($product->get_name())); ?>
+                    </div>
+                    <p style="color: #6b7280; margin-top: 20px;">
+                        <?php _e('The stock has been updated and the restock link is now expired.', 'smart-restock-waitlist'); ?>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+    
+    /**
+     * Log restock action
+     */
+    private function log_restock_action($product_id, $quantity, $method) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'srwm_restock_logs';
+        
+        $product = wc_get_product($product_id);
+        $product_name = $product ? $product->get_name() : 'Unknown Product';
+        $sku = $product ? $product->get_sku() : '';
+        $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
+        
+        $action_details = sprintf(
+            'Product restocked via %s. Quantity: %d units. IP: %s',
+            $method,
+            $quantity,
+            $this->get_client_ip()
+        );
+        
+        $wpdb->insert(
+            $table,
+            array(
+                'product_id' => $product_id,
+                'product_name' => $product_name,
+                'sku' => $sku,
+                'quantity' => $quantity,
+                'method' => $method,
+                'ip_address' => $this->get_client_ip(),
+                'waitlist_count' => $waitlist_count,
+                'action_details' => $action_details,
+                'timestamp' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s')
+        );
+    }
+    
+    /**
+     * Get client IP address
+     */
+    private function get_client_ip() {
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR');
+        
+        foreach ($ip_keys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        
+        return $_SERVER['REMOTE_ADDR'] ?? '';
     }
 }
 
