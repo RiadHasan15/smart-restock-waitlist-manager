@@ -5621,11 +5621,6 @@ register_activation_hook(__FILE__, function() {
     $plugin->create_tables();
 });
 
-// GLOBAL DEBUG: Log if quick restock link is detected
-if (isset($_GET['srwm_restock'])) {
-    error_log('SRWM: GLOBAL - srwm_restock detected in URL: ' . $_GET['srwm_restock']);
-}
-
 // Register srwm_restock and product_id as public query vars
 add_filter('query_vars', function($vars) {
     $vars[] = 'srwm_restock';
