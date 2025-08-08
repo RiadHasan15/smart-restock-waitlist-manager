@@ -5680,7 +5680,57 @@ Best regards,
             wp_die(__('Product not found.', 'smart-restock-waitlist'));
         }
         $waitlist_count = SRWM_Waitlist::get_waitlist_count($product_id);
-        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' . esc_html__('Quick Restock', 'smart-restock-waitlist') . "</title><style>body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}.container{max-width:640px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}.header{background:#2c3e50;color:#fff;padding:24px}.content{padding:24px}.product{background:#f8f9fa;border-radius:6px;padding:16px;margin-bottom:20px}.btn{background:#27ae60;color:#fff;border:none;border-radius:4px;padding:12px 16px;cursor:pointer;width:100%;font-size:16px}</style></head><body><div class="container"><div class="header"><h1>' . esc_html__('Quick Restock', 'smart-restock-waitlist') . '</h1><p>' . esc_html(get_bloginfo('name')) . '</p></div><div class="content"><div class="product"><h2>' . esc_html($product->get_name()) . '</h2><p><strong>' . esc_html__('SKU:', 'smart-restock-waitlist') . '</strong> ' . esc_html($product->get_sku()) . '</p><p><strong>' . esc_html__('Current Stock:', 'smart-restock-waitlist') . '</strong> ' . esc_html($product->get_stock_quantity()) . '</p><p><strong>' . esc_html__('Customers Waiting:', 'smart-restock-waitlist') . '</strong> ' . esc_html($waitlist_count) . '</p></div><form method="post"><input type="hidden" name="srwm_restock_submit" value="1"><label for="restock_quantity">' . esc_html__('Quantity to add:', 'smart-restock-waitlist') . '</label><input type="number" id="restock_quantity" name="restock_quantity" min="1" value="10" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;margin:10px 0 20px" required><button type="submit" class="btn">' . esc_html__('Restock Product & Notify Customers', 'smart-restock-waitlist') . '</button></form></div></div></body></html>';
+        $title = esc_html__('Quick Restock', 'smart-restock-waitlist');
+        $site_name = esc_html(get_bloginfo('name'));
+        $product_name = esc_html($product->get_name());
+        $sku = esc_html($product->get_sku());
+        $current_stock = esc_html($product->get_stock_quantity());
+        $waiting = esc_html($waitlist_count);
+        $qty_label = esc_html__('Quantity to add:', 'smart-restock-waitlist');
+        $btn_text = esc_html__('Restock Product & Notify Customers', 'smart-restock-waitlist');
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{$title}</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}
+    .container{max-width:640px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}
+    .header{background:#2c3e50;color:#fff;padding:24px}
+    .content{padding:24px}
+    .product{background:#f8f9fa;border-radius:6px;padding:16px;margin-bottom:20px}
+    .btn{background:#27ae60;color:#fff;border:none;border-radius:4px;padding:12px 16px;cursor:pointer;width:100%;font-size:16px}
+  </style>
+  </head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{$title}</h1>
+      <p>{$site_name}</p>
+    </div>
+    <div class="content">
+      <div class="product">
+        <h2>{$product_name}</h2>
+        <p><strong>SKU:</strong> {$sku}</p>
+        <p><strong>Current Stock:</strong> {$current_stock}</p>
+        <p><strong>Customers Waiting:</strong> {$waiting}</p>
+      </div>
+      <form method="post">
+        <input type="hidden" name="srwm_restock_submit" value="1">
+        <label for="restock_quantity">{$qty_label}</label>
+        <input type="number" id="restock_quantity" name="restock_quantity" min="1" value="10" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;margin:10px 0 20px" required>
+        <button type="submit" class="btn">{$btn_text}</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+HTML;
+
+        echo $html;
         exit;
     }
 }
