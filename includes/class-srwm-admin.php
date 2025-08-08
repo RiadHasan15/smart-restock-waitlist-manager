@@ -44,6 +44,13 @@ class SRWM_Admin {
             update_option('srwm_restock_email_template', $this->get_default_restock_email_template());
         }
         
+        // Check if basic supplier email template is corrupted
+        $basic_supplier_template = get_option('srwm_basic_supplier_email_template');
+        if (!empty($basic_supplier_template) && strpos($basic_supplier_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
+            // Template is corrupted, replace with correct default
+            update_option('srwm_basic_supplier_email_template', $this->get_default_basic_supplier_email_template());
+        }
+        
         // Check if supplier email template is corrupted
         $supplier_template = get_option('srwm_email_template_supplier');
         if (!empty($supplier_template) && strpos($supplier_template, '\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\') !== false) {
@@ -183,6 +190,8 @@ class SRWM_Admin {
         // Basic supplier alerts (FREE version)
         register_setting('srwm_settings', 'srwm_basic_supplier_alerts_enabled');
         register_setting('srwm_settings', 'srwm_basic_supplier_alert_threshold');
+        register_setting('srwm_templates', 'srwm_basic_supplier_email_subject');
+        register_setting('srwm_templates', 'srwm_basic_supplier_email_template');
         
         // Social proof display settings
         register_setting('srwm_settings', 'srwm_hide_social_proof');
@@ -250,6 +259,10 @@ class SRWM_Admin {
         delete_option('srwm_restock_email_template');
         update_option('srwm_restock_email_template', $this->get_default_restock_email_template());
         
+        // Force delete and recreate basic supplier email template (FREE version)
+        delete_option('srwm_basic_supplier_email_template');
+        update_option('srwm_basic_supplier_email_template', $this->get_default_basic_supplier_email_template());
+        
         // Force delete and recreate supplier email template if Pro is active
         if ($this->license_manager->is_pro_active()) {
             delete_option('srwm_email_template_supplier');
@@ -262,6 +275,7 @@ class SRWM_Admin {
         // Reset email subjects
         update_option('srwm_registration_email_subject', __('Welcome to the waitlist!', 'smart-restock-waitlist'));
         update_option('srwm_restock_email_subject', __('Product is back in stock!', 'smart-restock-waitlist'));
+        update_option('srwm_basic_supplier_email_subject', __('Low Stock Alert: {product_name}', 'smart-restock-waitlist'));
         if ($this->license_manager->is_pro_active()) {
             update_option('srwm_supplier_email_subject', __('Low Stock Alert - Action Required', 'smart-restock-waitlist'));
             update_option('srwm_po_email_subject', __('Purchase Order #{po_number}', 'smart-restock-waitlist'));
@@ -276,6 +290,7 @@ class SRWM_Admin {
         $email_options = array(
             'srwm_email_template_registration',
             'srwm_restock_email_template',
+            'srwm_basic_supplier_email_template',
             'srwm_email_template_supplier',
             'srwm_po_email_template'
         );
@@ -293,6 +308,9 @@ class SRWM_Admin {
                         break;
                     case 'srwm_restock_email_template':
                         update_option($option, $this->get_default_restock_email_template());
+                        break;
+                    case 'srwm_basic_supplier_email_template':
+                        update_option($option, $this->get_default_basic_supplier_email_template());
                         break;
                     case 'srwm_email_template_supplier':
                         if ($this->license_manager->is_pro_active()) {
@@ -6676,6 +6694,38 @@ Please respond promptly to maintain our inventory levels.';
     }
     
     /**
+     * Get default basic supplier email template (FREE version)
+     */
+    public function get_default_basic_supplier_email_template() {
+        $site_name = get_bloginfo('name');
+        $site_url = get_bloginfo('url');
+        $admin_email = get_option('admin_email');
+        
+        return 'Hi,
+
+STOCK ALERT: {product_name}
+
+Product Details:
+- Product Name: {product_name}
+- SKU: {sku}
+- Current Stock: {current_stock}
+- Stock Status: {stock_status}
+- Customers on Waitlist: {waitlist_count}
+
+This product needs to be restocked as soon as possible.
+
+Please contact us if you need any assistance:
+Email: ' . $admin_email . '
+Website: ' . $site_url . '
+
+Best regards,
+' . $site_name . ' Team
+
+---
+This is an automated stock alert from ' . $site_name . '.';
+    }
+    
+    /**
      * Get default purchase order email template
      */
     public function get_default_po_email_template() {
@@ -7090,6 +7140,47 @@ Please respond promptly to maintain our inventory levels.';
                                     ?></textarea>
                                     <p class="description"><?php _e('Available placeholders: {customer_name}, {product_name}, {product_url}, {site_name}, {stock_quantity}', 'smart-restock-waitlist'); ?></p>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Basic Supplier Alert Email (Free Version) -->
+                        <div class="srwm-template-card">
+                            <div class="srwm-template-header">
+                                <div class="srwm-template-icon">
+                                    <span class="dashicons dashicons-businessman"></span>
+                                </div>
+                                <div class="srwm-template-title">
+                                    <h3><?php _e('Basic Supplier Alert Email', 'smart-restock-waitlist'); ?></h3>
+                                    <p><?php _e('Sent to suppliers when products are low in stock (Free Version)', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                            </div>
+                            <div class="srwm-template-content">
+                                <div class="srwm-form-group">
+                                    <label><?php _e('Subject:', 'smart-restock-waitlist'); ?></label>
+                                    <input type="text" name="srwm_basic_supplier_email_subject" value="<?php echo esc_attr(get_option('srwm_basic_supplier_email_subject', __('Low Stock Alert: {product_name}', 'smart-restock-waitlist'))); ?>" class="large-text">
+                                </div>
+                                <div class="srwm-form-group">
+                                    <label><?php _e('Email Body:', 'smart-restock-waitlist'); ?></label>
+                                    <textarea name="srwm_basic_supplier_email_template" rows="10" class="large-text"><?php 
+                                        $template = get_option('srwm_basic_supplier_email_template');
+                                        if (empty($template)) {
+                                            $template = $this->get_default_basic_supplier_email_template();
+                                        }
+                                        echo esc_textarea($template); 
+                                    ?></textarea>
+                                    <p class="description"><?php _e('Available placeholders: {product_name}, {sku}, {current_stock}, {stock_status}, {waitlist_count}, {site_name}', 'smart-restock-waitlist'); ?></p>
+                                </div>
+                                <?php if (!$this->license_manager->is_pro_active()): ?>
+                                <div class="notice notice-info inline" style="margin-top: 15px;">
+                                    <p><strong><?php _e('Free Version Features:', 'smart-restock-waitlist'); ?></strong></p>
+                                    <ul style="margin-left: 20px;">
+                                        <li><?php _e('Plain text email notifications', 'smart-restock-waitlist'); ?></li>
+                                        <li><?php _e('Basic product and stock information', 'smart-restock-waitlist'); ?></li>
+                                        <li><?php _e('Set supplier emails per product', 'smart-restock-waitlist'); ?></li>
+                                    </ul>
+                                    <p><?php printf(__('Upgrade to <strong>Pro</strong> for advanced supplier management, one-click restock links, multi-channel notifications, and more. <a href="%s">View Pro Features</a>', 'smart-restock-waitlist'), admin_url('admin.php?page=smart-restock-waitlist-pro')); ?></p>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                         
