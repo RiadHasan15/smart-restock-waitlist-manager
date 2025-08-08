@@ -556,6 +556,20 @@
         
         // Initialize data tables
         initDataTables();
+
+        // Handle quick restock supplier selection tab switching
+        $(document).on('click', '.srwm-supplier-selection-tabs .srwm-tab-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var tab = $btn.data('tab');
+            var $tabsContainer = $btn.closest('.srwm-supplier-selection-tabs').parent();
+            // Remove active from all tab buttons in this group
+            $btn.siblings('.srwm-tab-btn').removeClass('active');
+            $btn.addClass('active');
+            // Hide all tab contents in this group
+            $tabsContainer.find('.srwm-tab-content').removeClass('active');
+            $tabsContainer.find('#' + tab + '-tab').addClass('active');
+        });
     }
     
     // Email validation helper function (moved outside initAdmin for global access)
