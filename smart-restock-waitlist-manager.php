@@ -5447,46 +5447,29 @@ Best regards,
             $product_id
         ));
         
-        // Create basic email content (plain text)
-        $site_name = get_bloginfo('name');
-        $site_url = get_bloginfo('url');
-        $admin_email = get_option('admin_email');
+        // Get email template and subject from Email Templates settings
+        $subject_template = get_option('srwm_basic_supplier_email_subject', __('Low Stock Alert: {product_name}', 'smart-restock-waitlist'));
+        $message_template = get_option('srwm_basic_supplier_email_template');
         
-        $subject = sprintf(__('Low Stock Alert: %s', 'smart-restock-waitlist'), $product_name);
+        // Use default template if none is saved
+        if (empty($message_template)) {
+            require_once SRWM_PLUGIN_DIR . 'includes/class-srwm-admin.php';
+            $admin = new SRWM_Admin($this->license_manager);
+            $message_template = $admin->get_default_basic_supplier_email_template();
+        }
         
-        $message = sprintf(__('Hi,
-
-STOCK ALERT: %s
-
-Product Details:
-- Product Name: %s
-- SKU: %s
-- Current Stock: %s
-- Stock Status: %s
-- Customers on Waitlist: %d
-
-This product needs to be restocked as soon as possible.
-
-Please contact us if you need any assistance:
-Email: %s
-Website: %s
-
-Best regards,
-%s Team
-
----
-This is an automated stock alert from %s.', 'smart-restock-waitlist'),
-            $product_name,
-            $product_name,
-            $sku ?: __('N/A', 'smart-restock-waitlist'),
-            $current_stock !== null ? $current_stock . ' units' : __('N/A', 'smart-restock-waitlist'),
-            ucfirst($stock_status),
-            $waitlist_count,
-            $admin_email,
-            $site_url,
-            $site_name,
-            $site_name
+        // Replace placeholders in subject and message
+        $placeholders = array(
+            '{product_name}' => $product_name,
+            '{sku}' => $sku ?: __('N/A', 'smart-restock-waitlist'),
+            '{current_stock}' => $current_stock !== null ? $current_stock . ' units' : __('N/A', 'smart-restock-waitlist'),
+            '{stock_status}' => ucfirst($stock_status),
+            '{waitlist_count}' => $waitlist_count,
+            '{site_name}' => get_bloginfo('name')
         );
+        
+        $subject = str_replace(array_keys($placeholders), array_values($placeholders), $subject_template);
+        $message = str_replace(array_keys($placeholders), array_values($placeholders), $message_template);
         
         // Send email
         $headers = array('Content-Type: text/plain; charset=UTF-8');
