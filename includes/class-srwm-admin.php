@@ -9401,6 +9401,67 @@ This is an automated stock alert from ' . $site_name . '.';
             color: white;
             border-color: #4f46e5;
         }
+        
+        /* Supplier Selection Tabs */
+        .srwm-supplier-selection-tabs {
+            display: flex;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .srwm-tab-btn {
+            flex: 1;
+            background: #f9fafb;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .srwm-tab-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .srwm-tab-btn.active {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .srwm-tab-btn i {
+            font-size: 12px;
+        }
+        
+        .srwm-tab-content {
+            display: none;
+        }
+        
+        .srwm-tab-content.active {
+            display: block;
+        }
+        
+        .srwm-tab-content input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .srwm-tab-content .description {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #6b7280;
+        }
         </style>
         <?php
     }
@@ -12318,10 +12379,26 @@ This is an automated stock alert from ' . $site_name . '.';
                             </div>
                             
                             <div class="srwm-form-group">
-                                <label for="quick-restock-supplier"><?php _e('Select Supplier *', 'smart-restock-waitlist'); ?></label>
-                                <select id="quick-restock-supplier" name="supplier_email" required>
-                                    <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
-                                </select>
+                                <label><?php _e('Supplier Selection *', 'smart-restock-waitlist'); ?></label>
+                                <div class="srwm-supplier-selection-tabs">
+                                    <button type="button" class="srwm-tab-btn active" data-tab="saved-supplier-single">
+                                        <i class="fas fa-users"></i> <?php _e('Saved Supplier', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                    <button type="button" class="srwm-tab-btn" data-tab="email-input-single">
+                                        <i class="fas fa-envelope"></i> <?php _e('Email Input', 'smart-restock-waitlist'); ?>
+                                    </button>
+                                </div>
+                                
+                                <div class="srwm-tab-content active" id="saved-supplier-single-tab">
+                                    <select id="quick-restock-supplier" name="supplier_email">
+                                        <option value=""><?php _e('Choose a saved supplier...', 'smart-restock-waitlist'); ?></option>
+                                    </select>
+                                </div>
+                                
+                                <div class="srwm-tab-content" id="email-input-single-tab">
+                                    <input type="email" id="quick-restock-email" name="supplier_email" placeholder="<?php _e('Enter supplier email address...', 'smart-restock-waitlist'); ?>">
+                                    <p class="description"><?php _e('Enter the email address of the supplier who will receive the restock link.', 'smart-restock-waitlist'); ?></p>
+                                </div>
                             </div>
                             
                             <div class="srwm-form-group">
@@ -14165,6 +14242,23 @@ This is an automated stock alert from ' . $site_name . '.';
                 closeAllModals();
             });
             
+            // Tab switching for both single and bulk restock modals
+            $(document).on('click', '.srwm-supplier-selection-tabs .srwm-tab-btn', function() {
+                const tab = $(this).data('tab');
+                const modal = $(this).closest('.srwm-modal');
+                
+                // Update active tab button within this modal
+                modal.find('.srwm-supplier-selection-tabs .srwm-tab-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                // Update active tab content within this modal
+                modal.find('.srwm-tab-content').removeClass('active');
+                modal.find('#' + tab + '-tab').addClass('active');
+                
+                // Clear form validation
+                modal.find('select, input[type="email"]').removeClass('error');
+            });
+            
             $('#generate-quick-restock-link-btn').on('click', function() {
                 generateQuickRestockLink();
             });
@@ -14809,11 +14903,26 @@ This is an automated stock alert from ' . $site_name . '.';
                 } else {
                     // Single product generation (legacy)
                     const productId = $('#quick-restock-product').val();
-                    const supplierEmail = $('#quick-restock-supplier').val();
                     const expires = $('#quick-restock-expires').val();
+                    
+                    // Get supplier email from active tab
+                    let supplierEmail = '';
+                    const activeTab = $('.srwm-supplier-selection-tabs .srwm-tab-btn.active').data('tab');
+                    
+                    if (activeTab === 'saved-supplier-single') {
+                        supplierEmail = $('#quick-restock-supplier').val();
+                    } else if (activeTab === 'email-input-single') {
+                        supplierEmail = $('#quick-restock-email').val();
+                    }
                     
                     if (!productId || !supplierEmail) {
                         showNotification('Please select both product and supplier.', 'error');
+                        return;
+                    }
+                    
+                    // Validate email format if using email input
+                    if (activeTab === 'email-input-single' && !isValidEmail(supplierEmail)) {
+                        showNotification('Please enter a valid email address.', 'error');
                         return;
                     }
                     
@@ -14822,6 +14931,30 @@ This is an automated stock alert from ' . $site_name . '.';
             }
             
             function generateBulkQuickRestockLinks(supplierEmail, expires) {
+                // Get supplier email from active tab
+                let finalSupplierEmail = supplierEmail;
+                
+                // Check which tab is active
+                const activeTab = $('.srwm-supplier-selection-tabs .srwm-tab-btn.active').data('tab');
+                
+                if (activeTab === 'saved-supplier') {
+                    finalSupplierEmail = $('#bulk-quick-restock-supplier').val();
+                } else if (activeTab === 'email-input') {
+                    finalSupplierEmail = $('#bulk-quick-restock-email').val();
+                }
+                
+                // Validate supplier email
+                if (!finalSupplierEmail) {
+                    showNotification('Please select a supplier or enter an email address.', 'error');
+                    return;
+                }
+                
+                // Validate email format if using email input
+                if (activeTab === 'email-input' && !isValidEmail(finalSupplierEmail)) {
+                    showNotification('Please enter a valid email address.', 'error');
+                    return;
+                }
+                
                 $('#quick-restock-loading').show();
                 $('#quick-restock-content').hide();
                 $('#generate-quick-restock-link-btn').prop('disabled', true);
@@ -14836,7 +14969,7 @@ This is an automated stock alert from ' . $site_name . '.';
                         action: 'srwm_generate_bulk_quick_restock_links',
                         nonce: '<?php echo wp_create_nonce('srwm_nonce'); ?>',
                         product_ids: productIds,
-                        supplier_email: supplierEmail,
+                        supplier_email: finalSupplierEmail,
                         expires: expires
                     },
                     success: function(response) {
@@ -15035,7 +15168,7 @@ This is an automated stock alert from ' . $site_name . '.';
             }
             
             function copyQuickRestockLinkToClipboard(token) {
-                const restockUrl = '<?php echo site_url(); ?>/?srwm_restock=1&token=' + token;
+                const restockUrl = '<?php echo home_url(); ?>/?srwm_restock=' + token;
                 
                 navigator.clipboard.writeText(restockUrl).then(function() {
                     showNotification('Quick restock link copied to clipboard!', 'success');
@@ -15318,10 +15451,26 @@ This is an automated stock alert from ' . $site_name . '.';
                     
                     <form id="bulk-quick-restock-form">
                         <div class="srwm-form-group">
-                            <label for="bulk-quick-restock-supplier"><?php _e('Select Supplier *', 'smart-restock-waitlist'); ?></label>
-                            <select id="bulk-quick-restock-supplier" name="supplier_email" required>
-                                <option value=""><?php _e('Choose a supplier...', 'smart-restock-waitlist'); ?></option>
-                            </select>
+                            <label><?php _e('Supplier Selection *', 'smart-restock-waitlist'); ?></label>
+                            <div class="srwm-supplier-selection-tabs">
+                                <button type="button" class="srwm-tab-btn active" data-tab="saved-supplier">
+                                    <i class="fas fa-users"></i> <?php _e('Saved Supplier', 'smart-restock-waitlist'); ?>
+                                </button>
+                                <button type="button" class="srwm-tab-btn" data-tab="email-input">
+                                    <i class="fas fa-envelope"></i> <?php _e('Email Input', 'smart-restock-waitlist'); ?>
+                                </button>
+                            </div>
+                            
+                            <div class="srwm-tab-content active" id="saved-supplier-tab">
+                                <select id="bulk-quick-restock-supplier" name="supplier_email">
+                                    <option value=""><?php _e('Choose a saved supplier...', 'smart-restock-waitlist'); ?></option>
+                                </select>
+                            </div>
+                            
+                            <div class="srwm-tab-content" id="email-input-tab">
+                                <input type="email" id="bulk-quick-restock-email" name="supplier_email" placeholder="<?php _e('Enter supplier email address...', 'smart-restock-waitlist'); ?>">
+                                <p class="description"><?php _e('Enter the email address of the supplier who will receive the restock links.', 'smart-restock-waitlist'); ?></p>
+                            </div>
                         </div>
                         
                         <div class="srwm-form-group">
@@ -15349,6 +15498,22 @@ This is an automated stock alert from ' . $site_name . '.';
                 
                 // Load suppliers for the dropdown
                 loadQuickRestockSuppliers();
+                
+                // Add tab switching functionality
+                $('.srwm-supplier-selection-tabs .srwm-tab-btn').on('click', function() {
+                    const tab = $(this).data('tab');
+                    
+                    // Update active tab button
+                    $('.srwm-supplier-selection-tabs .srwm-tab-btn').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    // Update active tab content
+                    $('.srwm-tab-content').removeClass('active');
+                    $('#' + tab + '-tab').addClass('active');
+                    
+                    // Clear form validation
+                    $('#bulk-quick-restock-supplier, #bulk-quick-restock-email').removeClass('error');
+                });
                 
                 // Show modal
                 $('#quick-restock-modal').show();
