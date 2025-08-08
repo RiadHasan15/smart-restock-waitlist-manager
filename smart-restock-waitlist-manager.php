@@ -946,6 +946,7 @@ class SmartRestockWaitlistManager {
      * Initialize frontend functionality
      */
     private function init_frontend() {
+        error_log('SRWM: init_frontend running');
         // Initialize core classes with license manager
         $waitlist = SRWM_Waitlist::get_instance($this->license_manager);
         $supplier = SRWM_Supplier::get_instance($this->license_manager);
@@ -958,6 +959,7 @@ class SmartRestockWaitlistManager {
         
         // Initialize Pro Restock class for frontend URL handling
         if ($this->license_manager->is_pro_active()) {
+            error_log('SRWM: Attempting to load SRWM_Pro_Restock');
             if (!class_exists('SRWM_Pro_Restock')) {
                 require_once SRWM_PLUGIN_DIR . 'includes/pro/class-srwm-pro-restock.php';
             }
@@ -5618,3 +5620,8 @@ register_activation_hook(__FILE__, function() {
     $plugin = new SmartRestockWaitlistManager();
     $plugin->create_tables();
 });
+
+// GLOBAL DEBUG: Log if quick restock link is detected
+if (isset($_GET['srwm_restock'])) {
+    error_log('SRWM: GLOBAL - srwm_restock detected in URL: ' . $_GET['srwm_restock']);
+}
