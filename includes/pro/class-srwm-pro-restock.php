@@ -29,21 +29,22 @@ class SRWM_Pro_Restock {
      * Handle restock request from supplier link
      */
     public function handle_restock_request() {
-        error_log('SRWM_PRO: Pro restock handler running for token: ' . (isset($_GET['srwm_restock']) ? $_GET['srwm_restock'] : 'NONE'));
         if (!isset($_GET['srwm_restock']) || !isset($_GET['product_id'])) {
             return;
         }
         $token = sanitize_text_field($_GET['srwm_restock']);
         $product_id = intval($_GET['product_id']);
+        
         if (!$this->validate_restock_token($token, $product_id)) {
             wp_die(__('Invalid or expired restock link.', 'smart-restock-waitlist'));
         }
-        // Handle the restock form submission
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['srwm_restock_submit'])) {
             $this->process_restock_request($product_id, $token);
-        } else {
-            $this->display_restock_form($product_id, $token);
+            return;
         }
+        
+        $this->display_restock_form($product_id, $token);
     }
     
     /**
